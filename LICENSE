@@ -1,0 +1,13 @@
+This repository contains materials under different licenses.
+
+- Original agent scripts, prompts and agent documentation: MIT (agent/LICENSE).
+- RLHF Book chapters and their Chinese adaptations: CC BY-NC-SA 4.0
+  (zh/rlhf-book/LICENSE-CHAPTERS).
+- RLHF Book code and other materials covered by its code license: MIT
+  (zh/rlhf-book/LICENSE-CODE).
+- Missing Semester course content and its Chinese adaptations: CC BY-NC-SA 4.0
+  (https://creativecommons.org/licenses/by-nc-sa/4.0/).
+- Third-party images and excerpts retain their respective rights and notices.
+
+See NOTICE.md for attribution, modifications, and the scope of each license.
+No single license is asserted over all repository contents.

@@ -1,0 +1,14 @@
+agent/secrets.local.json
+agent/progress.json
+agent/progress.tmp
+agent/logs/
+agent/.run.lock
+work/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+zh/**/build/
+zh/**/.bundle/
+zh/**/vendor/
+zh/**/_site/

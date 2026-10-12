@@ -1,0 +1,58 @@
+{
+  "claude_bin": "~/.local/bin/claude",
+  "model": "Qwen3.6-35B-A3B-FP8",
+  "timeout_seconds": 900,
+  "max_output_tokens": 32000,
+  "books": {
+    "rlhf-book": {
+      "url": "https://github.com/natolambert/rlhf-book.git",
+      "branch": "main",
+      "title_zh": "从人类反馈中学习：RLHF 中文教学版",
+      "audience": "具备基础概率、微积分和机器学习知识，正在学习大模型后训练的中文读者",
+      "include": [
+        "book/chapters/*.md",
+        "code/README.md",
+        "code/*/README.md",
+        "code/direct_alignment/ORPO_SIMPO.md",
+        "teach/**/*.md",
+        "README.md",
+        "book/README.md",
+        "book/chapters/README.md",
+        "book/scripts/README.md",
+        "diagrams/README.md",
+        "diagrams/tikz/*/README.md"
+      ],
+      "exclude": [
+        "**/CLAUDE.md",
+        "**/AGENTS.md",
+        "**/*-plan.md",
+        "**/*-notes.md"
+      ],
+      "licenses": [
+        "LICENSE-CHAPTERS",
+        "LICENSE-CODE"
+      ],
+      "license_note": "章节及其教学改编保留 CC BY-NC-SA 4.0；代码与其他材料遵循上游各自许可证。图片保留原文件，不据此宣称获得额外授权。"
+    },
+    "missing-semester": {
+      "url": "https://github.com/missing-semester/missing-semester.git",
+      "branch": "master",
+      "title_zh": "计算机教育中缺失的一学期：中文教学版",
+      "audience": "掌握基本编程、但缺乏命令行和软件工程工具系统训练的中文读者",
+      "include": [
+        "_2019/*.md",
+        "_2020/*.md",
+        "_2026/*.md",
+        "about.md",
+        "index.md",
+        "past.md",
+        "license.md"
+      ],
+      "exclude": [],
+      "licenses": [
+        "license.md"
+      ],
+      "license_note": "课程及中文改编保留 CC BY-NC-SA 4.0，保留作者署名及来源链接。不同年份分别保留，不合并练习或过时的环境假设。"
+    }
+  }
+}

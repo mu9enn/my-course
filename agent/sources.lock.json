@@ -1,0 +1,16 @@
+{
+  "rlhf-book": {
+    "url": "https://github.com/natolambert/rlhf-book.git",
+    "branch": "main",
+    "title_zh": "从人类反馈中学习：RLHF 中文教学版",
+    "license_note": "章节及其教学改编保留 CC BY-NC-SA 4.0；代码与其他材料遵循上游各自许可证。图片保留原文件，不据此宣称获得额外授权。",
+    "commit": "eecc49e1e1daf1be670d7242eb090240b5bb0f04"
+  },
+  "missing-semester": {
+    "url": "https://github.com/missing-semester/missing-semester.git",
+    "branch": "master",
+    "title_zh": "计算机教育中缺失的一学期：中文教学版",
+    "license_note": "课程及中文改编保留 CC BY-NC-SA 4.0，保留作者署名及来源链接。不同年份分别保留，不合并练习或过时的环境假设。",
+    "commit": "1d695c94ccafdce3f06d6b9dfe3e6f106097693a"
+  }
+}

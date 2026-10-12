@@ -1,0 +1,6 @@
+[submodule "original/rlhf-book"]
+	path = original/rlhf-book
+	url = https://github.com/natolambert/rlhf-book.git
+[submodule "original/missing-semester"]
+	path = original/missing-semester
+	url = https://github.com/missing-semester/missing-semester.git
