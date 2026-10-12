@@ -46,9 +46,9 @@ def initialize():
     lock = {}
     for name, spec in CONFIG['books'].items():
         source = ROOT / 'original' / name
-        if not source.exists():
-            source.parent.mkdir(parents=True, exist_ok=True)
-            subprocess.run(['git', 'clone', '--depth', '1', '--branch', spec['branch'], spec['url'], str(source)], check=True)
+        if not (source / '.git').exists():
+            subprocess.run(['git', '-C', str(ROOT), 'submodule', 'update', '--init', '--',
+                            'original/' + name], check=True)
         commit = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
         lock[name] = {**{k: spec[k] for k in ('url', 'branch', 'title_zh', 'license_note')}, 'commit': commit}
         edition = ROOT / 'zh' / name
@@ -85,8 +85,10 @@ def execute(name, relative, source, target, state):
         env['ANTHROPIC_DEFAULT_' + tier + '_MODEL'] = CONFIG['model']
     command = [os.path.expanduser(CONFIG['claude_bin']), '--bare', '--safe-mode', '--setting-sources', '',
                '--strict-mcp-config', '--no-session-persistence', '--model', CONFIG['model'],
-               '--tools', 'Read,Write,Edit', '--allowedTools', 'Read,Write,Edit',
+               '--tools', 'Read,Edit', '--allowedTools', 'Read,Edit(/' + str(target) + ')',
+               '--disallowedTools', 'Edit(/' + str(ROOT / 'original') + '/**),Read(/' + str(AGENT / 'secrets.local.json') + ')',
                '--permission-mode', 'dontAsk', '--output-format', 'text',
+               '--debug-file', str(log.with_suffix('.debug.log')),
                '--add-dir', str(ROOT), '--append-system-prompt', (AGENT / 'PROMPT.md').read_text(), '-p']
     prompt = (f'请完成这一篇中文教学改写。\n原文：{source}\n目标：{target}\n'
               f'术语表：{AGENT / "TERMS.md"}\n读者：{CONFIG["books"][name]["audience"]}\n'
@@ -94,12 +96,31 @@ def execute(name, relative, source, target, state):
               '即使目标已有中文也必须依据当前要求重新改写并覆盖，不能只检查后宣告完成。'
               '请读英文原文后直接覆盖目标文件，完整保留原文教学内容。'
               '只写指定目标文件，读完长文的所有部分再完成改写和自查。')
+    in_place = relative in CONFIG['books'][name].get('edit_in_place', [])
+    if in_place:
+        ranges = CONFIG['books'][name]['safe_read_ranges'][relative]
+        prompt += ('\n本篇专用要求，优先于所有通用读取和写入方式：目标已复制为完整英文原稿。'
+                   '本篇包含模型控制 token，重新生成它们可能截断工具参数。'
+                   '禁止 Read 全文，也禁止读取任何邻近文件。原文和目标只能按照下面给出的安全范围读取，'
+                   '每组为 [offset, limit]，在同一轮同时 Read 各组即可；未列出的行保留原样，不要读取。'
+                   + json.dumps(ranges) +
+                   '因此不要整篇覆盖，不要生成任何代码块；仅用 Edit 将代码块外的英文段落、'
+                   '标题、表格和练习逐项改成中文。old_string 和 new_string 不得包含模型控制 token，'
+                   '涉及控制 token 的示例及代码原样留在文件中。可在同一轮并行提交多个不同段落的 Edit。'
+                   '最终只在相同安全范围内读回检查，不得 Read 全文。原代码块完整保留。')
     record = {'status': 'running', 'source_sha256': source_hash, 'log': str(log.relative_to(ROOT)), 'started': run_id}
     state[task_id] = record
     save(state)
     print('正在改写 ' + task_id, flush=True)
     started = time.monotonic()
-    previous = fingerprint(target) if target.exists() else None
+    # Give the writer a fresh destination, preserving any previous version locally.
+    # Otherwise a model may turn a translation task into many incremental edits.
+    backup = log.with_suffix('.before.md')
+    if target.exists():
+        shutil.copyfile(target, backup)
+        target.unlink()
+    if in_place:
+        shutil.copyfile(source, target)
     try:
         with log.open('w') as output:
             process = subprocess.Popen(command, cwd=str(ROOT / 'zh' / name),
@@ -115,9 +136,10 @@ def execute(name, relative, source, target, state):
                     os.killpg(process.pid, signal.SIGKILL)
                     process.wait()
                 raise
-        changed = target.exists() and fingerprint(target) != previous and fingerprint(target) != source_hash
-        if process.returncode != 0 or not changed:
-            raise RuntimeError(f'Claude exit={process.returncode}, 文件发生改写={changed}；请查看日志')
+        changed = target.exists() and fingerprint(target) != source_hash
+        plausible_size = target.exists() and target.stat().st_size >= source.stat().st_size * 0.65
+        if process.returncode != 0 or not changed or not plausible_size:
+            raise RuntimeError(f'Claude exit={process.returncode}, 文件发生改写={changed}, 长度基本检查={plausible_size}；请查看日志')
         record.update(status='done', output_sha256=fingerprint(target))
     except KeyboardInterrupt:
         record.update(status='failed', error='用户中断')
@@ -126,6 +148,8 @@ def execute(name, relative, source, target, state):
         record.update(status='failed', error=str(error))
         print(str(error), flush=True)
     finally:
+        if not target.exists() and backup.exists():
+            shutil.copyfile(backup, target)
         record['seconds'] = round(time.monotonic() - started, 2)
         save(state)
     print(f'{record["status"]}: {task_id} ({record["seconds"]}s)', flush=True)

@@ -24,6 +24,10 @@
 | pretraining | 预训练 |
 | policy | 策略 |
 | reward model | 奖励模型 |
+| outcome reward model / ORM | 结果奖励模型（ORM） |
+| process reward model / PRM | 过程奖励模型（PRM） |
+| preference reward model | 偏好奖励模型 |
+| mirror descent | 镜像下降 |
 | reward hacking | 奖励投机 |
 | supervised fine-tuning | 监督微调（SFT） |
 | preference | 偏好 |
@@ -49,7 +53,7 @@
 | dependency | 依赖 |
 | package manager | 包管理器 |
 | lock file | 锁文件 |
-| semantic versioning | 语义化版本控制 |
+| semantic versioning | 语义化版本（SemVer） |
 | regular expression | 正则表达式 |
 | version control | 版本控制 |
 | debugging | 调试 |
