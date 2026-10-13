@@ -1,27 +1,25 @@
-# Instruction Tuning (SFT)
+# 指令微调（SFT）
 
-Educational supervised fine-tuning of a base language model for [RLHF Book](https://rlhfbook.com).
-See **Chapter 4: Instruction Fine-Tuning** for chat-template structure, prompt masking,
-and the role SFT plays in the broader post-training pipeline.
+面向 [RLHF Book](https://rlhfbook.com) 的基座语言模型教学型监督微调（SFT）示例。
+关于 chat-template 结构、prompt masking，以及 SFT 在整个后训练流水线中的
+角色，详见 **第四章：指令微调（Instruction Fine-Tuning）**。
 
-## Sanity Check: From Continuation to Answer
+## 合理性检查：从"续写"到"回答"
 
-This module exists to make one effect concrete: a base model continues text;
-an instruction-tuned model answers and stops.
+本模块旨在直观呈现一个效果：基座模型会无休止地续写文本；
+而经过指令微调的模型则能够回答问题并在适当时机停止生成。
 
-Querying `allenai/OLMo-2-0425-1B` (base) with the prompt
-*"What is the capital of France?"* produces a continuation that drifts
-into more questions or unrelated text. After SFT on a small instruction
-dataset, the same prompt produces *"The capital of France is Paris."*
-followed by the assistant end-of-turn token, ending generation.
+用提示词 *"What is the capital of France?"* 调用 `allenai/OLMo-2-0425-1B`（基座模型）时，
+生成的内容会发散到更多问题或无关文本上。在小型指令数据集上完成 SFT 之后，
+同样的提示词会生成 *"The capital of France is Paris."*，
+并在助手结束发言标记（end-of-turn token）处停止生成。
 
-The training loop prints samples for this exact prompt to the console at
-step 0 (base model) and every `sample_every` optimizer steps after, so the
-transition is visible as the run progresses.
+训练循环会在 step 0（基座模型）以及之后每 `sample_every` 个优化器步时，
+将该提示词对应的生成样本打印到控制台，因此随着训练的进行，
+模型从"续写"到"回答"的转变过程一目了然。
 
-Early in training the base model has not yet internalized the chat template
-or the convention of stopping after one answer, so it keeps continuing past
-the assistant turn and invents more user questions:
+训练初期，基座模型尚未内化 chat-template 的规则，也不清楚"回答完一次就停"
+的约定，因此在助手轮次结束后继续续写，甚至凭空编造出更多用户问题：
 
 ```
 ──────────────────────────────────── Samples @ step 100 ─────────────────────────────────────
@@ -40,8 +38,7 @@ the assistant turn and invents more user questions:
 ╰───────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-A few hundred steps later, the model has learned to give one coherent
-assistant reply and emit `<|endoftext|>` to terminate the turn:
+几百步之后，模型已经学会了给出一段连贯的助手回答，并输出 `<|endoftext|>` 来结束本轮对话：
 
 ```
 ──────────────────────────────────── Samples @ step 650 ─────────────────────────────────────
@@ -53,52 +50,53 @@ assistant reply and emit `<|endoftext|>` to terminate the turn:
 ╰───────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-## Training Results
+## 训练结果
 
-![Instruction Tuning Training Results](../images/wandb_instruction_tuning.png)
+![指令微调训练结果](../images/wandb_instruction_tuning.png)
 
-Reference run: [wandb](https://wandb.ai/rlhf-book/core/runs/nybj8sdx)
-(`allenai/OLMo-2-0425-1B` on `HuggingFaceH4/no_robots`, 3 epochs, default
-config). Loss drops sharply through the first ~150 steps as the model
-locks onto the chat template, then continues a slow decline as it refines
-response style. `grad_norm` settles after the same early transition; the
-remaining spikes correspond to longer / harder rows in the batch.
+参考运行记录：[wandb](https://wandb.ai/rlhf-book/core/runs/nybj8sdx)
+（模型 `allenai/OLMo-2-0425-1B`，数据集 `HuggingFaceH4/no_robots`，
+3 个 epoch，默认配置）。损失在前 ~150 步急剧下降——模型在此期间
+"学会"了 chat-template 的格式——之后持续缓慢下降，逐步改进
+回复风格。`grad_norm` 也在同样的早期阶段趋于平稳；其余的波动
+对应于 batch 中更长或更难的样本行。
 
-## Quick Start
+## 快速开始
 
 ```bash
 cd code/
 uv sync
 
-# Default run (~9.5K rows, 3 epochs, fits a 24 GB GPU at bf16)
+# 默认运行（约 9.5K 行，3 个 epoch，bf16 精度下可跑在 24 GB GPU 上）
 uv run python -m instruction_tuning.train \
     --config instruction_tuning/configs/sft_olmo2_1b.yaml
 
-# With W&B logging
+# 开启 W&B 日志记录
 WANDB_PROJECT=rlhf-book uv run python -m instruction_tuning.train \
     --config instruction_tuning/configs/sft_olmo2_1b.yaml
 ```
 
-## What Happens
+## 运行流程
 
-1. Load `allenai/OLMo-2-0425-1B` (base) and its tokenizer. The base tokenizer
-   has no `chat_template`, so we lift the canonical one from
-   `allenai/OLMo-2-0425-1B-SFT` so the resulting model speaks the same
-   `<|user|>` / `<|assistant|>` format.
-2. Load `HuggingFaceH4/no_robots`, render each row with the chat template,
-   and build labels with `-100` (`IGNORE_INDEX`) on prompt tokens — only
-   assistant tokens contribute to the loss.
-3. Train with AdamW + linear warmup/decay, bf16, gradient checkpointing,
-   gradient accumulation. No sharding, no data parallelism.
-4. Periodically generate completions for a fixed prompt pool (including the
-   capital-of-France prompt) and print them to the console as colored panels.
-   Loss and learning rate are logged to W&B; sample text is console-only.
+1. 加载 `allenai/OLMo-2-0425-1B`（基座模型）及其 tokenizer。基座
+   tokenizer 没有 `chat_template`，因此我们从
+   `allenai/OLMo-2-0425-1B-SFT` 中"提取"出标准模板，让生成的模型
+   使用相同的 `<|user|>` / `<|assistant|>` 对话格式。
+2. 加载 `HuggingFaceH4/no_robots`，用 chat-template 渲染每一行数据，
+   并在 prompt token 上标注 `-100`（`IGNORE_INDEX`）——只有
+   助手（assistant）的 token 对损失函数有贡献。
+3. 使用 AdamW + 线性预热/衰减策略进行训练，精度为 bf16，并启用
+   梯度检查点（gradient checkpointing）和梯度累积（gradient
+   accumulation）。未使用分片（sharding）或数据并行。
+4. 定期针对一组固定的提示词池（包括"法国首都是什么"的提示词）生成
+   补全结果，并以彩色面板的形式打印到控制台。损失和学习率会记录
+   到 W&B；样本文本仅输出到控制台。
 
-## OLMo-2 Chat Format Quirk
+## OLMo-2 对话格式的"彩蛋"
 
-The OLMo-2 tokenizer overloads `<|endoftext|>` (id `100257`) as BOS, EOS,
-*and* UNK; the only other special token is `<|pad|>`. So every rendered
-conversation looks like:
+OLMo-2 的 tokenizer 对 `<|endoftext|>` （id 为 `100257`）作为 BOS（start of conversation）、EOS
+*以及* UNK 三种用途——唯一的另一个特殊 token 是 `<|pad|>`。
+因此，任何渲染后的对话都长这样：
 
 ```
 <|endoftext|><|user|>\nhi\n<|assistant|>\nhello<|endoftext|>
@@ -106,12 +104,13 @@ conversation looks like:
    BOS (start of conversation)                 EOS (end of assistant turn)
 ```
 
-The model disambiguates from context: at the start, followed by `<|user|>`,
-it means "begin"; after an assistant message, it means "stop." Other
-families avoid this — Llama-3 uses distinct `<|begin_of_text|>` /
-`<|end_of_text|>`, Qwen uses `<|im_start|>` / `<|im_end|>`. The
+模型通过上下文来消除歧义：在对话开头、紧跟 `<|user|>` 时，
+它表示"开始"；而在助手消息之后出现时，则表示"停止"。其他
+模型家族避免了这种设计——Llama-3 使用不同的 `<|begin_of_text|>` /
+`<|end_of_text|>`，Qwen 使用 `
+<|im_start|>` / `<|im_end|>`. The
 `<|user|>` / `<|assistant|>` / `<|system|>` role markers are *not* special
-tokens in OLMo-2's vocabulary; they're tokenized as plain BPE pieces (`<`,
+词表中 *并非* 特殊 token；它们被拆解为普通的 BPE 子词片段（`<`、
 `|`, `user`, `|`, `>`), which is why the base model (pre-SFT) treats them
 as ordinary text and produces nonsense like `<|admin|>` continuations.
 

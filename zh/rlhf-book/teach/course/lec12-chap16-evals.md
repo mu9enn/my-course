@@ -1,51 +1,16 @@
 ---
-title: "Lecture 12: The Evolution of Frontier Model Evaluation"
+title: "第12讲：前沿模型评估的演进"
 author: "Nathan Lambert"
-fonts:
-  heading: "Rubik"
-  body: "Poppins"
-bibliography: refs.bib
-figure_captions: true
 footer:
   left: "rlhfbook.com/course"
-  center: "Lecture 12"
+  center: "第12讲"
   right: "Lambert {n}/{N}"
-custom_css: |
-  .slide--section-break { background: #F28482; }
-  :root {
-    --colloquium-progress-fill: #F28482;
-  }
-  .slide--title-sidebar h1 {
-    font-size: 2.5em;
-    letter-spacing: 0;
-  }
-  .slide--title-sidebar h1 .title-subtitle {
-    display: block;
-    margin-top: 0.6em;
-    font-size: 0.45em;
-    font-weight: 400;
-    letter-spacing: 0;
-    opacity: 0.75;
-  }
-  /* Bulleted lists should never be centered (markers float, looks bad).
-     Target lists only -- leave titles and display-math paragraphs centered. */
-  .slide ul, .slide ol, .slide li { text-align: left; }
-  /* Vertically center every content slide by default (special layouts and
-     explicit valign-top/bottom directives still win). */
-  .slide.active:not([class*="slide--"]):not(.valign-top):not(.valign-bottom) {
-    justify-content: center;
-  }
-  /* Verbatim prompt dumps: compact monospace so full prompts fit a slide. */
-  .slide pre {
-    font-size: 0.52em;
-    line-height: 1.38;
-  }
 ---
 
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 12: The Evolution of Frontier Model Evaluation <span class="title-subtitle">From few-shot prompting to agentic sandboxes</span>
+# 第12讲：前沿模型评估的演进 <span class="title-subtitle">从少样本提示到代理沙盒</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -53,28 +18,28 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Post-training course. Chapter 16.</p>
+<p class="colloquium-title-note">后训练课程。第16章。</p>
 
 ---
 
-## How we measure progress changes over time
+## 我们衡量进步的方式如何随时间变化
 
-Different model types need different strategies.
+不同类型的模型需要不同的评估策略。
 
-As models get smarter, we need to re-invent the cutting edge of AI.
+随着模型变得越来越智能，我们需要重新发明人工智能的前沿。
 
-Evaluation is at the core of AI progress and understanding truth of what the models are.
+评估是人工智能进步的核心，也是理解模型真实能力的核心。
 
 ---
 
 <!-- columns: 48/52 -->
-## Frontier evaluation is harder than it ever has been
+## 前沿评估比以往任何时候都更难
 
-When Opus 4.6 and GPT-5.3-Codex shipped in the same week (Feb 2026), the headline benchmark deltas were tiny -- and settled nothing about which model to use.
+当 Opus 4.6 和 GPT-5.3-Codex 在同一个月（2026年2月）发布时，头条基准测试分数的差距微乎其微——而且根本无法决定应该使用哪个模型。
 
-What separated them was found through use: usability, product fit, behavior over long agentic tasks. Benchmark-based release reactions barely matter at the frontier -- consistent testing and clear articulation have to carry the comparison.
+真正的区分因素来自于实际使用：可用性、产品匹配度、在长程代理任务中的表现。在前沿领域，基于基准测试的发布反应几乎无关紧要——持续测试和清晰的论证才是比较的关键。
 
-Read on Interconnects: [the post-benchmark era](https://www.interconnects.ai/p/opus-46-vs-codex-53)
+阅读 Interconnects 文章：[基准测试之后的时代](https://www.interconnects.ai/p/opus-46-vs-codex-53)
 
 |||
 
@@ -84,34 +49,34 @@ Read on Interconnects: [the post-benchmark era](https://www.interconnects.ai/p/o
 
 <!-- columns: 38/62 -->
 <!-- cite-right: kwa2025measuring -->
-## ...and the tasks we're trying to measure keep taking longer
+## ……而且我们试图测量的任务也在变得越来越长
 
-The task length frontier models can complete (at 50% success) **doubles roughly every 7 months** -- from seconds-long questions to tasks that take human experts hours ([Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)).
+前沿模型能够完成（成功率 50%）的任务时长 **大约每 7 个月翻一番**——从需要几秒的问题到需要人类专家数小时才能完成的任务（[Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)）。
 
-Measuring the frontier now means running hours-long expert tasks, many times over.
+现在测量前沿意味着反复运行耗时数小时的专业任务。
 
 |||
 
-![Task-completion time horizon of frontier models. Figure from METR (Time Horizon 1.1), CC-BY.](assets/metr-time-horizon-11.png)
+![前沿模型任务完成时间跨度。图片来自 METR（Time Horizon 1.1），CC-BY。](assets/metr-time-horizon-11.png)
 
 ---
 
 <!-- columns: 45/55 -->
-## This lecture
+## 本讲内容
 
-Every training decision in this course -- data mixes, hyperparameters, which checkpoint ships -- is made off benchmark numbers.
+本课程中的每一项训练决策——数据配比、超参数、哪个检查点被部署——都是基于基准测试分数做出的。
 
-Today: How we got to modern benchmarking approaches and research.
+今天：我们是如何走到现代基准测试方法和研究的。
 
 |||
 
 ```box
-title: The plan
+title: 本讲计划
 tone: accent
 content: |
-  1. **The eras** -- how each model type was prompted, graded, and benchmarked
-  2. **A bit more on agentic evals** -- the system around today's scores
-  3. **Trusting the number** -- variance, contamination, and gaming
+  1. **各个时代** -- 每种模型类型是如何被提示、评分和基准测试的
+  2. **更多关于代理评估** -- 今天分数背后的系统
+  3. **信任这个数字** -- 方差、污染和投机取巧
 ```
 
 ---
@@ -119,27 +84,27 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: The eras of post-training evaluation
+## 第一部分：后训练评估的各个时代
 
 ---
 
 <!-- animate: bullets -->
-## Benchmarks mirror the training goals of their era
+## 基准测试反映了其所属时代的训练目标
 
-The key to understanding evals: popular benchmarks are a **reflection of the training best practices of their moment**.
+理解评估的关键：流行的基准测试是其所处时刻 **训练最佳实践的一面镜子**。
 
-- **Chat era** *(2022-23)* -- basic knowledge and chat style
-- **Multi-skill era** *(2023-24)* -- post-training improves more skills than just chat (math, code, factuality, safety, etc.)
-- **Reasoning & tools era** *(2024-26)* -- hard math, coding, and reasoning problems, long chains of thought
-- **Agents & real work** *(now)* -- end-to-end knowledge-work tasks inside products and harnesses
+- **对话时代** *（2022-23年）* -- 基本知识和对话风格
+- **多技能时代** *（2023-24年）* -- 后训练不再只提升对话一项技能（数学、代码、事实性、安全性等）
+- **推理与工具时代** *（2024-26年）* -- 高难度数学、编码和推理问题，长链思维过程
+- **代理与真实工作** *（当下）* -- 产品和评估工具中的端到端知识工作流任务
 
 ---
 
 <!-- rows: 20/80 -->
 <!-- cite-right: brown2020language, robinson2023leveraging -->
-## Base models (before post-training): few-shot prompting
+## 基础模型（后训练之前）：少样本提示
 
-Base models can't take a bare or formatted question -- eval prompts carried examples of the patterns (3 to 8+ in-context samples) so the model continues the pattern. Canonical evals: **5-shot MMLU**, **8-shot GSM8K**.
+基础模型无法接受裸的或格式化的问题——评估提示会携带示例的模式（3 到 8+ 个上下文样本），让模型接着这个模式继续。经典评估：**5-shot MMLU**、**8-shot GSM8K**。
 
 ===
 
@@ -188,33 +153,34 @@ Choices:
 
 Correct Answer:
 ```
+
 ---
 
 <!-- columns: 50/50 -->
 <!-- cite-right: brown2020language, teamolmo2025olmo3 -->
-## Grading: log-likelihood vs. exact match
+## 评分方式：对数似然 vs. 精确匹配
 
-**Log-likelihood scoring**: compare the probability the model assigns each answer option -- either just the letter `A`, or the full answer string. No sampling, fully deterministic. The standard for pretraining evals, where models couldn't always answer in a clean format.
+**对数似然评分**：比较模型分配给每个答案选项的概率——可以是单个字母 `A`，也可以是完整的答案字符串。不需要采样，完全确定性的。这是预训练评估的标准，因为那时的模型无法始终以清晰格式作答。
 
 |||
 
 <!-- step -->
 
-**Generation + exact match**: sample a completion, extract the answer. Mirrors real usage -- and is standard for post-training since ~2024. Aggregating multiple completions/samples gives majority voting; e.g. **pass@k** is a common tool.
+**生成 + 精确匹配**：采样一个补全结果，提取答案。模拟真实使用场景——自 ~2024 年以来已成为后训练的标准。聚合多个补全/样本可以给出多数投票；例如，**pass@k** 是一种常用方法。
 
-Generation and extraction gave rise to answer extraction formatting bugs, which only became more complex with agentic models today.
+生成和答案提取带来了格式提取 bug，随着代理模型的出现，这个问题只会变得越来越复杂。
 
 ---
 
 <!-- columns: 46/54 -->
 <!-- cite-right: chen2021codex -->
-## The math behind pass@k
+## pass@k 背后的数学原理
 
-pass@k = the probability that **at least one of $k$ samples** solves the problem.
+pass@k = **k 个样本中至少有一个** 解决问题概率。
 
-The naive route -- generate exactly $k$, report whether any passed -- is a **high-variance** coin flip per problem, and plugging a small-sample success rate into $1-(1-\hat{p})^k$ is **biased**.
+朴素的方法——精确生成 $k$ 个结果，报告是否有通过的——对于每个问题都是一个 **高方差** 的抛硬币式事件，而且将小样本成功率代入 $1-(1-\hat{p})^k$ 会产生 **偏差**。
 
-The fix, from the Codex paper: sample $n \geq k$ completions, count the $c$ that pass, and average an unbiased estimator over problems.
+修正方法来自 Codex 论文：采样 $n \geq k$ 个补全结果，统计通过的个数 $c$，然后在问题上平均一个无偏估计量。
 
 |||
 
@@ -222,18 +188,17 @@ The fix, from the Codex paper: sample $n \geq k$ completions, count the $c$ that
 
 $$\text{pass@}k = \mathop{\mathbb{E}}_{\text{problems}}\left[1 - \frac{\binom{n-c}{k}}{\binom{n}{k}}\right]$$
 
-- $\binom{n-c}{k}\big/\binom{n}{k}$ is the chance that $k$ draws (without replacement) from your $n$ samples are **all failures**
-- Larger $n$ → tighter estimate at the same $k$; the paper used $n=200$ for $k \leq 100$
-- The knobs interact: **higher temperature can hurt pass@1 but help pass@100** -- so a reported "pass@1" depends on $n$ and the sampling settings, not just the model
+- $\binom{n-c}{k}\big/\binom{n}{k}$ 表示从 $n$ 个样本中无放回地抽取 $k$ 次 **全部抽到失败** 的概率
+- $n$ 越大 → 在相同的 $k$ 下估计越精确；论文中对于 $k \leq 100$ 使用了 $n=200$
+- 这些参数会相互作用：**更高的温度可能会降低 pass@1 但提升 pass@100**——因此一个报告为 "pass@1" 的分数取决于 $n$ 和采样设置，而不仅仅是模型本身
 
 ---
 
 <!-- columns: 40/60 -->
 <!-- footnote-right: Slide Credit: Florian Brand -->
-## The early pipeline was simple
+## 早期的流水线非常简单
 
-Prompt in, completion out, grade it. 
-Almost everything that could go wrong was in **how you formatted the prompt**.
+提示输入，补全输出，评分。几乎所有能出错的地方都在于 **提示的格式**。
 
 |||
 
@@ -243,13 +208,11 @@ Almost everything that could go wrong was in **how you formatted the prompt**.
 
 <!-- columns: 38/62 -->
 <!-- cite-right: wei2022chain, kojima2022large -->
-## Chain of thought (CoT) emerged to enable progress on harder problems
+## 思维链（CoT）的出现是为了推进更难的问题
 
-Few-shot examples that show intermediate steps let models reason before answering.
-When people were still prompting base models, adding CoT made math and reasoning scores jump! 
-This is before modern post-training as well.
+展示中间步骤的少样本示例让模型在回答之前进行推理。当人们还在提示基础模型时，加入 CoT 让数学和推理分数大幅跃升！这也早于现代后训练。
 
-Soon just appending *"Let's think step by step"* to a prompt approximated this behavior.
+很快，仅仅在提示后附加 *"Let's think step by step"* 就可以近似这种行为。
 
 |||
 
@@ -275,11 +238,11 @@ A: The cafeteria had 23 apples originally. They...
 
 ---
 
-## Entering the chat era: zero-shot instruction following
+## 进入对话时代：零样本指令跟随
 
-Instruction tuning (FLAN [@wei2021finetuned], T0 [@sanh2021multitask]) and then RLHF changed the way people expected to use models: the models learned to directly answer questions. This, in retrospect, was a huge deal! But not the default.
+指令微调（FLAN [@wei2021finetuned]、T0 [@sanh2021multitask]）以及随后的 RLHF 改变了人们对模型使用方式的期望：模型学会了直接回答问题。这在事后看来，是一件大事！但最初这并不是默认方式。
 
-Now, the input to the model can look like:
+现在，模型的输入可能看起来像这样：
 ```text
 User: "What is the capital of France?"
 Assistant:
@@ -287,29 +250,29 @@ Assistant:
 
 <!-- step -->
 
-- **LLM-as-a-judge** emerged as questions became open-ended (and evals imitated RLHF training)
-- Canonical evals: **MT-Bench** [@zheng2023judging], **AlpacaEval** [@dubois2024length], and the community-scale [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
-- MCQ evals like MMLU stayed in the mix (but were in flux, people used them differently) -- now answered zero-shot, sampling the answer letter at temperature 0
+- **LLM-as-a-judge**（LLM 作为裁判）随着问题变得开放式而出现（评估也开始模仿 RLHF 的训练方式）
+- 经典评估：**MT-Bench** [@zheng2023judging]、**AlpacaEval** [@dubois2024length]，以及社区规模的 [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
+- 多项选择题评估如 MMLU 仍然在用（但有所变化，人们使用它们的方式不同）——现在以零样本方式回答，在温度 0 下采样答案字母
 
 ---
 
 <!-- columns: 55/45 -->
 <!-- cite-right: lambert2024t, hendrycks2020measuring -->
-## The emergence of zero-shot prompting took time!
+## 零样本提示的出现耗费了时间！
 
-When we trained Tülu 3 (summer 2024), many of our evaluations were a mix of zero-shot and few-shot prompting. Though, the field was focusing on a variety of skills (from Tülu 3):
+我们在训练 Tülu 3（2024 年夏季）时，许多评估是零样本和少样本提示的混合体。不过，当时的领域正专注于多种技能（来自 Tülu 3）：
 
-- **Knowledge**: MMLU, PopQA, TruthfulQA
-- **Reasoning**: BigBenchHard, DROP
-- **Math & code**: MATH, GSM8K, HumanEval
-- **Instruction following & safety** IFEval, others
+- **知识**：MMLU、PopQA、TruthfulQA
+- **推理**：BigBenchHard、DROP
+- **数学与代码**：MATH、GSM8K、HumanEval
+- **指令跟随与安全**：IFEval、其他
 
-By early 2025, everyone was using zero-shot prompting, and today multi-shot prompting for a post-trained model is very rare, unless the model wasn't trained for it (true in-context learning).
+到了 2025 年初，所有人都在使用零样本提示，而如今对于经过后训练的模型来说，多样本提示非常罕见，除非模型专门为此进行了训练（真正的上下文学习能力）。
 
 |||
 
 ```box
-title: Example question (MMLU)
+title: 示例问题（MMLU）
 content: |
   What was GDP per capita in the United States in 1850 when adjusting for inflation and PPP in 2011 prices?
 
@@ -319,21 +282,21 @@ content: |
   D. About $15k
 ```
 
-Internet trivia more than intelligence -- but it tracked pretraining knowledge well.
+这更像是互联网 trivia 而非真正的智能——但它很好地追踪了预训练知识。
 
 ---
 
 <!-- columns: 40/60 -->
 <!-- cite-right: lambert2024t -->
-## Encouraging the models to reason
+## 鼓励模型进行推理
 
-We know reasoning models today think before answering. Tülu 3's MMLU prompt (a model before reasoning models) → the same MMLU eval as the few-shot era, now long-form CoT with exact-match checking.
+我们知道今天的推理模型会在回答之前进行思考。Tülu 3 的 MMLU 提示（一个早于推理模型的版本）→ 与少样本时代相同的 MMLU 评估，现在变成了带有精确匹配检查的长格式 CoT。
 
-Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc. 
+现代评估套件可以携带 **每个基准的专用提示**，针对格式等进行了调优。
 
 |||
 
-Tülu 3's MMLU prompt:
+Tülu 3 的 MMLU 提示：
 ```text
 Answer the following multiple-choice question by giving the correct answer letter in parentheses.
 Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
@@ -350,45 +313,44 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 
 <!-- columns: 40/60 -->
 <!-- cite-right: lambert2024t -->
-## Encouraging the models to reason
+## 鼓励模型进行推理
 
-We know reasoning models today think before answering. Tülu 3's MMLU prompt (a model before reasoning models) → the same MMLU eval as the few-shot era, now long-form CoT with exact-match checking.
+我们知道今天的推理模型会在回答之前进行思考。Tülu 3 的 MMLU 提示（一个早于推理模型的版本）→ 与少样本时代相同的 MMLU 评估，现在变成了带有精确匹配检查的长格式 CoT。
 
-Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc. 
+现代评估套件可以携带 **每个基准的专用提示**，针对格式等进行了调优。
 
 |||
 
-Sampling settings joined the prompt as part of the eval: reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"**. Read the `generation_config.json`: the recommended settings are "free" performance.
-
-
----
-
-## Formatting became fragile as usage became more open-ended
-
-- Formatting mismatches can take a model from **60% to near 0** [@schulhoff2024prompt] -- it is far easier to lose performance with a prompt than to gain it
-- Answer extraction is brittle: rigid suffixes (*"The answer is:"*) or regexes hunting for the answer anywhere in the text
-- Formats even conflict across training sets: NuminaMath [@li2024numinamath] wants `\boxed{42}`, MetaMath [@yu2023metamath] wants `The answer is: 42` -- **training on both can be worse than either alone**
-- Format-agnostic grading takes substantial effort and tinkering -- and was often rare in practice -- LLM-judges became popular even as answer extractors for flexibility
+采样设置与提示一起成为了评估的一部分：推理模型需要 **温度 > 0** 才能获得最佳分数——[Qwen 的模型卡片](https://huggingface.co/Qwen/Qwen3-32B) 甚至明确写着 **"DO NOT use greedy decoding"**。阅读 `generation_config.json`：推荐的设置是"免费"的性能提升。
 
 ---
 
-## Reasoning & tool-use pushed the industry to harder tasks
+## 随着使用变得越来越开放式，格式变得越来越脆弱
 
-Reasoning models saturated the old eval suites, so the next generation came:
+- 格式不匹配可能让一个模型的性能从 **60% 骤降至接近 0** [@schulhoff2024prompt]——失去性能远比获得性能容易
+- 答案提取非常脆弱：僵硬的尾缀（*"The answer is:"*）或在文本任何地方搜寻答案的正则表达式
+- 格式在不同训练集之间甚至相互冲突：NuminaMath [@li2024numinamath] 想要 `\boxed{42}`，MetaMath [@yu2023metamath] 想要 `The answer is: 42`——**同时训练两者可能比只训练一个更差**
+- 格式无关的评分需要大量工作和反复调试——在实践中这种情况很少见——LLM 裁判因其灵活性而变得流行，即便它们取代了答案提取器
 
-- **Knowledge**: GPQA Diamond [@rein2023gpqa], Humanity's Last Exam [@phan2025hle], FrontierMath
-- **Math**: recent AIME contests
-- **Software**: SWE-Bench (+ variants), LiveCodeBench [@jain2024livecodebench]
-- Question sourcing moved from the internet to **grad students, PhDs, and professors** -- writing questions became expert labor
+---
+
+## 推理与工具使用将行业推向了更难的任务
+
+推理模型已经用尽了旧的评估套件，因此下一代来了：
+
+- **知识**：GPQA Diamond [@rein2023gpqa]、Humanity's Last Exam [@phan2025hle]、FrontierMath
+- **数学**：近期的 AIME 竞赛题
+- **软件工程**：SWE-Bench（及其变体）、LiveCodeBench [@jain2024livecodebench]
+- 题目来源从互联网转向了 **研究生、博士和教授**——出题成为了一种专业劳动
 
 ---
 
 <!-- columns: 50/50 -->
 <!-- cite-right: phan2025hle -->
-## Reasoning & tool-use pushed the industry to harder tasks
+## 推理与工具使用将行业推向了更难的任务
 
 ```box
-title: "Example: Humanity's Last Exam"
+title: "示例：Humanity's Last Exam"
 content: |
   What was the rarest noble gas on Earth as a percentage of all terrestrial matter in 2002?
 
@@ -399,51 +361,53 @@ content: |
 
 <!-- step -->
 
-The official answer is wrong three ways: oganesson is **not a gas** (predicted solid), **not noble** (predicted reactive), and **not terrestrial** (synthetic, ~5 atoms ever made -- first synthesized in 2002).
+官方答案有三种错误：鿫（oganesson）**不是气体**（预测为固体）、**不是惰性气体**（预测为反应性）、**不是天然存在的**（人造元素，历史上仅合成过约 5 个原子——2002 年首次合成）。
 
 <!-- step -->
 
-Past a certain difficulty, **verifying the answer key is the bottleneck** -- expert-written no longer means correct.
+超过某个难度阈值后，**验证答案本身就是瓶颈**——专家编写的答案不意味着一定正确。
 
-Still, incorrect labels are a common problem in evals! Most evals saturate at 90-95%, not 100%.
+尽管如此，错误的标签在评估中依然是一个常见问题。大多数评估 saturate 在 90-95%，而非 100%。
+
+> 译者补充：此处 "saturate" 指分数趋近上限、不再有明显区分度的现象。
 
 ---
 
 <!-- cite-right: openai2024swebench -->
-## Today: evals of real work
+## 当下：真实工作的评估
 
-- The frontier evals are **end-to-end professional tasks**: SWE-bench Verified, Terminal-Bench, [GDPVal](https://openai.com/index/gdpval/), [APEX](https://arxiv.org/abs/2601.14242)
-- Task authors are now **experienced professionals**: GDPVal tasks come from experts averaging **14 years** of industry experience; APEX experts average 7+ years at firms like Goldman and McKinsey -- expert task-writing is the new cost center
-- And the models aren't evaluated bare: they run **inside harnesses and products** (Claude Code, Codex CLI) -- last lecture's subject (11 - tool-use)
+- 前沿评估是 **端到端的专业任务**：SWE-bench Verified、Terminal-Bench、[GDPVal](https://openai.com/index/gdpval/)、[APEX](https://arxiv.org/abs/2601.14242)
+- 任务作者现在是 **经验丰富的专业人士**：GDPVal 的任务来自平均拥有 **14 年** 行业经验的专家；APEX 的专家在 Goldman 和 McKinsey 等公司平均有 7 年以上的经验——专家出题已成为新的成本中心
+- 模型不是裸着被评估的：它们在 **评估工具和产品中运行**（Claude Code、Codex CLI）——上一讲的主题（第11讲-工具使用）
 
 ---
 
 <!-- columns: 38/62 -->
-## Every era ends the same way: saturation
+## 每个时代都以饱和结束
 
-Benchmarks are consumable. As scores approach the ceiling, only the hardest (and mislabeled) items remain, and the benchmark stops separating models.
+基准测试是可被消耗的。随着分数趋近天花板，只剩下最难（和最可能标错）的题目，基准测试不再能区分模型。
 
 |||
 
-![Major AI benchmarks reaching saturation over time. Figure from Epoch AI, CC-BY.](assets/benchmark-performance.jpeg)
+![主要 AI 基准测试随时间达到饱和。图片来自 Epoch AI，CC-BY。](assets/benchmark-performance.jpeg)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: A bit more on agentic evals
+## 第二部分：更多关于代理评估
 
 ---
 
 <!-- columns: 34/64 -->
 <!-- cite-right: tbench2026 -->
 <!-- footnote-right: Slide Credit: Florian Brand -->
-## The agentic pipeline: the model is one piece
+## 代理流水线：模型只是一部分
 
-A **harness** -- the loop of prompts, tools, and context management around the model -- runs in a **sandbox**: a reproducible world with the files, tools, and rules of the task.
+**评估工具（harness）**——围绕模型的提示、工具和上下文管理的循环——运行在一个 **沙盒** 中：一个可复现的世界，拥有该任务的文件、工具和规则。
 
-Add hardware and timeouts, and hours-long trajectories get graded by regex or an LLM judge.
+加上硬件和超时设置，时长的轨迹通过正则表达式或 LLM 裁判进行评分。
 
 |||
 
@@ -453,178 +417,178 @@ Add hardware and timeouts, and hours-long trajectories get graded by regex or an
 
 <!-- animate: bullets -->
 <!-- footnote-right: Slide Credit: Florian Brand -->
-## Harnesses are key
+## 评估工具至关重要
 
-- Frontier models are **trained in their own harness** -- evaluating them in a different one under-reports capability
-- The extreme case, from the [ARC-AGI-3 report](https://arcprize.org/media/ARC_AGI_3_Technical_Report.pdf): on one environment, Opus 4.6 scores **0% with no harness and 97.1%** with a hand-crafted one
-- This is why "same model, different agent product" produces wildly different scores
+- 前沿模型 **在其自己的评估工具中训练**——在另一个评估工具中评估它们会低估能力
+- 极端案例来自 [ARC-AGI-3 报告](https://arcprize.org/media/ARC_AGI_3_Technical_Report.pdf)：在某个环境中，Opus 4.6 使用无评估工具时得分 **0%**，使用手工制作的评估工具时得分 **97.1%**
+- 这就是为什么"同一模型、不同代理产品"会产生截然不同的分数
 
 ---
 
 <!-- footnote-right: Slide Credit: Florian Brand -->
-## Many little things contribute to agentic scores
+## 许多小细节共同构成了代理分数
 
-Every implementation detail in the boxes on slide 23 is a knob someone chose (usually undocumented) -- two labs running "the same benchmark" can measure meaningfully different things
+上slide 23中框里的每一个实现细节都是某人选择的参数（通常未记录在案）——两个实验室运行"同一基准测试"可能测量的是完全不同的东西
 
-- **The inference engine can be different**: [vLLM's postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2 -- three engine bugs held tool-call success **below 20%**; after fixes, **99.9%**. Same weights. So many players have these issues
-- **Hardware-level differences**: Variance across GPUs is real and a headache. Some benchmarks measure this variance on purpose (KernelBench-style tasks need specific GPUs). With scaled sandboxes, one bad GPU actor can stall the system and tank evals (see below)
-- **Timeouts are crucial on challenging tasks**: models will often timeout on hard tasks -- Terminal-Bench 2 reruns with 3-5× longer timeouts move GPT-5.2 by [+6 to +15 points](https://github.com/xdotli/gpt-5.2-tb2)
+- **推理引擎可能不同**：[vLLM 对 Kimi K2 服务的事后分析](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy)——三个引擎 bug 让工具调用成功率 **低于 20%**；修复后达到 **99.9%**。同一权重。这么多玩家都存在这类问题
+- **硬件层面的差异**：GPU 之间的方差是真实存在的痛点。一些基准测试有意测量这种方差（类似 KernelBench 的任务需要特定 GPU）。使用缩放沙盒时，一个有问题的 GPU 执行者可以阻塞整个系统并拉低评估分数（见下文）
+- **超时在有挑战性的任务上至关重要**：模型经常会超时——Terminal-Bench 2 用 3-5 倍更长的超时时间重新运行，使 GPT-5.2 的分数提高了 [+6 到 +15 分](https://github.com/xdotli/gpt-5.2-tb2)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Can you trust the final eval number?
+## 第三部分：你能信任最终的评估分数吗？
 
 ---
 
 <!-- columns: 55/45 -->
 <!-- cite-right: teamolmo2025olmo3 -->
-## Evaluation variance is everywhere
+## 评估方差无处不在
 
-Sampling at temperature > 0 means **re-running the same eval on the same model moves the score**.
+在温度 > 0 下采样意味着 **在同一个模型上重新运行相同的评估会改变分数**。
 
-During Olmo 3 we measured it: std. dev. across 3 runs of 14 models, per benchmark →
+在 Olmo 3 期间我们测量了它：对 14 个模型进行 3 次运行的标准差，按基准测试 →
 
-Most reasoning-era evals sit between **0.25 and 1.5 points of noise** -- before anyone changes a prompt or a sampling setting.
+大多数推理时代的评估在 **0.25 到 1.5 分的噪声**之间——在任何人更改提示或采样设置之前就已经存在了。
 
-Could be higher with agentic evals!
+代理评估可能更高！
 
-More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-practical#evaluation-variance).
+更多详情见 [附录 C：评估方差](https://rlhfbook.com/c/appendix-c-practical#evaluation-variance)。
 
 |||
 
-| | Benchmark | σ |
+| | 基准测试 | σ |
 |---|-----------|-----|
-| High variance | GPQA | 1.48 |
+| 高方差 | GPQA | 1.48 |
 | | AlpacaEval 3 | 1.24 |
 | | IFEval | 0.88 |
-| Stable | ZebraLogic | 0.56 |
+| 稳定 | ZebraLogic | 0.56 |
 | | AIME 24 (avg@32) | 0.54 |
-| Very stable | LiveCodeBench (avg@10) | 0.29 |
+| 非常稳定 | LiveCodeBench (avg@10) | 0.29 |
 | | MATH | 0.25 |
 | | MMLU | 0.22 |
 
 ---
 
 <!-- cite-right: teamolmo2025olmo3 -->
-## Managing eval noise
+## 管理评估噪声
 
-There are many things you need to do to manage eval noise (it's kind of the whole job sometimes). Examples:
+你需要做很多事情来管理评估噪声（有时候这简直就是你整个工作的一部分）。示例：
 
-- **avg@k instead of pass@k**: E.g. in Tülu 3 LiveCodeBench was noisy *and* cheap -- rerunning it 10× moved it from high-variance to very stable. Can work for any eval, is proportionately expensive.
-- Variance also leaks in from infrastructure: **batch size, tensor-parallel settings, numerics** of long generations (see previous slide on infra)
-- Practical rule: a **~1-point gap between two press releases is noise**
+- **avg@k 而非 pass@k**：例如，在 Tülu 3 中 LiveCodeBench 既噪声大又便宜——重新运行 10 次后它变得非常稳定。可以适用于任何评估，代价是成比例地昂贵。
+- 方差也会从基础设施中渗透进来：**批处理大小、张量并行设置、长生成过程的数值精度**（见上一 slide 关于基础设施的内容）
+- 实用规则：两次新闻稿之间约 **1 分的差距是噪声**
 
 ---
 
-## Why lab-vs-lab comparisons are unreliable
+## 为什么实验室之间的比较不可靠
 
-Why I started being a bit wary of corporate announcements comparing to competitors. OpenAI & Anthropic are pretty fair, but many companies are more sketch about comparisons.
+我为什么开始对比较竞争对手的企业公告保持警惕。OpenAI 和 Anthropic 相对公平，但许多公司在比较方面就有些可疑了。
 
-- Each lab's eval stack is **tuned to its internal needs**: custom prompts for key benchmarks, undisclosed formats, different engines
-- We see the outputs of a sometimes complex function
-- Nobody discloses which public benchmarks were **held out vs. hillclimbed** -- train/dev/test hygiene is invisible from outside
-- Inference-time scaling confounds everything: more tokens buys more score, and token budgets are rarely controlled
+- 每个实验室的评估栈都 **针对其内部需求进行了调优**：关键基准的自定义提示、未公开的格式、不同的推理引擎
+- 我们看到的有时是一个复杂函数的输出
+- 没有人公开哪些公共基准测试是 **被保留的 vs. 被优化的**——训练/验证/测试的卫生措施从外部完全不可见
+- 推理时扩展混淆了一切：更多的 token 换更多分数，而 token 预算很少被控制
 
 ---
 
 <!-- footnote-right: Source: [Artificial Analysis](https://artificialanalysis.ai/models) -->
-## The cost-performance Pareto, today
+## 今天的成本-性能帕累托曲线
 
 
-![Intelligence Index vs. cost per task, with the Pareto frontier drawn. Figure from Artificial Analysis.](assets/aa-intelligence-cost-pareto.png)
-
----
-
-## What evals are actually for inside labs
-
-Evals are more of a training target than a monitoring lens.
-
-- Labs hillclimb on ~50+ prioritized evals and report the public suite (subset, maybe not even the training target) at the end
-- The real product of a good internal eval is **statistical power to decide between models**
-- Sometimes the "test set" is just good data (rumors from a few years ago, I hear less about this now): MATH and GSM8K train splits are high-quality and crucial at a time -- if a lab doesn't track that eval, training on them is a rational choice
-- Human A/B testing and Elo stay in the loop for what benchmarks can't measure (recall Lecture 8, other work on RLHF, Arena, etc. Still matters!)
+![智力指数与每次任务的成本，绘制了帕累托前沿。图片来自 Artificial Analysis。](assets/aa-intelligence-cost-pareto.png)
 
 ---
 
-## Contamination: Is training on test intentional?
+## 评估在实验室内部实际上是做什么的
 
-There's a long-running field of study on understanding whether training data intentionally or accidentally improved a score.
+评估更像是训练目标而非监控视角。
 
-- **Decontamination** = n-gram / substring search between training and test sets to remove overlap and eval scores being due to memorization not generalization [@singh2024evaluation]
-- Tülu 3 found popular open datasets contaminated (train set X eval set): UltraFeedback×TruthfulQA, Evol-CodeAlpaca×HumanEval, NuminaMath×MATH [@lambert2024t]
-- A subtle tell on some contamination: RL with **random rewards** improving Qwen benchmarks [@shao2025spurious] -- only explicable with contamination in the base model; a real confound in early RLVR research ([blog post](https://www.interconnects.ai/p/reinforcement-learning-with-random))
-- Ecosystem response: perturbed benchmark rewrites (same problem, new numbers) to catch models trained on the original [@huang2025math] or private leaderboards/test sets (can't cheat on them!)
+- 实验室在 ~50+ 个优先评估上优化，最终只报告公共套件（子集，可能甚至不是训练目标）
+- 好的内部评估的真正产品是 **决定模型之间优劣的统计能力**
+- 有时候"测试集"就是好数据（几年前的传闻，我现在听到得少了）：MATH 和 GSM8K 的训练集在某个时期是高质量且关键的——如果一个实验室不跟踪某个评估，在其上训练就是合理的选择
+- 人类 A/B 测试和 Elo 评分仍用于基准测试无法衡量的领域（回顾第8讲，RLHF 的其他工作、Arena 等。仍然很重要！）
+
+---
+
+## 数据污染：在测试集上训练是故意的吗？
+
+有一个长期存在的领域来理解训练数据是否有意或意外地提高了分数。
+
+- **去污染** = 在训练集和测试集之间进行 n-gram / 子字符串搜索以移除重叠，让评估分数不是来自记忆而是来自泛化 [@singh2024evaluation]
+- Tülu 3 发现了热门开源数据集中的污染（训练集 X 评估集）：UltraFeedback×TruthfulQA、Evol-CodeAlpaca×HumanEval、NuminaMath×MATH [@lambert2024t]
+- 某些情况下污染的微妙迹象：使用 **随机奖励** 的 RL 提升了 Qwen 的基准分数 [@shao2025spurious]——这只能用基础模型中的污染来解释，这是早期 RLVR 研究中的一个混杂因素（[博客文章](https://www.interconnects.ai/p/reinforcement-learning-with-random)）
+- 生态系统的回应：扰动基准重写（相同的问题，不同的数字）来检测在原题上训练的模型 [@huang2025math] 或私有排行榜/测试集（无法作弊！）
 
 ---
 
 <!-- rows: 15/85 -->
-## Today's models are reward-hack happy and games the evals
+## 今天的模型热衷于奖励投机和游戏评估
 
-Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild. Of course, there's the Hugging Face [hack](https://huggingface.co/blog/security-incident-july-2026) by an OpenAI model.
+代理喜欢最大化奖励（这会导致走捷径）。[NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) 和 [DebugML](https://debugml.github.io/cheating-agents/) 在真实场景中记录了这些行为。当然，还有 OpenAI 模型对 Hugging Face 的 [黑客行为](https://huggingface.co/blog/security-incident-july-2026)。
 
 ===
 
 <!-- row-columns: 50/50 -->
 
-**Observed techniques:**
+**观察到的技术：**
 
-- Mining git history for the **future commit that fixes the bug** -- one open model did this in **24% of its SWE-bench trajectories**
-- Dodging URL blocklists via **mirrors, web archives, and package registries**
-- **Hardcoding expected test outputs** into the code (instead of changing the code)
-- Abusing quirks of the test runner
+- 挖掘 git 历史以查找 **修复 bug 的后续提交**——一个开源模型在其 **24%** 的 SWE-bench 轨迹中使用了这种方法
+- 通过 **镜像、网络归档和软件包注册中心** 绕过 URL 黑名单
+- 将 **预期的测试输出硬编码到代码中**（而不是修改代码本身）
+- 滥用测试运行器的特殊行为
 
 |||
 
-**Defenses:**
+**防御措施：**
 
-- Remove access to everything not strictly needed
-- A **second, separate sandbox** for verification and test runs
-- A second LLM monitoring the first (expensive)
+- 移除对非严格必要内容的访问权限
+- 使用 **第二个独立的沙盒** 进行验证和测试运行
+- 使用第二个 LLM 监控第一个（成本高昂）
 
 ---
 
 <!-- columns: 50/50 -->
-## Tooling: run your own research-grade evals
+## 工具：运行你自己的研究级评估
 
-**The established harnesses:**
+**成熟的评估工具：**
 
-- [Inspect](https://inspect.aisi.org.uk/) `★ 2.5k` -- UK AI Security Institute
-- [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) `★ 13.5k` -- EleutherAI's standard since the GPT-3 era
-- [LightEval](https://github.com/huggingface/lighteval) `★ 2.5k` -- Hugging Face; powered the Open LLM Leaderboard
-- [OLMES](https://github.com/allenai/olmes) `★ 390` -- Ai2's reproducible evaluation system
-- [HELM](https://crfm.stanford.edu/helm/) `★ 2.9k` -- Stanford CRFM
-- [Eval Gauntlet](https://github.com/mosaicml/llm-foundry) `★ 4.4k` -- Mosaic, now Databricks
+- [Inspect](https://inspect.aisi.org.uk/) `★ 2.5k` -- 英国 AI 安全研究所
+- [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) `★ 13.5k` -- EleutherAI 自 GPT-3 时代以来的标准
+- [LightEval](https://github.com/huggingface/lighteval) `★ 2.5k` -- Hugging Face；支撑了 Open LLM Leaderboard
+- [OLMES](https://github.com/allenai/olmes) `★ 390` -- Ai2 的可重复评估系统
+- [HELM](https://crfm.stanford.edu/helm/) `★ 2.9k` -- 斯坦福 CRFM
+- [Eval Gauntlet](https://github.com/mosaicml/llm-foundry) `★ 4.4k` -- Mosaic，现 Databricks
 
 |||
 
-**The environments wave:**
+**环境浪潮：**
 
-- [olmo-eval](https://github.com/allenai/olmo-eval) `★ 64 (new)` -- Ai2's workbench for evals *inside the model-development loop* (2026)
-- [verifiers](https://github.com/PrimeIntellect-ai/verifiers) `★ 4.4k` + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect's library and community hub: 2,500+ verifiable environments that double as evals (AIME, Terminal-Bench, ...)
-- The direction of travel: **training and evaluation share the same environment code** -- write it once, hillclimb and measure with it
+- [olmo-eval](https://github.com/allenai/olmo-eval) `★ 64 (新)` -- Ai2 的评估工作台（2026），位于 *模型开发流程内部*
+- [verifiers](https://github.com/PrimeIntellect-ai/verifiers) `★ 4.4k` + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect 的库和社区中心：2,500+ 可验证环境，同时也可作为评估工具（AIME、Terminal-Bench 等）
+- 发展方向：**训练和评估共享同一份环境代码**——写一次，用它来优化和测量
 
 ---
 
-## Takeaways
+## 总结
 
-- Benchmarks mirror the **training goals of their era** -- and every era ends in saturation.
-- A score is a **property of the whole system**: prompt, sampling, engine, harness, sandbox, hardware, grader. The model is one box.
-- Expect **±1 point of pure noise**; treat cross-lab comparisons as directional at best.
-- Contamination, gaming, etc. all bend single numbers -- for decisions that matter, **run your own evals** and control the system.
-- Full evaluation is expensive! In-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
+- 基准测试反映了其所属 **训练目标的时代**——而且每个时代都以饱和结束。
+- 分数是整个系统的 **属性**：提示、采样、引擎、评估工具、沙盒、硬件、评分器。模型只是其中一个环节。
+- 预期 **±1 分的纯噪声**；将跨实验室比较至多视为方向性的。
+- 污染、投机取巧等行为会扭曲单一数字——对于重要的决策，**运行你自己的评估** 并控制整个系统。
+- 完整评估非常昂贵！现代代理套件的深入运行成本可超 **10 万美元** *（来自 Florian Brand）*
 
 ---
 
 <!-- columns: 50/50 -->
-## Continue from here
+## 从这里继续
 
-Two talks that go deeper on everything in this lecture:
+两场深入探讨本讲所有内容的演讲：
 
-- My NeurIPS talk on evals, inside the Olmo 3 story: [slides](https://docs.google.com/presentation/d/10DT7MM8vbKFrxPiwAfcyvea0V4d6XpFBhe6_Pmneu2A/edit) · [recording](https://youtu.be/uaZ3yRdYg8A?t=2465) *(evals section from 41:05)*
-- Florian Brand's [LLM benchmarks in the time of agents](https://www.youtube.com/watch?v=kmTMc-fVSXw&t=870s) *(from 14:30)* -- an inspiration for some of this lecture's agentic-evals story
+- 我在 NeurlPS 上关于评估的演讲，在 Olmo 3 故事内部：[幻灯片](https://docs.google.com/presentation/d/10DT7MM8vbKFrxPiwAfcyvea0V4d6XpFBhe6_Pmneu2A/edit) · [录制](https://youtu.be/uaZ3yRdYg8A?t=2465) *(评估部分从 41:05 开始)*
+- Florian Brand 的 [LLM 基准测试在代理时代](https://www.youtube.com/watch?v=kmTMc-fVSXw&t=870s) *(从 14:30 开始)*——本讲中部分代理评估故事的灵感来源
 
 |||
 
@@ -634,36 +598,36 @@ Two talks that go deeper on everything in this lecture:
 ---
 
 <!-- columns: 50/50 -->
-## The course so far
+## 课程回顾
 
-0. Prerequisites review
-1. Overview *(ch. 1-3)*
-2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & Math *(ch. 6)*
-4. RL: Implementation & Practice *(ch. 6)*
-5. The Rise of Reasoning Models *(ch. 7)*
-6. Direct Preference Optimization *(ch. 8)*
-7. Synthetic Data & Modern Post-training *(ch. 12)*
+0. 先修知识回顾
+1. 概述 *（第1-3章）*
+2. IFT、奖励模型与拒绝采样 *（第4、5、9章）*
+3. 强化学习：动机与数学 *（第6章）*
+4. 强化学习：实现与实践 *（第6章）*
+5. 推理模型的崛起 *（第7章）*
+6. 直接偏好优化 *（第8章）*
+7. 合成数据与现代后训练 *（第12章）*
 
 |||
 
-8. Preferences & Preference Data *(ch. 10-11)*
-9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
-10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
-11. Tool Use, Function Calling & The Road to Agents *(ch. 13)*
-12. **Evaluation** *(ch. 16, app. C)* -- *today*
-13. Crafting Model Character & Products *(ch. 17)* -- *next*
+8. 偏好与偏好数据 *（第10-11章）*
+9. 过度优化与RLHF的坏名声 *（第14章、附录B）*
+10. 正则化工具与理解后训练如何改变模型 *（第15章）*
+11. 工具使用、函数调用与通往代理之路 *（第13章）*
+12. **评估** *（第16章、附录C）*——*今天*
+13. 塑造模型性格与产品 *（第17章）*——*下一讲*
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions / discussion
+问题 / 讨论
 
-Contact: nathan@natolambert.com
+联系方式：nathan@natolambert.com
 
-Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+通讯：[interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
 

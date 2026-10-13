@@ -24,7 +24,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 5: The Rise of Reasoning Models
+# 讲义 5：推理模型的兴起
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 5: The rise of reasoning models
+## 讲义 5：推理模型的兴起
 
 <!-- row-columns: 32/36/32 -->
 
@@ -46,9 +46,9 @@ title: Overview
 tone: muted
 compact: true
 content: |
-  1. Introduction
-  2. Key related works
-  3. Training overview
+  1. 引言
+  2. 关键相关工作
+  3. 训练总览
 ```
 
 |||
@@ -58,12 +58,12 @@ title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction tuning
-  5. Reward models
-  6. Reinforcement learning
-  7. **Reasoning**
-  8. Direct alignment
-  9. Rejection sampling
+  4. 指令微调（Instruction Tuning）
+  5. 奖励模型
+  6. 强化学习
+  7. **推理**
+  8. 直接对齐
+  9. 拒绝采样
 ```
 
 |||
@@ -73,9 +73,9 @@ title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are preferences
-  11. Preference data
-  12. Synthetic data & CAI
+  10. 偏好是什么
+  11. 偏好数据
+  12. 合成数据与 CAI
 ```
 
 ===
@@ -87,11 +87,11 @@ title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool use
-  14. Over-optimization
-  15. Regularization
-  16. Evaluation
-  17. Product & character
+  13. 工具使用
+  14. 过度优化
+  15. 正则化
+  16. 评估
+  17. 产品与品格
 ```
 
 |||
@@ -101,9 +101,9 @@ title: Appendices
 tone: muted
 compact: true
 content: |
-  A. Key definitions
-  B. Style benchmarks
-  C. References
+  A. 关键定义
+  B. 风格基准
+  C. 参考文献
 ```
 
 |||
@@ -113,35 +113,35 @@ title: Lectures
 tone: surface
 compact: true
 content: |
-  1. Overview (Ch. 1-3)
-  2. IFT, RM, RS (Ch. 4,5,9)
-  3. RL theory (Ch. 6 pt 1)
-  4. RL practice (Ch. 6 pt 2)
-  5. **Reasoning (Ch. 7)**
+  1. 总览（第 1-3 章）
+  2. IFT、RM、RS（第 4、5、9 章）
+  3. RL 理论（第 6 章 第 1 部分）
+  4. RL 实践（第 6 章 第 2 部分）
+  5. **推理（第 7 章）**
 ```
 
 ---
 
-## From RL to reasoning
+## 从强化学习到推理
 
-Lectures 3-4 covered the core policy gradient RL implementation for language models: PPO, GRPO, loss aggregation, async training, etc.
+讲义 3–4 已经讲解了语言模型中基于策略梯度的强化学习实现：PPO、GRPO、损失聚合、异步训练等。
 
-This lecture: The rise of reasoning models, early techniques specific to reasoning, recapping 2025's core models, etc.
+本讲义：推理模型的兴起、推理相关的早期技术、回顾 2025 年的核心模型等。
 
 ---
 
 <!-- columns: 38/62 -->
-## The LeCun cake
+## LeCun 的蛋糕比喻
 
 <!-- cite-right: synced2019cake -->
 
-At NeurIPS 2016, Yann LeCun introduced the cake metaphor: predictive / unsupervised learning is the cake, supervised learning is icing, and RL is the cherry.
+在 NeurIPS 2016 上，Yann LeCun 提出了蛋糕比喻：预测性/无监督学习是蛋糕的主体，监督微调是糖衣，而强化学习是顶部的樱桃。
 
-With modern language models, the analogy is complete:
+对于现代语言模型，这个比喻可以完整对应：
 
-- **Self-supervised learning** on internet data = the bulk of the cake
-- **Supervised fine-tuning** for instructions = the icing
-- **Reinforcement learning** (RLHF, then RLVR) = the cherry on top
+- **自监督学习**在网页数据上训练 = 蛋糕的主体
+- **监督微调**用于指令遵循 = 糖衣
+- **强化学习**（RLHF，再到 RLVR）= 顶部的樱桃
 
 |||
 
@@ -149,98 +149,98 @@ With modern language models, the analogy is complete:
 
 <!-- step -->
 
---> With agents, RL may be more than just the cherry in compute, but it's still the shape of the training loops!
+--> 有了智能体之后，RL 在计算投入上的意义可能不止一颗樱桃——但它仍然是训练循环的基本形态！
 
 ---
 
 <!-- rows: 60/40 -->
-## RLHF vs RLVR: How reward changes everything
+## RLHF 与 RLVR：奖励信号如何改变一切
 
 <!-- row-columns: 50/50 -->
 
-**RLHF** -- subjective scoring:
+**RLHF**（基于人类反馈的强化学习）——主观打分：
 
-> *Explain opportunity cost in economics.*
+> *解释经济学中的机会成本。*
 >
-> Scoring requires judging clarity, accuracy, completeness -- all learned preferences with no definitive answer.
+> 评分需要判断清晰度、准确性和完整性——这些都属于学习得到的偏好，没有确定的答案。
 
 |||
 
-**RLVR** -- verifiable scoring:
+**RLVR**（基于可验证奖励的强化学习，Reinforcement Learning from Verifiable Rewards）——可验证打分：
 
-> *What is the sum of all primes < 20?*
+> *小于 20 的所有质数之和是多少？*
 >
 > `extracted_answer == 77` → Reward = 1
 >
-> *Write `fib(n)` returning the nth Fibonacci number.*
+> *编写返回第 n 个斐波那契数的 `fib(n)` 函数。*
 >
-> `assert fib(10) == 55` → All tests pass → Reward = 1
+> `assert fib(10) == 55` → 所有测试通过 → Reward = 1
 
 ===
 
-The post-training methods are the same (i.e. same algorithms), but a new set of intuitions for building models.
+后训练方法是相同的（即使用相同的算法），但构建模型的一套全新直觉由此产生。
 
 <!-- step -->
 
-**RLVR opened the door to reasoning models.** Now RL training uses mixed rewards, rubrics, and a variety of tools to train useful models. The clean distinction here is pedagogical, but in practice rare.
+**RLVR 为推理模型打开了大门。** 现在的 RL 训练使用混合奖励、评分标准和各种工具来训练有用的模型。这里所做的清晰区分只是为了教学目的，在实践中这种泾渭分明的情况并不多见。
 
 ---
 
-## The RLVR feedback loop
+## RLVR 的反馈循环
 
 <!-- cite-right: lambert2024t -->
 <!-- img-align: center -->
 
-![RLVR in the form of an RL feedback loop. Instead of a reward model, a verification function scores completions.](assets/rlvr-system.png)
+![以 RL 反馈循环形式展现的 RLVR。与奖励模型不同，这里使用一个验证函数来对模型输出打分。](assets/rlvr-system.png)
 
 ---
 
 <!-- columns: 50/50 -->
-## Recall: RL training vs inference-time scaling
+## 回顾：RL 训练与推理时扩展
 
 <!-- cite-right: openai2024o1 -->
 
-![Train-time compute scaling: more RL training improves the policy.](assets/o1-train-time.png)
+![训练时计算扩展：更多 RL 训练提升了策略性能。](assets/o1-train-time.png)
 
 |||
 
-![Test-time compute scaling: more inference compute improves performance.](assets/o1-test-time.png)
+![推理时计算扩展：更多推理计算提升了性能。](assets/o1-test-time.png)
 
 
 ---
 
-## Recall: What thinking tokens look like
+## 回顾：思考 token 的形态
 
 <!-- cite-right: guo2025deepseek -->
 
-**Standard model** answers directly:
+**普通模型**直接给出答案：
 
-> *What is the sum of all prime numbers less than 20?*
+> *小于 20 的所有质数之和是多少？*
 >
-> The primes less than 20 are 2, 3, 5, 7, 11, 13, 17, 19. Their sum is **77**.
+> 小于 20 的质数有 2、3、5、7、11、13、17、19。它们的和是 **77**。
 
 **Reasoning model** generates `<think>` tokens before answering:
 
 > `<think>` I need to find all primes less than 20. Starting from 2: 2 is prime. 3 is prime. 4 = 2×2, not prime. 5 is prime... Let me add them up: 2+3=5, 5+5=10, 10+7=17, 17+11=28, 28+13=41, 41+17=58, 58+19=77. `</think>`
 >
-> The answer is $\boxed{77}$.
+> 答案是 $\boxed{77}$。
 >
-> **Verification**: `extracted_answer == 77` → Reward = 1
+> **验证**：`extracted_answer == 77` → Reward = 1
 
-For harder problems, thinking can be **thousands of tokens**.
+对于更困难的问题，思考过程可能长达**数千个 token**。
 
 ---
 
-## Key terms for this lecture
+## 本讲义的关键术语
 
 <!-- columns: 50/50 -->
 
-**Evaluation metrics**:
+**评估指标**：
 
-- **pass@1**: Accuracy on a single sample per problem
-- **pass@K**: Generate $K$ completions, report whether *any* is correct -- measures coverage
+- **pass@1**：每个问题单个样本的准确率
+- **pass@K**：生成 $K$ 个完成样本，报告是否*至少有一个*正确——衡量覆盖能力
 
-If $n$ attempts contain $c$ correct answers:
+如果 $n$ 次尝试中有 $c$ 次给出正确答案：
 
 $$
 \widehat{\mathrm{pass@}k}=1-\frac{\binom{n-c}{k}}{\binom{n}{k}}
@@ -248,21 +248,21 @@ $$
 
 |||
 
-**Algorithm / architecture terms**:
+**算法 / 架构术语**：
 
-- **DAPO**: Dynamic Advantage Policy Optimization -- a relaxed-clipping variant of GRPO [@yu2025dapo]. Key early RLVR paper
-- **CISPO**: Clipped Importance Sampling PO -- clips importance sampling (IS) weights rather than per-token ratios, from MiniMax-M1 [@minimax2025minimax_m1]
+- **DAPO**（Dynamic Advantage Policy Optimization，动态优势策略优化）——GRPO 的宽松裁剪变体 [@yu2025dapo]。早期的关键 RLVR 论文
+- **CISPO**（Clipped Importance Sampling PO，裁剪重要性采样策略优化）——裁剪重要性采样（IS）权重而非逐个 token 的比率，出自 MiniMax-M1 [@minimax2025minimax_m1]
 
 ---
 
 
 <!-- layout: section-break -->
 
-## The reasoning model Cambrian explosion
+## 推理模型的"寒武纪大爆发"
 
 ---
 
-## The reasoning model Cambrian explosion
+## 推理模型的"寒武纪大爆发"
 
 <!-- img-align: center -->
 
@@ -270,389 +270,389 @@ $$
 
 ---
 
-## The research that came before
+## 先行研究
 
-The key ideas behind RLVR aren't new -- they were explored before o1/R1 made them mainstream (and effective):
+RLVR 背后的核心思想并不新鲜——在 o1/R1 使之成为主流（且有效）之前，相关工作早已展开探索：
 
 <!-- animate: bullets -->
 
-- **STaR** [@zelikman2022star] (and **Quiet-STaR** [@Zelikman2024QuietSTaRLM]): self-taught reasoning with ground-truth rewards (2022-2024). Sample CoTs with different rationales, keep correct answers, train.
-- **TRICE** [@hoffman2023training]: MCMC-inspired optimization for reasoning traces (more complex algorithm).
-- **VinePPO** [@VinePPO]: PPO with binary math rewards on GSM8K/MATH via many rollouts & Monte Carlo estimation.
-- **Tülu 3** [@lambert2024t]: PPO for math correctness while maintaining broad capabilities.
+- **STaR** [@zelikman2022star]（以及 **Quiet-STaR** [@Zelikman2024QuietSTaRLM]）：利用真实奖励进行自训练推理（2022–2024 年）。抽样带不同推理过程（CoT）的样本，保留正确答案，然后进行训练。
+- **TRICE** [@hoffman2023training]：受 MCMC 启发的推理轨迹优化算法（更为复杂）。
+- **VinePPO** [@VinePPO]：在 GSM8K / MATH 上利用大量 rollout 和蒙特卡洛估计，配合二元数学奖励的 PPO。
+- **Tülu 3** [@lambert2024t]：在保持广泛能力的前提下，用 PPO 提升数学正确性。
 
 <!-- step -->
 
-The models that followed these scaled up the methods, in a simpler approach, and shifted the focus of post-training.
+后续模型在此基础上以更简洁的方式放大了这些方法，并改变了后训练的关注点。
 
 ---
 
-## Why does RL work now?
+## 为什么强化学习现在能行？
 
 <!-- animate: bullets -->
 
-- **Stability is much more tractable**: Still a first-class research problem (entropy collapse, long-horizon credit), but tooling and recipes are mature enough for widespread adoption
-- **Base models are good enough**: Multiple sources suggest RL reasoning training only became viable with models from ~2024 onwards -- a capability floor was needed
-- **Verifiable domains provide clean signal**: Math and code give unambiguous rewards, avoiding the reward hacking problems of RLHF
+- **稳定性显著改善**：它仍然是第一等的研究课题（熵坍塌、长程信用分配），但工具链和训练配方已经足够成熟，可以被广泛采用
+- **基础模型足够强**：多项来源表明，RL 推理训练只有在 ~2024 年之后的模型上才变得可行——需要一定的能力基线
+- **可验证领域提供干净的信号**：数学和代码给出明确的奖励信号，避免了 RLHF 中常见的奖励投机（reward hacking）问题
 
 ---
 
-## This lecture
+## 本讲义结构
 
-1. The seminal models
-2. What we learned about them
-3. What recent history teaches us
+1. 开创性模型
+2. 我们从中学到什么
+3. 近期历史给我们的启示
 
 ---
 
 <!-- rows: 39/61 -->
-## DeepSeek R1 (Jan. 20, 2025): The catalyst
+## DeepSeek R1（2025 年 1 月 20 日）：催化剂
 
 <!-- cite-right: guo2025deepseek -->
 
-A surprisingly fast o1 replication.
+一个出人意料快速的 o1 复现。
 
-**R1-Zero**: Pure RL on a base model. No SFT warm-start. Showed that large-scale RL *alone* induces chain-of-thought reasoning.
+**R1-Zero**：直接在基础模型上进行纯 RL 训练，不经过 SFT 预热。它证明大规模 RL *本身*就能激发链式推理能力。
 
-**The full R1 recipe**: Cold-start SFT → large-scale RL → distillation of smaller models.
+**完整的 R1 配方**：冷启动 SFT → 大规模 RL → 蒸馏小型模型。
 
 ===
 
-![Training reward curve for DeepSeek R1-Zero showing emergent reasoning behavior.](assets/deepseek-r1-zero-figure1-training.png)
+![DeepSeek R1-Zero 的训练奖励曲线，展示涌现的推理行为。](assets/deepseek-r1-zero-figure1-training.png)
 
 ---
 
 <!-- columns: 45/55 -->
-## Kimi 1.5 (Jan. 20, 2025): Scaling the curriculum
+## Kimi 1.5（2025 年 1 月 20 日）：扩展课程难度
 
 <!-- cite-right: team2025kimi -->
 
-Kimi 1.5 landed in the same January wave as R1 and emphasized **RL scale plus curriculum**.
+Kimi 1.5 与 R1 同属一月的模型浪潮，强调 **RL 规模加上课程学习**。
 
-- PPO/GRPO-style RL on Chinese and English reasoning data
-- Difficulty scheduling and online filtering to keep gradients useful
-- Progressive length extension to reduce overthinking while enabling long CoT
-- Detailed technical report, but **no open-weight k1.5 release**
+- 在中文和英文推理数据上使用 PPO/GRPO 风格的 RL
+- 难度调度和在线过滤，保持梯度有用性
+- 渐进式长度扩展，在支持长 CoT 的同时减少过度思考
+- 详细的技术报告，但 **未开源 k1.5 权重**
 
 |||
 
-![Kimi 1.5 RL training dynamics: accuracy and response length grow together across benchmarks.](assets/kimi-15-training-dynamics.png)
+![Kimi 1.5 的 RL 训练动态：准确率和响应长度在各基准测试中同步增长。](assets/kimi-15-training-dynamics.png)
 
 ---
 
 <!-- rows: 43/57 -->
-## Open-Reasoner-Zero (Feb. 18, 2025): The minimalist replication
+## Open-Reasoner-Zero（2025 年 2 月 18 日）：极简复现
 
 <!-- cite-right: hu2025openreasonerzero -->
 
-First public dataset and code for an r1-style, base model RL run.
+第一个公开 r1 风格的基础模型 RL 数据集和代码。
 
-- Fully open: **training code, curated RL data, and model weights**
-- Vanilla PPO with GAE ($\lambda=1, \gamma=1$) and simple rule-based rewards
-- No KL penalty
-- Mar. 31 expansion: easier scripts and 129k curated problems
+- 完全开源：**训练代码、精校的 RL 数据和模型权重**
+- 标准 PPO，使用 GAE（$\lambda=1, \gamma=1$）和简单的规则奖励
+- 没有 KL 惩罚
+- 3 月 31 日扩展：更简易的脚本和 12.9 万精选题目
 
 ===
 
-![Open-Reasoner-Zero train-time scaling curves from the paper.](assets/open-reasoner-zero-train-scale.png)
+![论文中 Open-Reasoner-Zero 的训练时扩展曲线。](assets/open-reasoner-zero-train-scale.png)
 
 ---
 
 <!-- columns: 45/55 -->
-## Qwen 3 (Apr. 29, 2025): Hybrid reasoners
+## Qwen 3（2025 年 4 月 29 日）：混合推理器
 
 <!-- cite-right: yang2025qwen3 -->
 
-New open weight standard (RIP Llama 4).
+新的开源权重标杆（Llama 4 安息吧）。
 
-- Toggleable thinking: `/think` and `/no_think` modes (most labs found this to be quite the training headache)
-- Thinking budget length controls
-- Large-model recipe mirrors the R1-style multi-stage pipeline
-- Lightweight models use strong-to-weak distillation: off-policy outputs, then on-policy teacher-logit matching
+- 可切换思考模式：`/think` 和 `/no_think`（多数实验室发现这相当折腾训练流程）
+- 思考预算长度控制
+- 大模型配方与 R1 风格的多阶段流水线类似
+- 轻量模型使用"强到弱"蒸馏：先离策略输出，再做同策略教师 logit 匹配
 
-Llama-Nemotron [@bercovich2025llamanemotron] is another toggleable open-weights reasoner with released post-training data and training codebases, but a different recipe.
+Llama-Nemotron [@bercovich2025llamanemotron] 是另一个可切换的开源权重推理模型，发布了后训练数据和训练代码库，但配方不同。
 
 |||
 
-![Qwen 3 performance curves under different thinking budgets from the paper.](assets/qwen3-thinking-budget.png)
+![论文中 Qwen 3 在不同思考预算下的性能曲线。](assets/qwen3-thinking-budget.png)
 
 ---
 
 <!-- columns: 45/55 -->
-## MiMo (Apr. 30, 2025): End-to-end reasoning pipeline
+## MiMo（2025 年 4 月 30 日）：端到端推理流水线
 
 <!-- cite-right: xia2025mimo -->
 
-Xiaomi reports the **entire pipeline** from pretraining through post-training.
+小米报告了从预训练到后训练的**完整流水线**。
 
-Tweaks to a training recipe for reasoning:
-- Three-stage data mixing during pretraining (25T tokens)
-- Multi-Token Prediction (MTP) during pretraining
-- Multi-domain RL to prevent over-optimization on a single task type
+对推理训练配方的改进：
+- 预训练中的三阶段数据混合（25T token）
+- 预训练中的多 Token 预测（MTP，Multi-Token Prediction）
+- 多域 RL，防止在单一任务类型上过优化
 
-One of the only open-weight reasoning models to release clear intermediate checkpoints within post-training!
+它是少数在后训练阶段公开清晰中间检查点的开源权重推理模型之一！
 
 |||
 
-![MiMo-7B-RL surpasses o1-mini and larger RL baselines on both code (LiveCodeBench) and math (AIME) -- reasoning-oriented pretraining sets the RL ceiling.](assets/mimo-rl-curves.png)
+![MiMo-7B-RL 在代码（LiveCodeBench）和数学（AIME）上超越 o1-mini 和更大的 RL 基线——面向推理的预训练设定了 RL 的能力上限。](assets/mimo-rl-curves.png)
 
 ---
 
 <!-- columns: 40/60 -->
-## OpenThoughts 3 (Jun. 5, 2025): SFT data recipes still matter
+## OpenThoughts 3（2025 年 6 月 5 日）：SFT 数据配方仍然重要
 
 <!-- cite-right: guha2025openthoughts -->
 
-The foundational, open reasoning data (still quite strong)!
+基础性的开源推理数据（依然非常强大！）：
 
-- 1.2M public examples across math, code, and science
-- QwQ-32B traces, over 1,000 controlled data-pipeline experiments
-- OpenThinker3-7B reaches strong reasoning performance with SFT only
+- 覆盖数学、代码和科学的 120 万个公开示例
+- 使用 QwQ-32B 的推理轨迹，完成了超过 1000 次受控的数据流水线实验
+- OpenThinker3-7B 仅使用 SFT 就达到了出色的推理性能
 
-The community needs more investment in strong, open reasoning traces (and understanding what makes a good teacher).
+社区需要在强推理轨迹（以及理解什么构成"好教师"）上投入更多。
 
 |||
 
-![OpenThoughts3 scaling curves across AIME 2025, LiveCodeBench, and GPQA Diamond.](assets/openthoughts3-scaling.png)
+![OpenThoughts3 在 AIME 2025、LiveCodeBench 和 GPQA Diamond 上的扩展曲线。](assets/openthoughts3-scaling.png)
 
 ---
 
 <!-- columns: 40/60 -->
-## MiniMax-M1 (Jun. 16, 2025): A fun RL paper!
+## MiniMax-M1（2025 年 6 月 16 日）：一篇有趣的 RL 论文！
 
 <!-- cite-right: minimax2025minimax_m1 -->
 
-MiniMax M1's paper really held the test of time. On top of the very popular models:
+MiniMax M1 的论文经受住了时间的考验。在它非常受欢迎的模型之上：
 
-1. CISPO clips importance-sampling weights instead of dropping high-update tokens. This sort of algorithm has been lasting.
-2. Introduced the now famous FP32 LM head inference-training mismatch plot.
+1. CISPO 裁剪重要性采样权重，而不是丢弃高频更新 token。这类算法具有持久影响力。
+2. 引入了现在广为人知的 FP32 LM head 推理-训练不匹配图。
 
 |||
 
-![Per-token probabilities from the training engine vs. the inference engine, before and after the fix. Running the LM head in low precision makes the two diverge -- a hidden train/inference mismatch that destabilizes RL -- and upcasting just the LM head to FP32 realigns them.](assets/minimax-m1-logprob-mismatch.png)
+![训练引擎与推理引擎逐 token 概率的对比，修复前和修复后。LM head 使用低精度运行会导致两者发散——一个隐藏的训练/推理不匹配问题，会破坏 RL 的稳定性——仅将 LM head 提升为 FP32 即可重新对齐。](assets/minimax-m1-logprob-mismatch.png)
 
 ---
 
 <!-- columns: 40/60 -->
-## GLM-4.5 (Jul. 28, 2025): Reasoning broadens into agentic work
+## GLM-4.5（2025 年 7 月 28 日）：推理扩展到智能体工作
 
 <!-- cite-right: zeng2025glm45 -->
 
-GLM-4.5 report was one of the early ones to focus on agentic behaviors. Otherwise, it represented "yet another" very strong, open Chinese model through the summer wave.
+GLM-4.5 的报告是最早关注智能体行为的工作之一。除此之外，它代表了暑期浪潮中又一个非常出色的开源中文模型。
 
-- 355B total parameters, 32B active
-- Thinking and direct-response modes
-- Expert-model iteration plus RL for agent, reasoning, and general chat skills
+- 355B 总参数，32B 活跃参数
+- 思考模式和直接回复模式
+- 专家模型迭代加上 RL，用于智能体、推理和通用对话能力
 
 |||
 
-![GLM-4.5 average performance on agentic, reasoning, and coding benchmarks.](assets/glm45-arc-benchmarks.png)
+![GLM-4.5 在智能体、推理和编码基准测试上的平均表现。](assets/glm45-arc-benchmarks.png)
 
 ---
 
 <!-- columns: 40/60 -->
-## Olmo 3 Think (Nov. 20, 2025): The fully open reasoning model
+## Olmo 3 Think（2025 年 11 月 20 日）：完全开源的推理模型
 
 <!-- cite-right: teamolmo2025olmo3 -->
 
-The most comprehensive open documentation of a reasoning model lifecycle.
+推理模型生命周期最全面的开源文档。
 
-Releases: stages, checkpoints, data, infrastructure, hyperparameters.
+公开发布了：各阶段、检查点、数据、基础设施、超参数。
 
-Interesting DPO findings and more fun stuff. See [this talk](https://www.youtube.com/watch?v=uaZ3yRdYg8A) for more.
+包括有趣的 DPO 发现和一些其他有趣内容。详见[这次演讲](https://www.youtube.com/watch?v=uaZ3yRdYg8A)。
 
 
 |||
 
-![Olmo 3.1 Think extended RL training lifecycle from the model report.](assets/olmo31-extended-rl.jpeg)
+![Olmo 3.1 Think 从模型报告中展示的扩展 RL 训练生命周期。](assets/olmo31-extended-rl.jpeg)
 
 ---
 
 <!-- columns: 45/55 -->
-## DeepSeek V3.2 (Dec. 1, 2025): Reasoning becomes agentic
+## DeepSeek V3.2（2025 年 12 月 1 日）：推理走向智能体化
 
 <!-- cite-right: deepseekai2025v32 -->
 
-DeepSeek V3.2 pushes the R1 recipe into **tool-use and agent environments**.
+DeepSeek V3.2 将 R1 配方推向了**工具使用和智能体环境**。
 
-- Open-weight MoE successor to V3.2-Exp
-- V3.2 integrates thinking directly into tool use, no longer distinct reasoning models
-- Speciale variant targets maximum reasoning performance
+- V3.2-Exp 的开源权重 MoE 后继模型
+- V3.2 将思考直接集成到工具使用中，不再区分单独的推理模型
+- Special 变体专注于最大化推理性能
 
 |||
 
-![DeepSeek V3.2 benchmark chart comparing reasoning and agentic capabilities.](assets/deepseek-v32-benchmark.png)
+![DeepSeek V3.2 的基准测试图表，比较推理和智能体能力。](assets/deepseek-v32-benchmark.png)
 
 ---
 
 <!-- rows: 43/57 -->
-## Nemotron 3 Nano (Dec. 15, 2025): Efficient agentic reasoning
+## Nemotron 3 Nano（2025 年 12 月 15 日）：高效的智能体推理
 
 <!-- cite-right: nvidia2025nemotron3nano -->
 
-Another very open (and American) model, which led into stronger American open-weight models in 2026.
+又一个非常开源（且来自美国）的模型，为 2026 年更强的美国开源权重模型铺路。
 
-- 31.6B total parameters, roughly 3.2B active per forward pass
-- Hybrid Mamba-Transformer MoE architecture
-- Post-trained with SFT, multi-environment RLVR, and RLHF
+- 31.6B 总参数，每次前向传播约 3.2B 活跃参数
+- 混合 Mamba-Transformer MoE 架构
+- 使用 SFT、多环境 RLVR 和 RLHF 进行后训练
 
 ===
 
-![Nemotron 3 Nano accuracy and throughput comparisons from the technical report.](assets/nemotron-3-nano-comparison.png)
+![技术报告中 Nemotron 3 Nano 的准确率和吞吐量对比。](assets/nemotron-3-nano-comparison.png)
 
 ---
 
 <!-- columns: 45/55 -->
-## MiMo-V2-Flash (Dec. 16, 2025): Distilling many teachers into one
+## MiMo-V2-Flash（2025 年 12 月 16 日）：将多位教师蒸馏为一人
 
 <!-- cite-right: mimo2025flash -->
 
-The notable contribution is in post-training: **Multi-Teacher On-Policy Distillation (MOPD)**.
+值得关注的贡献在后训练：**多教师同策略蒸馏（MOPD, Multi-Teacher On-Policy Distillation）**。
 
-- Train a specialist teacher per domain (math, code, search, reasoning), then distill them into a single student
-- The student learns from **dense, token-level rewards**, not just sequence-level outcome rewards -- more sample-efficient, and it matches its strongest teacher in every domain
-- Underlying model is a 309B/15B MoE built for fast rollouts, but the recipe is the story here
+- 为每个领域（数学、代码、搜索、推理）训练一位专家教师，然后将它们蒸馏到单个学生模型中
+- 学生从**密集的、token 级别的奖励**中学习，而不仅仅是序列级别的结果奖励——样本效率更高，且在每个领域都追平最强的教师
+- 底层模型是一个为快速 rollout 构建的 309B/15B MoE，但真正的主角是这个配方
 
 |||
 
-![MOPD post-training: dense token-level reward from domain teachers lifts the student to teacher-level accuracy, where sequence-level ORM stalls.](assets/mimo-v2-flash-mopd.png)
+![MOPD 后训练：来自领域教师的密集 token 级奖励将学生提升到教师级别准确率，而序列级 ORM 在此停滞。](assets/mimo-v2-flash-mopd.png)
 
 ---
 
 <!-- columns: 50/50 -->
-## Recent American open models
+## 近期美国开源模型
 
-[**NVIDIA Nemotron 3 Super**](https://research.nvidia.com/labs/nemotron/Nemotron-3-Super/) (Mar. 10, 2026)
+[**NVIDIA Nemotron 3 Super**](https://research.nvidia.com/labs/nemotron/Nemotron-3-Super/)（2026 年 3 月 10 日）
 
-- 120B/12B MoE; LatentMoE, MTP, native NVFP4 pretraining
-- Fully open: checkpoints, training data, and recipes
+- 120B/12B MoE；LatentMoE、MTP、原生 NVFP4 预训练
+- 完全开源：检查点、训练数据和配方
 
 |||
 
-[**Arcee Trinity-Large-Thinking**](https://www.arcee.ai/blog/trinity-large-thinking) (Apr. 1, 2026)
+[**Arcee Trinity-Large-Thinking**](https://www.arcee.ai/blog/trinity-large-thinking)（2026 年 4 月 1 日）
 
-- Frontier reasoning model tuned for long-horizon, multi-turn tool use
-- Apache 2.0 weights; SFT + RL pipeline
+- 面向长程、多轮工具使用的前沿推理模型
+- Apache 2.0 权重；SFT + RL 流水线
 
-
----
-
-## Recent Chinese open models
-
-- [**Kimi K2.5**](https://www.kimi.com/blog/kimi-k2-5) (Jan. 27, 2026) → [**K2.6**](https://www.kimi.com/blog/kimi-k2-6) (Apr. 20, 2026): native multimodality and agent swarms, then stronger long-horizon coding
-- [**GLM-5**](https://z.ai/blog/glm-5) (Feb. 12, 2026) → [**GLM-5.1**](https://docs.z.ai/guides/llm/glm-5.1) (Apr. 7, 2026): agentic engineering, then longer and more stable autonomous runs
-- [**DeepSeek V4 Preview**](https://api-docs.deepseek.com/news/news260424) (Apr. 24, 2026): open Pro and Flash models, dual reasoning modes, efficient architecture innovations, and 1M-token context
-
-The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using agent substrate**.
 
 ---
 
-## What the landscape tells us
+## 近期中国开源模型
+
+- [**Kimi K2.5**](https://www.kimi.com/blog/kimi-k2-5)（2026 年 1 月 27 日）→ [**K2.6**](https://www.kimi.com/blog/kimi-k2-6)（2026 年 4 月 20 日）：原生多模态和智能体群体，然后是更强的长程编码能力
+- [**GLM-5**](https://z.ai/blog/glm-5)（2026 年 2 月 12 日）→ [**GLM-5.1**](https://docs.z.ai/guides/llm/glm-5.1)（2026 年 4 月 7 日）：智能体工程，然后是更长且更稳定的自主运行
+- [**DeepSeek V4 Preview**](https://api-docs.deepseek.com/news/news260424)（2026 年 4 月 24 日）：开源 Pro 和 Flash 模型，双推理模式，高效架构创新，以及 1M token 上下文
+
+前沿进展飞快——从"推理模型"演变为**长程、使用工具的智能体底层平台**。
+
+---
+
+## 图景带给我们的启示
 
 <!-- animate: bullets -->
 
-1. RL basics were quickly replicated in open-source codebases and data
-2. The shift to agentic models followed very quickly from math/code reasoning tasks. Models like Olmo 3 (which I built and know was a bit late) stand out even more here
-3. Substantial innovation at the model layer to make long-context inference more efficient, especially from Chinese labs
-4. Lots of lasting fundamentals (FP32 LM head, CISPO style losses, etc.) emerged very quickly but took meaningful tinkering to converge
+1. RL 的基本方法迅速被开源代码库和数据复现
+2. 向智能体模型的转变紧随数学/代码推理任务而来。像 Olmo 3 这样的模型（我亲自参与构建，知道它稍晚）在此背景下更加引人注目
+3. 模型层涌现大量创新以提升长上下文推理效率，尤其来自中国实验室
+4. 许多持久的基础技术（FP32 LM head、CISPO 风格损失函数等）迅速出现，但经过大量调参才收敛
 
 ---
 
 <!-- layout: section-break -->
 
-## Common implementation patterns
+## 常见实现模式
 
 ---
 
-## Recipe decisions (1/4)
+## 配方决策（1/4）
 
 <!-- animate: bullets -->
 
-1. **Offline difficulty filtering** -- pre-sample $N$ completions/prompt, keep prompts at ~20-80% pass rate (where the gradient lives). *Seed-Thinking 1.5 [@seed2025seed], Open-Reasoner-Zero [@hu2025openreasonerzero], Phi-4 Reasoning [@abdin2025phi4], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo], Skywork OR-1 [@he2025skyworkor1], Olmo 3 [@teamolmo2025olmo3]*
-2. **Online filtering and curriculum** -- skip prompts now too easy/hard; save harder problems for later. *Kimi 1.5 [@team2025kimi], Magistral [@mistral2025magistral], Llama-Nemotron [@bercovich2025llamanemotron], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo]*
-3. **Zero-gradient filtering + active sampling** -- drop groups where all $G$ completions pass or fail (advantage 0), then refill the batch. *Olmo 3 [@teamolmo2025olmo3]*. Makes loss nice and very stable!
-4. **KL penalty: dropped, now creeping back** -- single-turn math RLVR usually sets $\beta=0$ (verifiable rewards resist over-optimization). *Magistral [@mistral2025magistral], Open-Reasoner-Zero [@hu2025openreasonerzero], Skywork OR-1 [@he2025skyworkor1]* But long-horizon, off-policy agentic training is reviving a KL/reference term for stability -- e.g. Cursor [Composer 2](https://cursor.com/blog/composer-2-technical-report).
-5. **Relaxed / asymmetric clipping** -- widen the upper clip bound to keep exploratory updates (DAPO [@yu2025dapo]). *Magistral [@mistral2025magistral], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*
+1. **离线难度过滤**——为每个提问预采样 $N$ 个完成，保留通过率约 20–80% 的 prompt（梯度最丰富的区域）。*Seed-Thinking 1.5 [@seed2025seed]、Open-Reasoner-Zero [@hu2025openreasonerzero]、Phi-4 Reasoning [@abdin2025phi4]、INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]、MiMo [@xia2025mimo]、Skywork OR-1 [@he2025skyworkor1]、Olmo 3 [@teamolmo2025olmo3]*
+2. **在线过滤与课程学习**——跳过当前过易/过难的提问；将更难的问题留到后期。*Kimi 1.5 [@team2025kimi]、Magistral [@mistral2025magistral]、Llama-Nemotron [@bercovich2025llamanemotron]、INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]、MiMo [@xia2025mimo]*
+3. **零梯度过滤 + 主动采样**——丢弃所有 $G$ 个完成都通过或都失败的组（优势值为 0），然后重新填充批次。*Olmo 3 [@teamolmo2025olmo3]*。损失曲线变得漂亮且非常稳定！
+4. **KL 惩罚：暂时移除，又在悄然回归**——单轮数学 RLVR 通常设 $\beta=0$（可验证奖励本身就能抵抗过优化）。*Magistral [@mistral2025magistral]、Open-Reasoner-Zero [@hu2025openreasonerzero]、Skywork OR-1 [@he2025skyworkor1]* 但长程、离策略的智能体训练正在重新引入 KL/参考项以增强稳定性——例如 Cursor [Composer 2](https://cursor.com/blog/composer-2-technical-report)。
+5. **宽松/非对称裁剪**——扩大上界裁剪范围以保持探索性更新（DAPO [@yu2025dapo]）。*Magistral [@mistral2025magistral]、INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*
 
 ---
 
-## Recipe decisions (2/4)
+## 配方决策（2/4）
 
 <!-- animate: bullets -->
 
-6. **CISPO** -- clip importance-sampling weights instead of masking high-update tokens (MiniMax-M1 [@minimax2025minimax_m1]); ScaleRL [@khatri2025art] picked it as the best loss in their scaling study. Recall importance sampling and clipping from [Lecture 3](https://www.youtube.com/watch?v=K_Sj_-1BUMM).
-7. **Normalization choices** -- how you average advantages and loss quietly changes the objective. Normalize advantages across the **whole batch**, not per prompt group, so a few easy/hard prompts don't dominate (Magistral [@mistral2025magistral], MiMo [@xia2025mimo]); average loss over **total tokens**, not per sequence, to remove a length bias (Dr. GRPO [@liu2025understanding]). See the per-token vs. per-sequence loss-aggregation deep dive in [Lecture 4](https://www.youtube.com/watch?v=i-AIMpZHgeg).
-8. **Format rewards** -- reward valid `<think>` blocks and extractable answers; usability, not correctness. *DeepSeek R1 [@guo2025deepseek], Open-Reasoner-Zero [@hu2025openreasonerzero], Magistral [@mistral2025magistral], Skywork OR-1 [@he2025skyworkor1]*
-9. **Language consistency rewards** -- penalize language switching inside a trace. *DeepSeek R1 [@guo2025deepseek], Magistral [@mistral2025magistral]*. Models used to switch to Chinese or French while reasoning.
-10. **Length control** -- progressive length extension -- i.e. the maximum length of training, which rewards concise thinking (Kimi 1.5 [@team2025kimi]); small length penalty (INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]); overlong filtering for throughput.
+6. **CISPO**——裁剪重要性采样权重，而不是掩码高频更新 token（MiniMax-M1 [@minimax2025minimax_m1]）；ScaleRL [@khatri2025art] 在其扩展研究中将其选为最优损失函数。回顾重要性采样和裁剪见[讲义 3](https://www.youtube.com/watch?v=K_Sj_-1BUMM)。
+7. **归一化选择**——如何平均优势和损失会悄无声息地改变目标函数。对优势在整个**批次**上归一化，而不是按每个提问组归一化，避免个别易/难提问主导（Magistral [@mistral2025magistral]、MiMo [@xia2025mimo]）；对损失按**总 token 数**平均，而不是按序列平均，消除长度偏差（Dr. GRPO [@liu2025understanding]）。详见[讲义 4](https://www.youtube.com/watch?v=i-AIMpZHgeg)中逐 token 与逐序列损失聚合的深入讨论。
+8. **格式奖励**——奖励有效的 `<think>` 块和可提取的答案；关注可用性而非正确性。*DeepSeek R1 [@guo2025deepseek]、Open-Reasoner-Zero [@hu2025openreasonerzero]、Magistral [@mistral2025magistral]、Skywork OR-1 [@he2025skyworkor1]*
+9. **语言一致性奖励**——惩罚推理轨迹中的语言切换。*DeepSeek R1 [@guo2025deepseek]、Magistral [@mistral2025magistral]*。模型过去经常在推理时切换到中文或法文。
+10. **长度控制**——渐进式长度扩展，即训练的最大长度，奖励简洁思考（Kimi 1.5 [@team2025kimi]）；微小长度惩罚（INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]）；超长过滤以保证吞吐量。
 
 ---
 
 <!-- columns: 55/45 -->
-## Recipe decisions (3/4)
+## 配方决策（3/4）
 
 <!-- cite-right: teamolmo2025olmo3 -->
 
 <!-- animate: bullets -->
 
-11. **Inference is the bottleneck** -- long, variable completions; Olmo 3 learner GPUs idle ~**75%**, **5-14x** more inference than training compute.
-12. **Off-policy / async updates** -- actors generate continuously, the learner consumes; rollouts go slightly stale but throughput jumps. *Seed-Thinking 1.5 [@seed2025seed], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]* -- deep dive: Olmo 3 [slides](https://docs.google.com/presentation/d/17Evr5AqnwjtSZ4H5vpnoEvGmI9fRBO19SN2dGHg7tPE/edit), [recording](https://www.youtube.com/watch?v=uaZ3yRdYg8A)
-13. **Test-time scaling** -- majority voting (DeepSeek R1 [@guo2025deepseek], Phi-4 [@abdin2025phi4]); selector model (DeepSeek-GRM [@liu2025inference]); the pass@K vs pass@1 gap shows the headroom.
+11. **推理是瓶颈**——长且可变的完成文本；Olmo 3 的学习器 GPU 空闲约 **75%**，推理计算量是训练的 **5–14 倍**。
+12. **离策略/异步更新**——actor 持续生成，learner 持续消费；rollout 略有过期但吞吐量大幅提升。*Seed-Thinking 1.5 [@seed2025seed]、INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*——深入讨论：Olmo 3[幻灯片](https://docs.google.com/presentation/d/17Evr5AqnwjtSZ4H5vpnoEvGmI9fRBO19SN2dGHg7tPE/edit)、[录播](https://www.youtube.com/watch?v=uaZ3yRdYg8A)
+13. **推理时扩展**——多数投票（DeepSeek R1 [@guo2025deepseek]、Phi-4 [@abdin2025phi4]）；选择器模型（DeepSeek-GRM [@liu2025inference]）；pass@K 与 pass@1 的差距展示了提升空间。
 
 |||
 
-![Distributed RL training infrastructure.](assets/distributed-rl.png)
+![分布式 RL 训练基础设施。](assets/distributed-rl.png)
 
 ---
 
-## Recipe decisions (4/4)
+## 配方决策（4/4）
 
 <!-- animate: bullets -->
 
-14. **Finding -- text-only RL boosts multimodal** -- text reasoning RL *after* multimodal training improves vision tasks. *MiMo-VL, Magistral [@mistral2025magistral]*
-15. **Finding -- midtraining sets the RL ceiling** -- the math/code share in pretraining bounds what RL can reach. *MiMo [@xia2025mimo]*
+14. **发现——纯文本 RL 提升多模态能力**——在多模态训练之后进行文本推理 RL，能改善视觉任务表现。*MiMo-VL、Magistral [@mistral2025magistral]*
+15. **发现——中训练（midtraining）设定了 RL 的能力上限**——预训练中数学/代码的比例决定了 RL 能到达的上限。*MiMo [@xia2025mimo]*
 
 ---
 
-## Open questions
+## 开放问题
 
 <!-- animate: bullets -->
 
-- Is RL training **discovering** new capabilities, or **eliciting** what pretraining already learned?
-- How far can reasoning training go without better pretraining data? Pretraining does NOT seem dead.
-- Will agentic RL (tool use + reasoning) require fundamentally different recipes?
-- Can we systematically study the scaling properties of RL for reasoning? [@khatri2025art]
-- In 1, 2, 5, and 10 years what does the balance of compute between pretraining and RL look like?
+- RL 训练是在**发现**新能力，还是**激发**预训练已经学过的东西？
+- 没有更好的预训练数据时，推理训练能走多远？预训练看来并没有"死"。
+- 智能体 RL（工具使用 + 推理）是否需要本质上不同的配方？
+- 我们能否系统地研究 RL 在推理任务上的扩展特性？[@khatri2025art]
+- 1 年、2 年、5 年和 10 年后，预训练和 RL 之间的计算平衡会是什么样子？
 
 ---
 
-## RL training libraries
+## RL 训练库
 
-- [**slime**](https://github.com/THUDM/slime) -- SGLang-native post-training framework for RL scaling; used for the GLM model line
-- [**SkyRL**](https://github.com/NovaSky-AI/SkyRL) -- modular full-stack RL library for LLMs, with async and multi-turn agent workflows
-- [**veRL**](https://github.com/volcengine/verl) -- flexible, production-oriented RL training library from the HybridFlow work
-- [**OpenRLHF**](https://github.com/OpenRLHF/OpenRLHF) -- Ray-based RLHF and RLVR training framework
-- [**TRL**](https://github.com/huggingface/trl) -- Hugging Face post-training library with accessible trainer APIs
-- [**Open Instruct**](https://github.com/allenai/open-instruct) -- Ai2's open post-training recipes and research code
+- [**slime**](https://github.com/THUDM/slime)——基于 SGLang 的原生后训练框架，面向 RL 扩展；用于 GLM 模型系列
+- [**SkyRL**](https://github.com/NovaSky-AI/SkyRL)——模块化全栈 LLM RL 库，支持异步和多轮智能体工作流
+- [**veRL**](https://github.com/volcengine/verl)——来自 HybridFlow 工作的灵活、面向生产的 RL 训练库
+- [**OpenRLHF**](https://github.com/OpenRLHF/OpenRLHF)——基于 Ray 的 RLHF 和 RLVR 训练框架
+- [**TRL**](https://github.com/huggingface/trl)——Hugging Face 的后训练库，提供易于使用的 trainer API
+- [**Open Instruct**](https://github.com/allenai/open-instruct)——Ai2 的开源后训练配方和研究代码
 
 ---
 
-## Course outline
+## 课程大纲
 
-1. Introduction & training overview -- Chapters 1-3
-2. IFT, reward models, rejection sampling -- Chapters 4, 5, 9
-3. RL theory -- Chapter 6 (Part 1)
-4. RL implementation & practice -- Chapter 6 (Part 2)
-5. **Reasoning -- Chapter 7**
-6. Direct alignment algorithms -- Chapter 8
-7. ...
+1. 引言与训练总览——第 1–3 章
+2. IFT、奖励模型、拒绝采样——第 4、5、9 章
+3. RL 理论——第 6 章（第 1 部分）
+4. RL 实现与实践——第 6 章（第 2 部分）
+5. **推理——第 7 章**
+6. 直接对齐算法——第 8 章
+7. ……
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions and discussion welcome.
+欢迎提问和讨论。
 
 **Nathan Lambert**
 

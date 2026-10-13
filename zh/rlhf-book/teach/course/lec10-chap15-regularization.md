@@ -1,5 +1,5 @@
 ---
-title: "Lecture 10: Regularization in RL, Why RL Generalizes, and Why SFT Forgets"
+title: "第10讲：强化学习中的正则化、为什么 RL 能泛化、以及为什么 SFT 会遗忘"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -8,7 +8,7 @@ bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com/course"
-  center: "Lecture 10"
+  center: "第10讲"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #F28482; }
@@ -30,7 +30,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 10: Regularization in RL, Why RL Generalizes, and Why SFT Forgets
+# 第10讲：强化学习中的正则化、为什么 RL 能泛化、以及为什么 SFT 会遗忘
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -38,122 +38,122 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Post-training course. Chapter 15.</p>
+<p class="colloquium-title-note">后训练课程 · 第15章</p>
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## How do these optimizers change the distributions of the models? How do we control it?
+## 这些优化器如何改变模型的分布？我们该如何控制？
 
 ---
 
 <!-- columns: 45/55 -->
-## Recall: The RLHF process
+## 回顾：RLHF 流程
 
-The RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
+RL 步骤的目标是**最大化奖励模型的奖励，同时减去从参考模型漂移的惩罚**。
 
-This lecture is about that penalty -- and what happens with and without it.
+本讲关注的就是这个惩罚项——以及有它和没有它时分别会发生什么。
 
 |||
 
-![The RLHF training pipeline -- the RL step optimizes the policy against the reward model, held close to the reference model by a KL penalty.](assets/rlhf-overview.png)
+![RLHF 训练流水线：RL 步骤根据奖励模型优化策略，并通过 KL 惩罚将其约束在参考模型附近。](assets/rlhf-overview.png)
 
 ---
 
 <!-- columns: 50/50 -->
-## RLVR has regularization too, but different best practices
+## RLVR 同样需要正则化，但最佳实践有所不同
 
-Same RL loop, different reward source: a verification function instead of a reward model.
+相同的 RL 循环，不同的奖励来源：用验证函数代替奖励模型。
 
-Reasoning models (before tool use) often dropped the KL penalty to enhance learning.
+推理模型（在工具使用出现之前）常常直接去掉 KL 惩罚以增强学习效果。
 
-With the emergence of large-scale tool-use, regularization is coming back into vogue -- but aimed at drift from the *sampling distribution*, not a KL penalty to a reference model (more on this at the end of the lecture).
+随着大规模工具使用能力的出现，正则化正在回归主流——但目标已不再是到参考模型的 KL 惩罚，而是到*采样分布*的漂移（详见本讲末尾）。
 
 |||
 
-![RLVR uses a verification function instead of a reward model, but the RL loop -- and the regularization question -- is the same.](assets/rlvr-system.png)
+![RLVR 使用验证函数而非奖励模型，但 RL 循环——以及正则化问题——是一致的。](assets/rlvr-system.png)
 
 ---
 
 <!-- columns: 40/60 -->
-## This lecture
+## 本讲大纲
 
-How we control optimization pressures on models explicitly.
+我们如何显式地控制施加在模型上的优化压力。
 
-How the math of the optimizers we use changes the shapes of the models.
+所用优化器的数学形式如何改变模型的"形状"。
 
 |||
 
 ```box
-title: The plan
+title: 大纲
 tone: accent
 content: |
-  1. The **KL penalty** that controls RL
-  2. **The two directions of KL divergences**
-  3. **Why RL generalizes better than SFT**
-  4. **Other related work**
+  1. 控制 RL 的 **KL 惩罚**
+  2. **KL 散度的两个方向**
+  3. **为什么 RL 比 SFT 更好地泛化**
+  4. **其他相关工作**
 ```
 
 ---
 
 <!-- columns: 50/50 -->
 
-## Aside: Watch lecture 9 first
+## 补充：请先观看第9讲
 
 ```iframe
 src: https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/
-title: Lecture 9 slides
+title: 第9讲幻灯片
 height: 300
 style: "border:none;display:block;width:100%;aspect-ratio:16/9;height:auto"
 ```
 
-[Slides](https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/) -- yes, these are the real slides, in a slide.
+[幻灯片](https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/)——没错，这些就是真正的幻灯片，嵌在幻灯片里。
 
 |||
 
 ```iframe
 src: https://www.youtube.com/embed/y04JhXpiI4s?list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y
-title: Lecture 9 video
+title: 第9讲视频
 height: 300
 style: "border:none;display:block;width:100%;aspect-ratio:16/9;height:auto"
 ```
 
-[Watch on YouTube](https://www.youtube.com/watch?v=y04JhXpiI4s&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y)
+[在 YouTube 上观看](https://www.youtube.com/watch?v=y04JhXpiI4s&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: The explicit KL penalty
+## 第一部分：显式的 KL 惩罚
 
 ---
 
 <!-- animate: bullets -->
-## A KL penalty to the reference model controls reward
+## 到参考模型的 KL 惩罚控制着奖励
 
-The canonical LLM reward function:
+LLM 的标准奖励函数：
 
 $$ r = r_\theta - \lambda_{\text{KL}} \, D_{\mathrm{KL}}\!\left( \pi_{\text{RL}}(y \mid x) \,\|\, \pi_{\text{ref}}(y \mid x) \right) $$
 
-- KL control for RL predates LLMs: dialogue agents [@jaques2017sequence], then fine-tuning pretrained models [@jaques2020human]. 
-- This penalty is a **reverse KL** -- estimated by sampling from the *policy* and scoring against the reference. It punishes the policy for putting mass where the reference would not.
-- "KL distance" is the *optimization distance* spent (colloquially -- KL is not a true metric).
-- In practice, the above $\lambda$ is often written as $\beta$. 
+- KL 控制用于 RL 早于 LLM 时代：对话智能体 [@jaques2017sequence]，然后是微调预训练模型 [@jaques2020human]。
+- 此惩罚是**反向 KL**——通过对*策略*采样并对照参考模型打分来估计。它惩罚策略在参考模型不会分配概率的地方放置质量（probability mass）。
+- "KL 距离"是*优化距离*的花称（KL 并非真正的度量）。
+- 实践中，上述 $\lambda$ 常写为 $\beta$。
 
 ---
 
 <!-- columns: 45/55 -->
-## Measuring KL in practice
+## 实践中如何测量 KL
 
-Sampling from $P$ turns the definition into an expectation:
+从 $P$ 采样将定义转化为期望：
 
 $$ D_{\mathrm{KL}}(P \,\|\, Q) = \mathbb{E}_{x \sim P}\left[ \log P(x) - \log Q(x) \right] $$
 
-- Practitioners watch the KL curve during training -- a very large KL usually means a bug or a broken model.
-- Lower-variance estimators ($k_1, k_2, k_3$) came up in [Q&A 2](https://www.youtube.com/watch?v=gB-bYUECpzE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=11) [@schulman2020klapprox].
+- 实践中会在训练过程中观察 KL 曲线——KL 值过大通常意味着存在 bug 或模型崩溃。
+- 低方差估计量（$k_1, k_2, k_3$）在[问答第2期](https://www.youtube.com/watch?v=gB-bYUECpzE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=11)中被提及 [@schulman2020klapprox]。
 
 |||
 
@@ -175,69 +175,69 @@ kl_approx = token_lp.sum(-1) - ref_token_lp.sum(-1)
 
 ---
 
-## What the curves look like in a real run
+## 实际运行中的曲线形态
 
 ![](assets/olmo2-grpo-zero-reward-kl.png)
 
-An OLMo-2-7B GRPO run, RL directly on the *base* model (R1-Zero-style, no SFT), from open-instruct ([public W&B logs](https://wandb.ai/ai2-llm/open_instruct_public/reports/OLMo-2-7B-GRPO-Fast-Zero--VmlldzoxMjA0MjU4MQ)): over ~1M episodes the verifiable reward climbs while the logged KL to the reference rises and then wanders. This run has **β = 0**.
-This is a healthy shape.
+一次 OLMo-2-7B 的 GRPO 运行，RL 直接在*基础模型*上进行（R1-Zero 风格，无 SFT），来自 open-instruct（[公开 W&B 日志](https://wandb.ai/ai2-llm/open_instruct_public/reports/OLMo-2-7B-GRPO-Fast-Zero--VmlldzoxMjA0MjU4MQ)）：在约 1M 个 episode 中，可验证奖励持续攀升，同时记录到与参考模型的 KL 逐步上升然后徘徊。该运行中 **β = 0**。
+这是一个健康的形状。
 
 ---
 
 <!-- cite-right: ziegler2019fine -->
 <!-- animate: bullets -->
 
-## Static or dynamic KL penalties? β began as a feedback controller
+## 静态还是动态 KL 惩罚？β 最初是反馈控制器
 
-The first RLHF-on-LMs paper did not fix β. It picked a **target KL** and let a controller chase it:
+首篇将 RLHF 应用于 LM 的论文并未固定 β。它选择一个**目标 KL**，让控制器去追逐它：
 
 $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) - \mathrm{KL}_{\text{target}}}{\mathrm{KL}_{\text{target}}},\, -0.2,\, 0.2 \right), \qquad \beta_{t+1} = \beta_t \left(1 + K_\beta\, e_t\right) $$
 
-- A "log-space proportional controller" (their words), with $K_\beta = 0.1$: KL too high → β grows and pulls the policy back; too low → β shrinks and frees it up. Runs with different seeds land on the *same* KL budget, making experiments comparable.
-- The idea is older than RLHF: PPO's original **adaptive KL penalty** variant doubled or halved β around a target [@schulman2017proximal], and constrained RL later made the controls framing explicit with full **PID controllers** on the penalty multiplier [@stooke2020responsive].
-- Modern practice swung back to a small **static** β -- or, in many RLVR reasoning recipes, no KL term at all.
+- 一个"对数空间比例控制器"（原论文用语），其中 $K_\beta = 0.1$：KL 过高 → β 增大，将策略拉回；过低 → β 缩小，放开约束。不同种子运行的实验最终落到*相同的* KL 预算上，使得实验可比较。
+- 这个想法早于 RLHF：PPO 原始的**自适应 KL 惩罚**变体在目标附近将 β 翻倍或减半 [@schulman2017proximal]，而约束 RL 后来通过惩罚乘数上的完整**PID 控制器**将控制框架明确化 [@stooke2020responsive]。
+- 现代实践又回到了较小的**静态**β——或者在许多 RLVR 推理流程中，完全不用 KL 项。
 
 ---
 
 <!-- cite-right: ziegler2019fine -->
 
-## Static or dynamic KL penalties? β began as a feedback controller
+## 静态还是动态 KL 惩罚？β 最初是反馈控制器
 
-The first RLHF-on-LMs paper did not fix β. It picked a **target KL** and let a controller chase it:
+首篇将 RLHF 应用于 LM 的论文并未固定 β。它选择一个**目标 KL**，让控制器去追逐它：
 
 $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) - \mathrm{KL}_{\text{target}}}{\mathrm{KL}_{\text{target}}},\, -0.2,\, 0.2 \right), \qquad \beta_{t+1} = \beta_t \left(1 + K_\beta\, e_t\right) $$
 
-Read the code: [the original controller](https://github.com/openai/lm-human-preferences/blob/cbfd210bb8b08f6bc5c26878c10984b90f516c66/lm_human_preferences/train_policy.py#L115-L124) (lm-human-preferences, 2019) · [TRL's `AdaptiveKLController`](https://github.com/huggingface/trl/blob/v0.11.4/trl/trainer/utils.py#L54-L69) (v0.11.4 -- deleted in the modern rewrite) · [open-instruct today](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_utils.py#L104-L105): a static `beta = 0.05`, [applied directly in the loss](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_fast.py#L718).
+查看代码实现：[原始控制器](https://github.com/openai/lm-human-preferences/blob/cbfd210bb8b08f6bc5c26878c10984b90f516c66/lm_human_preferences/train_policy.py#L115-L124)（lm-human-preferences, 2019）· [TRL 的 `AdaptiveKLController`](https://github.com/huggingface/trl/blob/v0.11.4/trl/trainer/utils.py#L54-L69)（v0.11.4——在现代化重写中被删除）· [open-instruct 今日版本](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_utils.py#L104-L105)：静态 `beta = 0.05`，[直接应用于损失函数中](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_fast.py#L718)。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: RL optimization is a reverse KL minimization
+## 第二部分：RL 优化是反向 KL 最小化
 
 ---
 
-## The reward penalty and the optimization shape are two different things
+## 奖励惩罚和优化的"形状"是两回事
 
-We started with a **penalty** on the RL setup: a term added to the reward, with a coefficient you tune (or control).
+我们从一个 RL 设置中的**惩罚**开始：一个添加到奖励中的项，带有可调（或可控）的系数。
 
-This next part is about the **shape of RL optimization** and how it relates to KL as well.
-It comes down to "which direction of KL" -- that is set by *where the samples come from*:
+接下来要谈的是 **RL 优化的"形状"**，以及它与 KL 的关系。
+关键在于"哪个方向的 KL"——这由*采样来自哪里*决定：
 
 <!-- step -->
 
-- **SFT** samples from *data (or a separate teacher model)* → minimizing its loss is exactly minimizing a **forward** KL.
-- **RL** samples from *itself* → *with* the penalty on, maximizing the objective is exactly a **reverse-KL minimization** toward a reward-tilted reference. This is only true with the KL penalty in the optimization (does not apply to all RLVR results)... but on-policy sampling still *biases* RL toward KL-minimal solutions. More on that later.
+- **SFT**从*数据（或独立教师模型）*采样 → 最小化其损失等价于最小化**正向** KL。
+- **RL**从*自身*采样 → *带上*惩罚时，最大化目标等价于向奖励倾斜的参考模型做**反向 KL 最小化**。这只在优化中包含 KL 惩罚时成立（并不适用于所有 RLVR 结果）……但同策略采样仍然*偏向* KL 最小的解。详见后文。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
 <!-- cite-right: chen2025retainingdoingroleonpolicy -->
-## RL is reverse KL
+## RL 是反向 KL
 
-Start from the KL-regularized objective (the one our RL trainers optimize):
+从 KL 正则化目标出发（这是我们 RL 训练器优化的目标）：
 
 $$
 \max_\pi\; \mathcal{J}_{\text{RL}}(\theta) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi(\cdot \mid x)}\left[ r(x, y) \right] - \beta\, D_{\mathrm{KL}}\!\left(\pi(\cdot \mid x) \,\|\, \pi_{\text{ref}}(\cdot \mid x)\right)
@@ -245,13 +245,13 @@ $$
 
 <!-- step -->
 
-Dividing by $-\beta$ and normalizing turns the objective into a single KL -- minimized exactly when $\pi$ equals the optimal policy $\pi_\star$. Lecture 6 walked this same path (the starting point of DPO):
+除以 $-\beta$ 并归一化后，目标转化为单个 KL——当 $\pi$ 等于最优策略 $\pi_\star$ 时恰好被最小化。第6讲走过相同的路径（DPO 的起点）：
 
 $$ \pi_\star(y \mid x) = \frac{1}{Z(x)}\, \pi_{\text{ref}}(y \mid x)\, \exp\!\left(\tfrac{1}{\beta}\, r(x,y)\right) $$
 
 <!-- step -->
 
-Read $\pi_\star$ as the **reward-tilted reference** (AI suggested name, I couldn't come up with something better): take $\pi_{\text{ref}}$ and multiply each completion's probability by $\exp(r/\beta)$, then renormalize (that is all $Z(x)$ does). The "tilt" shifts probability mass toward high-reward completions while staying inside the reference's support -- large $\beta$ tilts barely at all, small $\beta$ concentrates on the highest-reward completions.
+将 $\pi_\star$ 读作**奖励倾斜的参考模型**（AI 建议的称呼，我自己没想出更好的名字）：取 $\pi_{\text{ref}}$ 并将每个补全的概率乘以 $\exp(r/\beta)$，然后重新归一化（$Z(x)$ 做的就是这件事）。"倾斜"将概率质量移向高奖励补全，同时保持在参考模型的支撑集内——大的 $\beta$ 倾斜幅度极小，小的 $\beta$ 则集中在最高奖励的补全上。
 
 ---
 
@@ -259,41 +259,41 @@ Read $\pi_\star$ as the **reward-tilted reference** (AI suggested name, I couldn
 <!-- title: center -->
 <!-- class: math-steps -->
 <!-- cite-right: chen2025retainingdoingroleonpolicy -->
-## RL is reverse KL
+## RL 是反向 KL
 
-Now expand the reverse KL to $\pi_\star$, substituting $\log \pi_\star = \log \pi_{\text{ref}} - \log Z(x) + \tfrac{1}{\beta} r(x,y)$:
+现在展开到 $\pi_\star$ 的反向 KL，代入 $\log \pi_\star = \log \pi_{\text{ref}} - \log Z(x) + \tfrac{1}{\beta} r(x,y)$：
 
-$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta(y \mid x) - \log \pi_\star(y \mid x) \right] \qquad \text{definition; samples from } \pi_\theta $$
-
-<!-- step -->
-
-$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta - \log \pi_{\text{ref}} + \log Z(x) - \tfrac{1}{\beta}\, r(x,y) \right] \qquad \text{substitute } \log \pi_\star $$
+$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta(y \mid x) - \log \pi_\star(y \mid x) \right] \qquad \text{定义；来自 } \pi_\theta \text{ 的采样} $$
 
 <!-- step -->
 
-$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} = -\tfrac{1}{\beta}\,\mathbb{E}\left[r(x,y)\right] + D_{\mathrm{KL}}\!\left(\pi_\theta \,\|\, \pi_{\text{ref}}\right) + \underbrace{\log Z(x)}_{\text{constant}} \qquad \text{regroup the terms} $$
+$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta - \log \pi_{\text{ref}} + \log Z(x) - \tfrac{1}{\beta}\, r(x,y) \right] \qquad \text{代入 } \log \pi_\star $$
 
 <!-- step -->
 
-$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} \propto -\tfrac{1}{\beta}\, \mathcal{J}_{\text{RL}}(\theta) \qquad \text{drop the constant} $$
+$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} = -\tfrac{1}{\beta}\,\mathbb{E}\left[r(x,y)\right] + D_{\mathrm{KL}}\!\left(\pi_\theta \,\|\, \pi_{\text{ref}}\right) + \underbrace{\log Z(x)}_{\text{常数}} \qquad \text{重组项} $$
+
+<!-- step -->
+
+$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} \propto -\tfrac{1}{\beta}\, \mathcal{J}_{\text{RL}}(\theta) \qquad \text{丢弃常数} $$
 
 <!-- step -->
 
 $$ \boxed{\ \max_\theta\, \mathcal{J}_{\text{RL}}(\theta) \iff \min_\theta\, D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)\ } $$
 
-With the penalty included, RL doesn't just *use* a reverse KL -- the whole objective **is** one, pointed at the reward-tilted reference policy.
+在包含惩罚的情况下，RL 不仅仅是*使用*反向 KL——整个目标**就是**一个反向 KL，指向奖励倾斜的参考策略。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## SFT is forward KL
+## SFT 是正向 KL
 
-Now the comparison point. SFT trains on a fixed dataset -- the samples come from the *data distribution*, call it $\pi_{\mathcal{D}}$, which makes it the other KL direction:
+接下来是对比。SFT 在固定数据集上训练——采样来自*数据分布*，记作 $\pi_{\mathcal{D}}$，这就对应了另一个 KL 方向：
 
 $$
 \begin{aligned}
-D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_{\mathcal{D}}(y \mid x) - \log \pi_\theta(y \mid x) \right] && \text{definition; samples are the data}
+D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_{\mathcal{D}}(y \mid x) - \log \pi_\theta(y \mid x) \right] && \text{定义；采样即数据}
 \end{aligned}
 $$
 
@@ -301,7 +301,7 @@ $$
 
 $$
 \begin{aligned}
-&= \underbrace{\mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_{\mathcal{D}}(y \mid x) \right]}_{-H(\pi_{\mathcal{D}}),\ \text{constant in } \theta} \; - \; \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\theta(y \mid x) \right] && \text{split the expectation}
+&= \underbrace{\mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_{\mathcal{D}}(y \mid x) \right]}_{-H(\pi_{\mathcal{D}}),\ \theta \text{ 的常数}} \; - \; \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\theta(y \mid x) \right] && \text{拆分期望}
 \end{aligned}
 $$
 
@@ -309,106 +309,106 @@ $$
 
 $$
 \begin{aligned}
-&= -H(\pi_{\mathcal{D}}) + \mathcal{L}_{\text{SFT}}(\theta) \;\propto\; \boxed{\ \mathcal{L}_{\text{SFT}}(\theta)\ } && \text{the NLL term is the SFT loss}
+&= -H(\pi_{\mathcal{D}}) + \mathcal{L}_{\text{SFT}}(\theta) \;\propto\; \boxed{\ \mathcal{L}_{\text{SFT}}(\theta)\ } && \text{NLL 项即为 SFT 损失}
 \end{aligned}
 $$
 
-Same gradients, same minimum: minimizing the SFT loss *is* minimizing forward KL to the data distribution.
+相同的梯度、相同的最小值：最小化 SFT 损失*就是*最小化到数据分布的正向 KL。
 
 ---
 
 <!-- rows: 18/82 -->
-## SFT and RL are the two directions of KL
+## SFT 和 RL 是 KL 的两个方向
 
-This is very reminiscent of Lecture 7 (on-policy distillation), with both directions of KL at play. Post-training math repeats itself:
+这与第7讲（同策略蒸馏）非常相似，两个方向的 KL 都在发挥作用。后训练中的数学形式会重复出现：
 
 ===
 
 <!-- row-columns: 50/50 -->
-**Forward KL** -- supervised fine-tuning (aka standard KL):
+**正向 KL**——监督微调（也称标准 KL）：
 
 $$ D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_{\mathcal{D}}}\!\left[\log \tfrac{\pi_{\mathcal{D}}(y)}{\pi_\theta(y)}\right] $$
 
-Samples come from the **target** (a fixed dataset). 
+采样来自**目标**（一个固定数据集）。
 
-*Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
+*质量覆盖（Mass-covering）*：无论目标在何处有质量而 $\pi_\theta \to 0$，损失都会爆炸——模型必须展开来覆盖一切。
 
 |||
 
 <!-- step -->
 
-**Reverse KL** -- reinforcement learning:
+**反向 KL**——强化学习：
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{y \sim \pi_\theta}\!\left[\log \tfrac{\pi_\theta(y)}{\pi_\star(y)}\right] $$
 
-Samples come from the **policy itself**. 
+采样来自**策略自身**。
 
-*Mode-seeking*: only penalized where it places mass, so it concentrates on high-reward modes.
+*模式搜索（Mode-seeking）*：仅在被放置质量的地方受到惩罚，因此向高奖励模式集中。
 
 ---
 
 <!-- rows: 18/82 -->
-## Recall, Lecture 7: The same two directions in distillation
+## 回顾第7讲：蒸馏中的同样两个方向
 
-The distillation version, verbatim from Lecture 7 -- teacher $\pi_T$ in place of the target. Sampling completions from the student is what puts $\pi_\theta$ on the **left** of the KL:
+蒸馏版本，直接来自第7讲——用教师模型 $\pi_T$ 替代目标。从学生端采样补全使得 $\pi_\theta$ 出现在 KL 的**左侧**：
 
 ===
 
 <!-- row-columns: 50/50 -->
-**Offline KD / SFT** (forward KL) -- the expectation is over the *teacher*, $z \sim \pi_T$ (**off-policy**: a fixed teacher dataset):
+**离线 KD / SFT**（正向 KL）——期望在*教师*上，$z \sim \pi_T$（**离策略**：固定的教师数据集）：
 
 $$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\log\frac{\pi_T(z)}{\pi_\theta(z)}\right] $$
 
-*Mass-covering* -- weighted by **teacher** mass: wherever the teacher has mass and $\pi_\theta \to 0$, the log-ratio blows up, so the student must cover *everything* the teacher might say.
+*质量覆盖*——由**教师**的质量加权：无论教师在何处有质量而 $\pi_\theta \to 0$，对数比率都会爆炸，因此学生必须覆盖教师可能说出的*一切*。
 
 |||
 
 <!-- step -->
 
-**On-policy distillation** (reverse KL) -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
+**同策略蒸馏**（反向 KL）——期望在*学生*上，$z \sim \pi_\theta$（**同策略**：你采样的是你正在训练的模型本身）：
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\left[\log\frac{\pi_\theta(z)}{\pi_T(z)}\right] $$
 
-*Mode-seeking* -- weighted by the **student's** own mass: penalized only where *it* puts probability the teacher dislikes, so it collapses onto the teacher's modes. Lecture 7 deferred *why reverse KL is better* to this lecture.
+*模式搜索*——由**学生自身的**质量加权：仅当*它*在教师不喜欢的地方放置概率时受惩罚，因此坍塌到教师的模式上。第7讲将*为什么反向 KL 更好*推迟到本讲讨论。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Why RL generalizes more
+## 第三部分：为什么 RL 泛化更多
 
 ---
 
 <!-- cite-right: chu2025sft -->
-## "SFT memorizes, RL generalizes"
+## "SFT 会记忆，RL 能泛化"
 
-Controlled study: post-train on one task, evaluate under a rule shift (i.e., small modifications of the problem to test out-of-distribution) [@chu2025sft].
+受控实验：在一个任务上后训练，然后在规则变化下评估（即对问题进行小修改以测试分布外表现）[@chu2025sft]。
 
-- **GeneralPoints**: reach 24 by combining four cards with $+,-,\times,\div$; test with shift to the face-card rule (train: J/Q/K = 10; test: 11/12/13).
-- **V-IRL**: visual navigation; test with shift from absolute (north/east) to relative (left/right) directions.
+- **GeneralPoints**：用四张牌通过 $+,-,\times,\div$ 组合达到 24；测试时改变牌面规则（训练：J/Q/K = 10；测试：11/12/13）。
+- **V-IRL**：视觉导航；测试时从绝对方向（北/东）改为相对方向（左/右）。
 
-On V-IRL, RL improves out-of-distribution accuracy **80.8% → 91.8%**. SFT collapses it **80.8% → 1.3%** -- destroying spatial reasoning the base model already had.
+在 V-IRL 上，RL 将分布外准确率从 **80.8% 提升到 91.8%**。而 SFT 将其摧毁至 **80.8% → 1.3%**——破坏了基础模型已有的空间推理能力。
 
-RL-based post-training carries *implicit* regularization from its on-policy structure alone. SFT is more brittle.
+基于 RL 的后训练仅凭其同策略结构本身就带有*隐式*正则化。SFT 则更加脆弱。
 
-Paper: [arxiv.org/abs/2501.17161](https://arxiv.org/abs/2501.17161)
+论文：[arxiv.org/abs/2501.17161](https://arxiv.org/abs/2501.17161)
 
 ---
 
-## Which direction should forget less?
+## 哪个方向应该遗忘更少？
 
-The naive read: forward KL is *mass-covering*, so SFT should preserve every mode -- while mode-seeking RL should collapse onto one and forget the rest.
+朴素的理解：正向 KL 是*质量覆盖*，因此 SFT 应保留所有模式——而模式搜索的 RL 会坍缩到单一模式并遗忘其余部分。
 
-Is this correct?
+这是正确的吗？
 
 ---
 
 <!-- img-fill -->
 <!-- cite-right: chen2025retainingdoingroleonpolicy -->
-## Which direction should forget less?
+## 哪个方向应该遗忘更少？
 
-That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.org/abs/2510.18874](https://arxiv.org/abs/2510.18874)
+这种直觉假设策略是单模态的——但 LLM 是多模态的。论文：[arxiv.org/abs/2510.18874](https://arxiv.org/abs/2510.18874)
 
 ![](assets/retaining_by_doing_mode_intuition.png)
 
@@ -416,109 +416,107 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 
 <!-- rows: 50/50 -->
 <!-- cite-right: shenfeld2026rls -->
-## RL's razor: Lower KL drift for equivalent performance
+## RL 的剃刀：同等性能下更低的 KL 漂移
 
-> *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."*
+> *"对于一个新任务的众多高奖励解中，同策略方法（如 RL）内在倾向于保持在 KL 散度上更接近原始策略的解。"*
 
-- Forgetting tracks KL drift: $\text{Forgetting} \approx f\!\left(\mathbb{E}_{x \sim \tau}\!\left[D_{\mathrm{KL}}\!\left(\pi_0 \,\|\, \pi\right)\right]\right)$ with $R^2 = 0.96$ -- measured on the **new task's data**. A cheap forgetting predictor.
-- The ablation: **on-policy data fully accounts for the difference** -- negative gradients have no discernible effect. Paper: [arxiv.org/abs/2509.04259](https://arxiv.org/abs/2509.04259)
+- 遗忘与 KL 漂移相关：$\text{Forgetting} \approx f\!\left(\mathbb{E}_{x \sim \tau}\!\left[D_{\mathrm{KL}}\!\left(\pi_0 \,\|\, \pi\right)\right]\right)$，$R^2 = 0.96$——在**新任务的数据上**测量。一种廉价的遗忘预测器。
+- 消融实验：**同策略数据完全解释了差异**——负梯度没有可辨识的影响。论文：[arxiv.org/abs/2509.04259](https://arxiv.org/abs/2509.04259)
 
 ===
 
-![Among policies that solve the new task, RL converges to those closest in KL to the base model -- yielding higher prior-task retention at matched new-task performance. Shenfeld et al., 2026 (CC-BY).](assets/rl_razor_motivation.png)
+![在所有解决新任务的策略中，RL 收敛到与基础模型 KL 最近的策略——在匹配的新任务性能下产生更高的旧任务保留率。Shenfeld 等，2026（CC-BY）。](assets/rl_razor_motivation.png)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: Other tools to control optimization
+## 第四部分：控制优化的其他工具
 
 ---
 
 <!-- animate: bullets -->
-## Other regularization in the wild
+## 其他正则化手段
 
-Most of these are scaffolding: added to stabilize one setup, simplified away in the next model generation.
+大多数属于脚手架：为了稳定某一设置而添加，在下一代模型中被简化掉。
 
-- **Pretraining next-token pred. gradients** (InstructGPT): add $\gamma\, \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}}\left[\log \pi_{\text{RL}}(x)\right]$ to the objective, "to fix the performance regressions on public NLP datasets" [@ouyang2022training].
-- **NLL alongside DPO**: $\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}} + \alpha\, \mathcal{L}_{\text{NLL}}$ keeps the chosen text high-likelihood in absolute terms, not just relatively better [@pang2024iterative].
-- **Margin loss** for reward models (Llama 2): $-\log \sigma\!\left(r_{\theta}(y_c) - r_{\theta}(y_r) - m(y_c, y_r)\right)$, where the margin $m$ comes from annotator rating deltas -- the Likert scales from Lecture 8 [@touvron2023llama].
-
-
+- **预训练下一个 token 预测梯度**（InstructGPT）：在目标中加入 $\gamma\, \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}}\left[\log \pi_{\text{RL}}(x)\right]$，"以修复公共 NLP 数据集上的性能回退" [@ouyang2022training]。
+- **DPO 旁侧的 NLL**：$\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}} + \alpha\, \mathcal{L}_{\text{NLL}}$ 确保所选文本在绝对意义上保持高似然，而非仅仅相对地更好 [@pang2024iterative]。
+- **奖励模型的边际损失**（Llama 2）：$-\log \sigma\!\left(r_{\theta}(y_c) - r_{\theta}(y_r) - m(y_c, y_r)\right)$，其中边际 $m$ 来自标注者评分差值——即第8讲中的 Likert 量表 [@touvron2023llama]。
 
 ---
 
 <!-- animate: bullets -->
-## 2026: The trust region / KL pen. is moving on
+## 2026：信任域 / KL 惩罚正在退场
 
-Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
+工具使用正在改变正则化要承担的任务。在智能体配方中，到参考模型的 KL 惩罚正在消失：
 
-- GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi does not use one either: the K2 → K3 recipes ship with no KL penalty and no reference policy at all [@moonshot2026kimik3].
-- In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
-- TMax paper summarizes the change in numerical issues we are battling: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities increase past 10 assistant turns and were absent below 5 [@ivison2026tmax].)
+- GLM-5 直接移除了它——"以加速 RL 改进" [@glm5team2026glm5]。Kimi 也不使用：K2 → K3 配方在没有 KL 惩罚的情况下发布，且完全没有参考策略 [@moonshot2026kimik3]。
+- 在我们的 TMax 终端智能体配方中，我们测量了权衡：较小的 KL 减少了崩溃的严重程度但降低了奖励，因此最终配方为 $\beta = 0$ [@ivison2026tmax]。
+- TMax 论文总结了我们要应对的数值问题的变化：20+ 回合的轨迹、异步/部分 rollout 以及训练与推理引擎的不匹配使得*从采样器*的漂移成为主要失败模式，而非从初始状态的漂移。（在 TMax 中，不稳定性在超过 10 个助手回合后增加，低于 5 个回合时则不存在 [@ivison2026tmax]。）
 
 ---
 
 <!-- rows: 22/78 -->
 <!-- cite-right: qi2026dppo -->
-## A trust region on the sampling distribution
+## 对采样分布的信任域
 
-**DPPO** (Divergence Proximal Policy Optimization) masks tokens by a *directly estimated* divergence between the rollout and training policies (binary Total Variation), instead of PPO's per-token ratio clip [@qi2026dppo].
+**DPPO**（Divergence Proximal Policy Optimization，散度近端策略优化）通过*直接估计* rollout 和训练策略之间的散度（二元总变差）来掩码 token，而非 PPO 的 per-token 比率裁剪 [@qi2026dppo]。
 
 ===
 
 <!-- row-columns: 55/45 -->
-The per-token ratio is a noisy one-sample estimate of that divergence. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
+per-token 比率是该散度的有噪单样本估计。GLM 的 IcePop [@glm5team2026glm5] 和 Kimi 的对数比率区间 [@moonshot2026kimik3] 做着同样的工作：掩码梯度，而非裁剪。
 
-This is where the eye of regularization is today -- algorithmic updates rather than KL penalties.
+这就是正则化目前的重心所在——算法更新，而非 KL 惩罚。
 
 |||
 
-![The motivation, from the DPPO paper: for the same rollout tokens, per-token probability ratios (left) explode at low probabilities while the directly-estimated TV divergence (right) stays stable. Qi et al., 2026.](assets/dppo-ratio-vs-tv.png)
+![动机，来自 DPPO 论文：对相同的 rollout token，per-token 概率比率（左）在低概率处爆炸，而直接估计的 TV 散度（右）保持稳定。Qi 等，2026。](assets/dppo-ratio-vs-tv.png)
 
 ---
 
-## Takeaways
+## 要点回顾
 
-- The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. 
-- The KL-regularized RL objective is a reverse KL minimization -- mode-seeking toward a reward-tilted reference policy -- while SFT is the forward direction, mass-covering toward the data.
-- Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. 
+- KL 惩罚是显式控制：一个**反向 KL**，在策略自身的采样上估计。
+- KL 正则化的 RL 目标是反向 KL 最小化——向奖励倾斜的参考模型进行模式搜索——而 SFT 是正向方向，向数据质量覆盖。
+- 即使没有惩罚，同策略 RL 也自带隐式正则化——SFT 记忆，RL 泛化。
 
-Verifiable rewards are much less prone to overoptimization than reward models! Hence, regularization is changing and the KL penalty is playing a smaller role.
+可验证奖励比奖励模型更不易过优化！因此，正则化正在发生变化，KL 惩罚正扮演越来越小的角色。
 
 ---
 
 <!-- columns: 50/50 -->
-## The course so far
+## 课程进度回顾
 
-0. Prerequisites review
-1. Overview *(ch. 1-3)*
-2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & math *(ch. 6)*
-4. RL: Implementation & practice *(ch. 6)*
-5. The rise of reasoning models *(ch. 7)*
-6. Direct preference optimization *(ch. 8)*
+0. 先修知识回顾
+1. 概述 *(第1-3章)*
+2. IFT、奖励模型 & 拒绝采样 *(第4、5、9章)*
+3. RL：动机与数学 *(第6章)*
+4. RL：实现与实践 *(第6章)*
+5. 推理模型的崛起 *(第7章)*
+6. 直接偏好优化 *(第8章)*
 
 |||
 
-7. Synthetic data & modern post-training *(ch. 12)*
-8. Preferences & preference data *(ch. 10-11)*
-9. Over-optimization & RLHF's bad reputation *(ch. 14, app. B)*
-10. **Regularization** *(ch. 15)* -- *today*
-11. **Evaluation** *(ch. 16)* -- *next (tentative)*
-12. **Basics of tool-use** *(ch. 13)* -- hopefully?
+7. 合成数据与现代后训练 *(第12章)*
+8. 偏好与偏好数据 *(第10-11章)*
+9. 过优化与 RLHF 的恶名 *(第14章、附录B)*
+10. **正则化** *(第15章)*——*今天*
+11. **评估** *(第16章)*——*下一次（暂定）*
+12. **工具使用基础** *(第13章)*——希望吧？
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions / discussion are encouraged!
+欢迎提问和讨论！
 
-If you have a second to subscribe and/or share my content with a friend, it helps massively on getting the word out.
+如果你愿意花几秒钟订阅或把我的内容分享给朋友，对传播帮助巨大。
 
-Contact: nathan@natolambert.com
+联系：nathan@natolambert.com
 
 Newsletter: [interconnects.ai](https://www.interconnects.ai/)
 

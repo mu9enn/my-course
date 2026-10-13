@@ -1,5 +1,5 @@
 ---
-title: "Lecture 8: Preferences and Preference Data"
+title: "第 8 讲：偏好与偏好数据"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -42,7 +42,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 8: On "Preferences" and Preference Data
+# 第 8 讲：谈"偏好"与偏好数据
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -50,29 +50,29 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Post-training course. Chapters 10 & 11.</p>
+<p class="colloquium-title-note">后训练课程。第 10 章与第 11 章。</p>
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## How do we hillclimb on capabilities we don't really know how to score?
+## 当我们无法真正衡量某种能力时，该如何对其进行梯度上升（hillclimb）？
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Is it easier to write a good demonstration or decide between a good and a bad example?
+## 写一段高质量的示范更难，还是在好例子与坏例子之间做选择更难？
 
 ---
 
 <!-- class: poem-ab -->
 <!-- rows: 22/78 -->
-## Which poem is better? Which model?
+## 哪首诗更好？哪个模型生成的？
 
-Same prompt to two frontier models (Claude 3.7 Sonnet and ChatGPT with GPT-4o, Feb 2025): *"Write me a short poem about an optimistic goldfish."* Which is better -- and which came from which?
+对两个前沿模型（Claude 3.7 Sonnet 和 ChatGPT（GPT-4o），2025 年 2 月）使用相同的提示词：*"写一首关于一条乐观金鱼的短诗。"* 哪一首更好？哪一个来自哪个模型？
 
 ===
 
@@ -120,21 +120,20 @@ messages:
 
 ---
 
-## When preference replaces correctness
+## 当"偏好"取代"正确"
 
-Most of post-training so far (SFT, RLVR) has had a notion of *correct* -- a math answer, a passing test, a verifiable reward. 
-Preferences are what we reach for when there is **no right answer**.
+到目前为止，后训练的大部分内容（SFT、RLVR）都包含"正确"的概念——数学答案、通过测试、可验证的奖励。偏好则是我们在**没有正确答案**时采用的手段。
 
-E.g. Which poem is better? Which explanation is clearer? Which tone is kinder?
+例如：哪首诗更好？哪个解释更清晰？哪种语气更友善？
 
-*Preferences came to be the core of RLHF, as the alignment community looked to optimize for complicated objectives like "human values."*
+*随着对齐社区寻求优化如"人类价值观"这样复杂的目标，偏好（preferences）成为了 RLHF 的核心。*
 
 ---
 
 <!-- columns: 40/60 -->
-## This lecture
+## 本节课
 
-We trace where "preferences" came from, argue why it's an **imperfect problem formulation**, then dig into **preference data** (chapter 11) used for today's models.
+我们追溯"偏好"从何而来，论证为什么它是一种**不完美的建模方式**，然后深入探讨用于当今模型的**偏好数据**（第 11 章）。
 
 |||
 
@@ -142,40 +141,40 @@ We trace where "preferences" came from, argue why it's an **imperfect problem fo
 title: The plan
 tone: accent
 content: |
-  1. A short **history** of preferences -- and why it's an **imperfect** formulation (chapter 10)
-  2. **Preference data** -- the trade-offs in practice (chapter 11)
-  3. **Open questions** (some shared with synthetic data)
+  1. 偏好的简短**历史**——以及为什么它是不完美的表述方式（第 10 章）
+  2. **偏好数据**——实际中的权衡取舍（第 11 章）
+  3. **开放问题**（其中一些与合成数据共享）
 ```
 
 ---
 
 <!-- columns: 42/58 -->
 <!-- cite-right: lambert2023entangled -->
-## The paper behind the first half of this lecture
+## 本节前半部分所依据的论文
 
 ![](assets/history-risks-rlhf.png)
 
 |||
 
-*The History and Risks of Reinforcement Learning and Human Feedback* (2023) [@lambert2023entangled] traces RLHF back through the fields it borrows from -- and asks what breaks in the borrowing.
+*《强化学习与人类反馈的历史与风险》*（2023）[@lambert2023entangled] 追溯了 RLHF 从各个借用其思想的领域的发展历程——并追问在"借用"过程中哪些地方会出问题。
 
-- **History:** RLHF is the meeting point of philosophy, economics, optimal control, and RL -- each with its own idea of what a "preference" is.
-- **Risk:** it quietly treats **costs, rewards, and preferences** as interchangeable when they are not.
-- Idea: we inherit RL's optimizers/setup without inheriting its guarantees for convergence.
+- **历史：** RLHF 是哲学、经济学、最优控制和强化学习（RL）的交汇点——每个领域对"偏好"都有不同的理解。
+- **风险：** 它在暗中把**成本、奖励和偏好**视为可互换的，而实际上它们并非如此。
+- 核心想法：我们沿用了 RL 的优化器和设定，却没有继承其收敛性保证。
 
-Paper details a series of assumptions and presumptions in the literature that RLHF / post-training are derived from.
+论文详细列举了 RLHF / 后训练所依赖的一系列文献假设和预设。
 
 ---
 
 <!-- columns: 58/42 -->
-## Aside: The "objective mismatch" lens
+## 旁白：从"目标不匹配"的视角思考
 
-A recurring way to think about post-training: we optimize a **proxy** objective that isn't the one we actually care about.
+一种贯穿后训练全程的思维方式是：我们优化的是一个**代理（proxy）**目标，而非我们真正关心的目标。
 
-- **Model-based RL:** the dynamics model is trained for prediction accuracy, not control performance -- so a "better" model can yield a *worse* policy [@lambert2020objective].
-- **RLHF:** the reward model is trained for preference-classification accuracy, not downstream policy quality -- the same mismatch, one level up [@lambert2023alignment].
+- **基于模型的 RL：** 动态模型是为预测准确性而训练的，而不是为了控制性能——因此"更好"的模型反而可能产生*更差*的策略 [@lambert2020objective]。
+- **RLHF：** 奖励模型是为偏好分类准确性而训练的，而非下游策略质量——同样的不匹配，只是高了一层 [@lambert2023alignment]。
 
-Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking what you are *really* optimizing.
+奖励模型准确性（RewardBench 类指标）是对代理的代理进行评估！不断追问你*真正*在优化的是什么。
 
 |||
 
@@ -186,7 +185,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: A short history of optimizing or measuring preferences
+## 第 1 部分：优化或测量偏好的简短历史
 
 ---
 
@@ -194,7 +193,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- img-align: center -->
 <!-- cite-right: lambert2023entangled -->
 <!-- notes: The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
-## Many fields converged into "RLHF"
+## 多个领域最终汇聚到了"RLHF"
 
 ![](assets/rlhf-tree.png)
 
@@ -202,94 +201,93 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 
 <!-- columns: 62/38 -->
 <!-- valign: top -->
-## Utility, from logic to a number
+## 效用：从逻辑到数字
 
-The idea that choices can be *scored* is old. The common thread: the idea that human wants can be reduced to a single measure:
+"选择可以被评分"这个想法由来已久。共同的主线是：人类的愿望可以归结为单一度量。
 
-- **Port Royal Logic** (1662): decision quality = outcome weighted by its probability [@arnauld1861port]
-- **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated, but common scale [@bentham1823hedonic]
-- **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together as the way that individuals make probabilistic decisions [@ramsey2016truth]
+- **波尔罗亚尔逻辑**（Port Royal Logic，1662）：决策质量 = 结果乘以其发生概率 [@arnauld1861port]
+- **边沁的幸福计算**（19 世纪初）：用一种复杂但统一的尺度权衡人生的方方面面 [@bentham1823hedonic]
+- **拉姆齐**，*《真理与概率》*（1931）：首次同时量化偏好和信念，作为个体进行概率决策的方式 [@ramsey2016truth]
 
 
-> *"To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen."* -- The Port Royal Logic, 1662
+> *"要判断一个人必须做什么才能获得好处或避免恶果，不仅需要考量好坏本身，还需要考虑其发生或不发生的概率。"* -- 《波尔罗亚尔逻辑》，1662
 
 |||
 
-![*La Logique, ou l'Art de Penser* (the Port Royal Logic), 1662](assets/port-royal-logic.jpg)
+![*《逻辑学，或思维的艺术》*（即波尔罗亚尔逻辑），1662](assets/port-royal-logic.jpg)
 
 ---
 
 <!-- columns: 64/36 -->
-## Von Neumann-Morgenstern utility theorem (1947)
+## 冯·诺依曼-摩根斯坦效用定理（1947）
 
-**Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
+**冯·诺依曼与摩根斯坦**（1947）：如果你的偏好满足一些公理（完备性、传递性、连续性、独立性），那么它们可以由一个单一的**效用函数**来表示，理性选择 = 最大化**期望效用** [@von1947theory]。
 
-This is the result RLHF leans on to justify fitting a scalar reward. 
+这正是 RLHF 用来为拟合标量奖励提供理论支撑的结果。
 
 <!-- step -->
 
-In RLHF, essentially none of those *ifs* hold:
+在 RLHF 中，上述那些"如果"几乎没有一个成立：
 
-- preferences **drift** during and after labeling
-- they're **context- and framing-dependent**
-- at high complexity they can be **intransitive**
-- and they're **multidimensional**, squashed into one number
+- 偏好会在标注过程中及之后**漂移（drift）**
+- 它们是**依赖于语境和框架的（context- and framing-dependent）**
+- 在高复杂度下，它们可能**不具备传递性（intransitive）**
+- 并且它们是**多维的**，却被压缩成一个数字
 
 |||
 
-![John von Neumann (Los Alamos badge photo, public domain)](assets/von-neumann.jpg)
+![约翰·冯·诺依曼（洛斯阿拉莫斯证件照，公有领域）](assets/von-neumann.jpg)
 
 ---
 
 
-## Bradley-Terry (1952): Comparisons to scores
+## 布拉德利-特里模型（1952）：从比较到分数
 
-The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry] (see Chapter 5 / Lecture 2):
+将**比较**转换为**分数**的统计模型——成为奖励建模的基石 [@BradleyTerry]（见第 5 章 / 第 2 讲）：
 
 $$ P(y_w \succ y_l \mid x) = \sigma\!\big(r(x,y_w) - r(x,y_l)\big) = \frac{e^{\,r(x,y_w)}}{e^{\,r(x,y_w)} + e^{\,r(x,y_l)}} $$
 
-Give it pairwise human comparisons; out comes a scalar reward. 
-This is *why* RLHF needs **preference data** (and where the imperfections enter).
+输入成对的人类比较；输出一个标量奖励。这就是为什么 RLHF 需要**偏好数据**，以及瑕疵从哪里开始进入。
 
 ---
 
-## One scalar preference, many features
+## 一个标量偏好，诸多特征
 
-A reward model compresses, into a single number, all of:
+一个奖励模型将以下所有内容压缩为一个数字：
 
-- helpfulness, honesty, harmlessness, tone, format, length, taste...
-- the annotator's psychology, culture, and the interface they used
-- whatever the *framing* of the comparison nudged them toward
+- 有用性、诚实性、无害性、语气、格式、长度、品味……
+- 标注者的心理、文化背景和所使用的界面
+- 比较的**框架**引导他们注意到的任何事物
 
-We then optimize hard against that number, which is impossible to ever do perfectly! There will always be trade-offs.
+然后我们用力地优化这个数字——而这是永远不可能完美做到的！总是存在权衡。
 
 ---
 
 <!-- columns: 64/36 -->
-## Where utility theory breaks down
+## 效用理论的失效之处
 
-Almost as soon as utility was formalized, social choice (the field studying how preferences should be aggregated) and economics found its limits:
+几乎在效用理论形式化的同时，社会选择（研究应如何聚合偏好的领域）和经济学就发现了它的局限：
 
-- **Arrow's impossibility theorem** (1950): no voting rule aggregates individual preferences into a collective one while satisfying a few basic fairness criteria [@arrow1950difficulty]
-- **Sen**, *Behaviour, Choice and Values* (1973): choice ≠ preference; revealed-preference theory is too thin [@sen1973behaviour]
-- **Hirschman**, *Against Parsimony* (1984): people have *preferences over their preferences* -- so preferences may be unmeasurable [@hirschman1984against]
+- **阿罗不可能性定理**（1950）：没有任何投票规则能够在满足一些基本公平标准的同时，将个体偏好聚合为集体偏好 [@arrow1950difficulty]
+- **阿马蒂亚·森**，《行为、选择与价值观》（1973）：选择 ≠ 偏好；显示性偏好理论过于单薄 [@sen1973behaviour]
+- **赫希曼**，《反对简约》（1984）：人们对他们的偏好本身也有偏好——因此偏好可能不可测量 [@hirschman1984against]
 
 |||
 
-![Kenneth Arrow (CC BY 3.0, via Wikimedia Commons)](assets/kenneth-arrow.jpg)
+![肯尼斯·阿罗（CC BY 3.0，通过维基共享资源）](assets/kenneth-arrow.jpg)
 
 ---
 
 <!-- columns: 58/42 -->
 <!-- cite-right: conitzer2024social -->
-## Aside: Social choice for AI alignment
+## 旁白：社会选择理论之于 AI 对齐
 
-If aggregating preferences is the hard part, **social choice theory** is the field that studies it -- and a natural lens for alignment.
+如果聚合偏好是关键难点，那么**社会选择理论**就是研究它的领域——也是对齐的自然透镜。
 
-*Social Choice Should Guide AI Alignment in Dealing with Diverse Human Feedback*.
-- A 2024 position paper I was part of argues social choice should guide how we aggregate diverse human feedback [@conitzer2024social]. 
-- Whose preferences count? How do you combine disagreeing labelers? ...
-- (One of the rabbit holes I used to spend more time in.)
+*《社会选择应指导 AI 对齐在处理多样化人类反馈时的方向》*。
+- 一篇 2024 年的立场论文（我曾参与撰写）认为，社会选择理论应该指导我们如何聚合多样化的人类反馈 [@conitzer2024social]。
+- 谁的偏好应该被计入？如何将不同标注者的分歧合并？……
+- （这也是我过去花了很多时间深入的一个"兔子洞"。）
 
 |||
 
@@ -298,89 +296,89 @@ If aggregating preferences is the hard part, **social choice theory** is the fie
 ---
 
 <!-- columns: 64/36 -->
-## Preferences are not stable objects over time and context
+## 偏好不是随时间和语境稳定的对象
 
-From psychology and behavioral economics:
+来自心理学和行为经济学：
 
-- Preferences **drift** -- they change with time, mood, and experience [@pettigrew2019choosing]
-- Choices are shaped by situation and framing, not just an inner ranking [@gilbert2022choices]
+- 偏好会**漂移**——随时间、情绪和经历而变化 [@pettigrew2019choosing]
+- 选择由情境和框架塑造，而不仅仅由内在排序决定 [@gilbert2022choices]
 
-A problem for "collect a label, train on it later repeatedly."
+这正是"先收集标签，之后反复用于训练"这一做法的问题所在。
 
 |||
 
-![The prospect-theory value function: the *same* outcome is valued differently depending on the reference point -- value depends on framing, not a fixed ranking (CC BY-SA 3.0, via Wikimedia Commons).](assets/prospect-value-function.png)
+![前景理论价值函数：*相同的*结果在不同的参考点下价值不同——价值取决于框架，而非固定排序（CC BY-SA 3.0，通过维基共享资源）](assets/prospect-value-function.png)
 
 ---
 
 <!-- columns: 62/38 -->
-## The other root: Optimal control & RL
+## 另一个来源：最优控制与 RL
 
-In parallel, a machinery for *optimizing* a reward matured:
+与此同时，用于*优化*奖励的 machinery 也在发展：
 
-- **Bellman** (1957): MDPs and dynamic programming [@bellman1957markovian] → origins of "optimal" control / control theory
-- **Sutton** (1988): temporal-difference learning for credit assignment [@sutton1988learning] (instead of learning from a lot of past data)
-- **Watkins** (1992): Q-learning [@watkins1992q] (learning value)
-- **DQN** (2013): deep RL at scale [@mnih2013playing]; **AlphaGo / AlphaZero** (2017): mastery from self-play [@silver2017mastering]. "RL works"
+- **贝尔曼**（1957）：马尔可夫决策过程（MDPs）和动态规划 [@bellman1957markovian] → "最优"控制的起源 / 控制理论
+- **萨顿**（1988）：时序差分学习用于信用分配（而非从大量历史数据中学习）[@sutton1988learning]
+- **沃特金斯**（1992）：Q-learning [@watkins1992q]（学习价值）
+- **DQN**（2013）：深度 RL 规模化 [@mnih2013playing]；**AlphaGo / AlphaZero**（2017）：从自我对弈中获得精通 [@silver2017mastering]。"RL 有效了"
 
-Note: these guarantees assume a **single, closed-form reward**!
+注意：这些保证都假设存在一个**单一的、闭式（closed-form）奖励**！
 
 |||
 
-![Lee Sedol vs AlphaGo, Game 4 (2016) (CC BY-SA 4.0, via Wikimedia Commons)](assets/alphago-game4.jpg)
+![李赛龙 vs AlphaGo，第 4 局（2016）（CC BY-SA 4.0，通过维基共享资源）](assets/alphago-game4.jpg)
 
 ---
 
-## Costs ≠ rewards ≠ preferences
+## 成本 ≠ 奖励 ≠ 偏好
 
-These three are **ontologically different**, and the emergence of modern post-training treated them as interchangeable [@lambert2023entangled].
+这三者在**本体论上是不同的**，而现代后训练的兴起把它们当作可互换的 [@lambert2023entangled]。
 
-- **Costs** come from control: physical, measurable, given, and often have clear optimality/bounds.
-- **Rewards** are from psychology and an RL convenience: a scalar signal to maximize.
-- **Preferences** are human, relational, and unstable -- *not* obviously a scalar at all.
+- **成本**来自控制理论：物理的、可测量的、给定的，并且通常有明确的最优性 / 边界。
+- **奖励**来自心理学和 RL 的便利：一个要最大化的标量信号。
+- **偏好**是人类特有的、关系性的、不稳定的——本身未必是一个标量。
 
-Reducing preferences to rewards made the optimization format tractable, but is the root cause of many of the unsolvable "biases" in RLHF and preference data.
-
----
-
-## Costs ≠ rewards ≠ preferences
-
-These three are **ontologically different**, and the emergence of modern post-training treated them as interchangeable [@lambert2023entangled].
-Deep RL's theory lives in MDPs with a fixed, closed-form reward (e.g. games, control).
-
-- A learned reward model is a *moving, noisy proxy*, not a ground-truth reward.
-- Inverse RL -- learning a reward *from behavior* -- is conceptually close but oddly absent from RLHF practice [@ng2000algorithms].
-- So we inherit RL's optimizers without inheriting its guarantees.
-
+将偏好归约为奖励使得优化格式变得可行，但这也是 RLHF 和偏好数据中许多无法解决的"偏差"的根本原因。
 
 ---
 
-## On what "reward" is
+## 成本 ≠ 奖励 ≠ 偏好
 
-> *Rewards in an RL system correspond to primary rewards, i.e., rewards that in animals have been hard-wired by the evolutionary process due to their relevance to reproductive success. … Further, RL systems that form value functions, … effectively create conditioned or secondary reward processes whereby predictors of primary rewards act as rewards themselves… The result is that the local landscape of a value function gives direction to the system’s preferred behavior: decisions are made to cause transitions to higher-valued states. A close parallel can be drawn between the gradient of a value function and incentive motivation.* 
+这三者在**本体论上是不同的**，而现代后训练的兴起把它们当作可互换的 [@lambert2023entangled]。
+深度 RL 的理论生活在 MDPs 中带有固定的、闭式的奖励（例如游戏、控制）。
 
--- Singh et al., 2009 [@singh2009rewards]
+- 一个经过训练的奖励模型是一个*移动的、有噪声的代理*，而非真理级奖励。
+- 逆 RL —— 从行为中学习奖励 —— 在概念上很接近，但令人意外地缺席于 RLHF 的实践 [@ng2000algorithms]。
+- 因此我们沿用了 RL 的优化器，却没有继承它的保证。
+
+
+---
+
+## 关于"奖励"的本质
+
+> *RL 系统中的奖励对应于初级奖励，即在动物中由于与繁殖成功相关而由进化过程硬编码的奖励。……此外，形成价值函数的 RL 系统，……有效地创造了条件化或次级奖励过程，其中初级奖励的预测因子本身也作为奖励……因此，价值函数的局部景观为系统的偏好行为提供方向：决策是为了引起向更高价值状态的转移。价值函数的梯度与激励动机之间可以建立密切的类比。*
+>
+> —— Singh 等人，2009 [@singh2009rewards]
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Preference data -- the trade-offs in practice
+## 第 2 部分：偏好数据——实践中的权衡
 
 ---
 
-## Where we started -- why collect preference data
+## 我们最初的出发点——为什么要收集偏好数据
 
-It is far easier to **judge** than to **generate** -- humans (and models) can reliably say which of two answers is better long before they can write the better one. There are many cases where models can't at all generate a good answer, but can pick up on cues for which is better. 
+**判断**远比**生成**容易得多——人类（以及模型）可以在自己还不能写出更好回答之前就可靠地指出两个回答中哪个更好。在许多情况下，模型根本无法生成好的回答，但可以捕捉到哪个更好的线索。
 
-But collecting (and processing) any data like this well is the most **opaque** part of the modern post-training pipeline.
+但高质量地收集（和处理）任何此类数据，都是现代后训练管线中**最不透明**的部分。
 
-Very few open models ship fully open human preference data *with* the methodology used to collect it -- the best examples are NVIDIA's **HelpSteer** datasets (behind the open Nemotron models) [@wang2024helpsteer2; @wang2024helpsteer2p; @wang2025helpsteer3].
+很少有开源模型会连同其收集方法一起完全公开人类偏好数据——最好的例子是 NVIDIA 的 **HelpSteer** 数据集（在开源 Nemotron 模型背后）[@wang2024helpsteer2; @wang2024helpsteer2p; @wang2025helpsteer3]。
 
 ---
 
-## Example data collection interfaces
+## 示例数据收集界面
 
 
 ---
@@ -388,53 +386,53 @@ Very few open models ship fully open human preference data *with* the methodolog
 <!-- img-align: center -->
 <!-- cite-right: bai2022training -->
 <!-- img-fill -->
-## Interface 1: Research data collection (Anthropic's early Claude models)
+## 界面 1：研究数据收集（Anthropic 早期 Claude 模型）
 
-![An early preference-collection interface from Anthropic's research: review the full conversation, then rate. Bai et al., 2022 (CC-BY).](assets/anthropic-interface.png)
+![Anthropic 研究中的一张早期偏好收集界面：审阅完整对话，然后评分。Bai 等人，2022（CC-BY）](assets/anthropic-interface.png)
 
 ---
 
 <!-- img-align: center -->
 <!-- img-fill -->
-## Interface 2: A/B testing in production (ChatGPT user data)
+## 界面 2：生产环境中的 A/B 测试（ChatGPT 用户数据）
 
-![Two completions from different ChatGPT beta models, served side by side. The answers are very close -- a reminder that preference data is noisy and hard to get exactly right.](assets/chatgpt-ab-test.jpeg)
+![来自不同 ChatGPT beta 模型的两个补全，并排呈现。这两个回答非常接近——提醒我们偏好数据是有噪声的、难以精确获取的。](assets/chatgpt-ab-test.jpeg)
 
 ---
 
 <!-- img-align: center -->
 <!-- cite-right: chiang2024chatbot -->
 <!-- img-fill -->
-## Interface 3: Pairwise with ties (Chatbot Arena public evaluation)
+## 界面 3：带平局选项的成对比较（Chatbot Arena 公开评估）
 
-![An early version of the Chatbot Arena interface: pairwise comparison with a tie option.](assets/chatbotarena.png)
-
----
-
-<!-- img-align: center -->
-<!-- img-fill -->
-## Interface 4: A single bit (Ai2 demos; in many other products)
-
-![Up/down voting from Ai2's research demos -- the minimal directional signal.](assets/up-down-vote.png)
+![Chatbot Arena 界面的早期版本：带平局选项的成对比较。](assets/chatbotarena.png)
 
 ---
 
 <!-- img-align: center -->
 <!-- img-fill -->
-## Interface 5: Pick-from-many (default in image models)
+## 界面 4：单个比特（Ai2 演示；也在许多其他产品中）
 
-![Selecting among generated images -- preference data outside of text. Every interface shapes the preference it captures.](assets/midj.jpeg)
+![来自 Ai2 研究演示的投票（赞成/反对）——最小方向信号。](assets/up-down-vote.png)
+
+---
+
+<!-- img-align: center -->
+<!-- img-fill -->
+## 界面 5：多选一（图像模型中的默认方式）
+
+![从生成的图像中选择偏好数据——超出文本的范围。每个界面都会塑造它所捕获的偏好。](assets/midj.jpeg)
 
 ---
 
 <!-- rows: 42/58 -->
-## Rankings vs. ratings
+## 排名 vs 评分
 
-**Ratings:** a score on one completion in isolation (e.g. 1-5). Good as metadata.
+**评分（Ratings）：** 对一个补全的孤立评分（例如 1-5）。适合作为元数据。
 
-**Rankings:** relative comparisons, often on a Likert scale -- early Claude used an 8-point scale [@bai2022training]; UltraFeedback pairs high- vs low-rated completions [@cui2023ultrafeedback].
+**排名（Rankings）：** 相对比较，通常在李克特量表（Likert scale）上——早期 Claude 使用了 8 点量表 [@bai2022training]；UltraFeedback 将高评分和低评分的补全配对 [@cui2023ultrafeedback]。
 
-In practice almost everyone trains on pairwise rankings, binarized to chosen/rejected for the Bradley-Terry loss (lecture 2 / chapter 5) -- and keeps ratings on the side.
+在实践中，几乎所有人都在成对排名上训练，将其二值化为 Bradley-Terry 损失（第 2 讲 / 第 5 章）中的 chosen/rejected——同时在旁边保留评分。
 
 ===
 
@@ -472,39 +470,39 @@ messages:
 
 ---
 
-## What exactly is a "Likert scale"?
+## "李克特量表"到底是什么？
 
-A **Likert scale** records a preference as an *ordered, graded* judgment -- not just which answer wins, but **by how much**, on a symmetric scale with an optional neutral middle. (After psychologist Rensis Likert, 1932 -- the same "strongly agree ... strongly disagree" survey tool, repurposed for pairwise preference.)
+**李克特量表**以*有序的、分级的*判断来记录偏好——不仅回答哪个答案胜出，而且**赢了多少**，在对称量表上带有可选的中性中间值。（以心理学家伦西斯·李克特 Rensis Likert 命名，1932 年——同一种"非常同意…非常不同意"调查工具，被用于成对偏好。）
 
-**5-point with a tie** (LMArena-style): labelers can say "about the same."
+**含平局的 5 点量表**（LMArena 风格）：标注者可以说"差不多一样"。
 
 | 1 | 2 | 3 | 4 | 5 |
 |:---:|:---:|:---:|:---:|:---:|
-| **A much better** | A better | *tie* | B better | **B much better** |
+| **A 好得多** | A 更好 | *平局* | B 更好 | **B 好得多** |
 
-**8-point without a tie** (early Claude [@bai2022training]): forces a direction.
+**不含平局的 8 点量表**（早期 Claude [@bai2022training]）：强制选择方向。
 
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **A>>>B** | | | A>B | B>A | | | **B>>>A** |
 
-How many points, and whether ties are allowed, are both design choices that change the data you collect.
+多少个点数、是否允许平局，都是会改变你所收集数据的设计选择。
 
 ---
 
 <!-- class: poem-ab -->
 <!-- rows: 62/38 -->
-## Structured (synthetic) preference data
+## 结构化（合成）偏好数据
 
-In domains with structure, you can build preference pairs automatically:
+在有结构感的领域，你可以自动构建偏好对：
 
-- **Math**: a correct solution ≻ an incorrect one.
-- **Instruction following (IFEval-style)**: prompt twice -- with the constraint and without -- and prefer the one that obeys it. The constraint is checked with code, so the label is free.
+- **数学**：一个正确解答 ≻ 一个错误解答。
+- **指令遵循（IFEval 风格）**：提示词生成两次——带约束和不带约束——偏好服从约束的那个。约束用代码检查，所以标注是免费的。
 
-In these narrow domains, structured pairs can beat quality-judged preferences [@lambert2024t]. 
-This is a simple form of *synthetic* preference data -- chapter 12 / lecture 7.
+在这些狭窄的领域，结构化对可以胜过靠质量判断的偏好 [@lambert2024t]。
+这是一种简单的**合成**偏好数据形式——第 12 章 / 第 7 讲。
 
-Example prompt: *"Describe the ocean. **Respond in all lowercase.**"*
+示例提示词：*"描述海洋。**全部使用小写字母回答。**"*
 
 ===
 
@@ -532,63 +530,63 @@ messages:
 
 ---
 
-## Beyond pairwise preferences
+## 超越成对偏好
 
-The pairwise comparison is a convention, not a law. Alternatives:
+成对比较是一种惯例，而非定律。替代方案：
 
-- **Directional / single-bit** labels (thumbs up/down), trained with Kahneman-Tversky Optimization (KTO) [@ethayarajh2024kto].
-- **Token-level / fine-grained** feedback [@wu2024fine]: Label specific tokens, or token-spans as good or bad.
-- **Natural-language** feedback -- written critiques instead of a label [@chen2024learning].
+- **方向性 / 单比特** 标签（大拇指向上/向下），使用 Kahneman-Tversky 优化（KTO）训练 [@ethayarajh2024kto]。
+- **Token 级 / 细粒度** 反馈 [@wu2024fine]：标注特定的 token 或 token 序列为好或坏。
+- **自然语言** 反馈——写的不是标签，而是评论 [@chen2024learning]。
 
-Richer signal, harder collection (and not often used extensively in practice).
+信号更丰富，收集也更难（实践中并不常被广泛使用）。
 
 ---
 
 <!-- columns: 56/44 -->
-## Sourcing & contracts
+## 来源与合同
 
-![A typical multi-batch human-data contract (~$500K): an early ramp where goals and methodology narrow, with much of the first batches thrown out. Larger contracts vary substantially.](assets/pref-data-timeline.png)
+![一个典型的多批次人类数据合同（约 $500K）：早期爬坡阶段目标和逐步聚焦，第一批中有大量数据被丢弃。大合同差异很大。](assets/pref-data-timeline.png)
 
 |||
 
-Access is relationship-driven: vendors are supply-limited and favor big budgets and known brands. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts often restrict you from releasing some data like this openly.
+获取渠道高度依赖人脉关系：供应商供应有限，偏好大预算和知名公司。数百万美元花出去又部分浪费；很少有团队有足够的带宽来充分使用人类数据。合同通常还限制你不能将某些此类数据公开释放。
 
-Is a far more complex industry today with environments, etc. But, even for simple, human preference data, you need a robust, existing post-training recipe to plug it into.
+如今的行业环境要复杂得多（涉及环境等）。但即使是简单的人类偏好数据，你也需要一个成熟的、已有的后训练管线来接入它。
 
 ---
 
 <!-- columns: 56/44 -->
 <!-- cite-right: ouyang2022training -->
-## Guiding data collection: Labeler instructions
+## 指导数据收集：标注者指令
 
-Once a contract is signed, buyer and vendor agree on **detailed instructions** for every task -- normally never seen outside the lab.
+合同签署后，买方与卖方就每个任务的**详细指令**达成一致——通常只在实验室内部可见。
 
-- One of the first *public* examples: OpenAI released the full **InstructGPT** labeler instructions (2022) [@ouyang2022training]. This was later deleted, but I recovered it.
-- Pages of guidance on ranking **helpful, truthful, harmless** -- the spec that actually shapes the labels.
-- [**Download the PDF**](https://rlhfbook.com/assets/instructgpt-instructions.pdf) (mirrored on rlhfbook.com).
+- 第一批*公开*示例之一：OpenAI 发布了完整的 **InstructGPT** 标注者指令（2022）[@ouyang2022training]。这些后来被删除了，但我已经恢复了它们。
+- 关于排名**有用、诚实、无害**的数页指导——这些规范实际上决定了标签的质量。
+- **[下载 PDF](https://rlhfbook.com/assets/instructgpt-instructions.pdf)**（在 rlhfbook.com 镜像）。
 
 |||
 
-![InstructGPT "Final labeling instructions" (OpenAI, 2022) -- released publicly.](assets/instructgpt-instructions.jpg)
+![InstructGPT "最终标注指令"（OpenAI，2022）——公开发布](assets/instructgpt-instructions.jpg)
 
 
 ---
 
 
-## A dataset we bought: No Robots
+## 我们购买的一个数据集：No Robots
 
-On Hugging Face's **H4 team**, we commissioned human data the same way the labs did.
+在 Hugging Face 的 **H4 team**，我们像各大实验室一样委托了人类数据。
 
-- **No Robots** [@no_robots] -- 10K expert human-written demonstrations, matching InstructGPT distribution, paid for from a vendor and then released **openly** (rare for commissioned data): [hf.co/datasets/HuggingFaceH4/no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots)
-- From the era/team of the **Zephyr** models [@tunstall2023zephyr] and the **Open LLM Leaderboard** [@open_llm_leaderboard].
+- **No Robots** [@no_robots] —— 10K 份专家手写示范，与 InstructGPT 分布匹配，由供应商付费购买，然后**公开释放**（在委托数据中很少见）：[hf.co/datasets/HuggingFaceH4/no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots)
+- 来自 **Zephyr** 模型 [@tunstall2023zephyr] 和 **Open LLM Leaderboard** [@open_llm_leaderboard] 所在的时期 / 团队。
 
 ---
 
 <!-- columns: 50/50 -->
 <!-- cite-right: arena2026 -->
-## Preference *evals* are now a standalone business
+## 偏好*评估*如今已成为独立业务
 
-Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot Arena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
+2026 年最近，**Arena**（前身为 LMArena 排行榜，前身为 Chatbot Arena）在推出企业 A/B 测试功能后约 8 个月内达到了 **~$1 亿美元的年化营收** [@arena2026]。
 
 |||
 
@@ -599,78 +597,77 @@ Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Open questions in preference data
+## 第 3 部分：偏好数据中的开放问题
 
 ---
 
 <!-- animate: bullets -->
-## Bias: What to watch for in data
+## 偏差：数据中需要注意什么
 
-Subtle, systematic biases sail straight from the data into the model:
+微妙的、系统性的偏差会从数据直接流入模型：
 
-- **Prefix bias** -- the opening disproportionately drives the label [@kumar2025detecting]
-- **Sycophancy** -- agreeing with the user over being right [@sharma2023towards]
-- **Verbosity** -- longer rated higher [@singhal2023long]
-- **Formatting** -- lists and bold look "better" [@zhang2024lists]
-- **Flattery / fluff** -- decorative language inflates scores [@bharadwaj2025flatteryflufffogdiagnosing]
+- **前缀偏差（Prefix bias）**——开头不成比例地驱动标注 [@kumar2025detecting]
+- **阿谀奉承（Sycophancy）**——附和用户而非说真话 [@sharma2023towards]
+- **冗长偏好**——更长的回答被评分更高 [@singhal2023long]
+- **格式偏好**——列表和加粗看起来"更好" [@zhang2024lists]
+- **奉承 / 废话**——装饰性语言推高评分 [@bharadwaj2025flatteryflufffogdiagnosing]
 
 <!-- step -->
-Detecting and controlling these biases is central to collecting high-quality preference data -- and they are exactly what over-optimization amplifies into model behavior (Lecture 9).
+检测和控制在这些偏差是收集高质量偏好数据的核心——而它们正是过度优化（第 9 讲）将模型行为放大的恰好对象。
 
 ---
 
 <!-- animate: bullets -->
-## Higher-level complexities 
+## 更高层次的复杂性
 
-- **Collection context** -- do workplace labels transfer to end users? Paid vs. volunteer? Do annotators follow instructions or their own values?
-- **Type of feedback** -- does a binary pair actually capture the preference we mean? What structure mirrors how people really compare?
-- **Population & demographics** -- who labels? Is disagreement **noise or signal**?
-- **Are the preferences even expressed in the models?**
-
----
-
-## The unaudited gap: Spec → data → behavior
-
-RLHF's *motivation* (align to human preference) has drifted from its *practice* (make models effective).
-
-Because industrial RLHF is closed, we can't check whether the trained model actually reflects the spec given to annotators. 
-The **Model Spec** [@openai2024modelspec] documents intended behavior, but the link from data → behavior stays largely unaudited.
-
-Many of these questions already surfaced with synthetic data (chapter 12 / lecture 7): the human/AI feedback balance, and on-policy preference data.
+- **收集语境**——工作场所标注能否转移到终端用户？付费 vs. 志愿？标注者遵循指令还是自己的价值观？
+- **反馈类型**——二元对是否真的捕获了我们想要的偏好？什么结构能更好地映射人们实际比较的方式？
+- **人口与人口统计**——谁在标注？分歧是**噪声还是信号**？
+- **偏好是否真的在模型中表达出来了？**
 
 ---
 
-## The nature of preferences is the lasting problem of RLHF
+## 未被审计的差距：规范 → 数据 → 行为
 
-This is one of the least-settled, most human parts of the field. Read widely and go to the primary sources.
-Is a great academic problem!
+RLHF 的*动机*（对齐人类偏好）已从它的*实践*（让模型有效）中漂移开来。
+
+由于工业界 RLHF 是封闭的，我们无法检查经过训练的模型是否真的反映了标注者收到的规范。**模型规范**（Model Spec）[@openai2024modelspec] 记录了预期行为，但数据 → 行为的链路很大程度上未被审计。
+
+其中许多问题在第 7 讲 / 第 12 章中已经随合成数据浮出水面：人类/AI 反馈的平衡，以及同策略（on-policy）偏好数据。
 
 ---
 
-## The course so far
+## 偏好的本质是 RLHF 持久的难题
 
-0. Prerequisites review
-1. Overview *(ch. 1–3)*
-2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & math *(ch. 6)*
-4. RL: Implementation & practice *(ch. 6)*
-5. The rise of reasoning models *(ch. 7)*
-6. Direct preference optimization *(ch. 8)*
-7. Synthetic data & modern post-training *(ch. 12)*
-8. **Preferences & preference data** *(ch. 10–11)* -- *today*
-9. **Over-optimization & RLHF's bad reputation** *(ch. 14, app. B)* -- *next*
-10. Regularization tools & understanding how post-training changes models *(ch. 15)*
+这是本领域最未解决、最具"人性"的一部分。广泛阅读并回到原始文献。
+这是一个极好的学术问题！
+
+---
+
+## 迄今的课程大纲
+
+0. 先修知识回顾
+1. 概述 *（第 1–3 章）*
+2. IFT、奖励模型与拒绝采样 *（第 4、5、9 章）*
+3. RL：动机与数学 *（第 6 章）*
+4. RL：实现与实践 *（第 6 章）*
+5. 推理模型的崛起 *（第 7 章）*
+6. 直接偏好优化 *（第 8 章）*
+7. 合成数据与现代后训练 *（第 12 章）*
+8. **偏好与偏好数据** *（第 10–11 章）*——*本次*
+9. **过度优化与 RLHF 的坏名声** *（第 14 章，附录 B）*——*下次*
+10. 正则化工具与理解后训练如何改变模型 *（第 15 章）*
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions / discussion
+问题 / 讨论
 
-Contact: nathan@natolambert.com
+联系方式：nathan@natolambert.com
 
-Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+通讯：[interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
 

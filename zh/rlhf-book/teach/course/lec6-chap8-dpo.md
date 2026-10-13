@@ -1,5 +1,5 @@
 ---
-title: "Lecture 6: Direct Preference Optimization"
+title: "讲义 6：直接偏好优化（DPO）"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -7,7 +7,7 @@ fonts:
 bibliography: refs.bib
 figure_captions: true
 footer:
-  left: "rlhfbook.com/course"
+  left: "rlhfbook.com"
   center: "Lecture 6"
   right: "Lambert {n}/{N}"
 custom_css: |
@@ -30,7 +30,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 6: Direct Preference Optimization
+# 讲义 6：直接偏好优化（DPO）
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -38,95 +38,97 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Post-training course. Chapter 8 on Direct Alignment Algorithms.</p>
+<p class="colloquium-title-note">后训练课程。第 8 章——直接对齐算法。</p>
 
 ---
 
 <!-- animate: bullets -->
-## Why DPO was -- and is -- such a big deal
+## DPO 为什么——以及为何一直——如此重要
 
-The Direct Preference Optimization paper [@rafailov2024direct] was a breakthrough in the accessibility of RLHF and post-training research.
-Some context:
-- DPO paper was released in May of 2023, when many groups were struggling to get open-source replications of RLHF pipelines going. Most "aligned" models were just SFT.
-- It took until about the fall of 2023 for people to figure out the right data and settings for DPO to work
-- Zephyr-Beta, Tülu 2, and other models that fall opened the floodgates of post-training research. Iterating on DPO methods in 2024 felt as exciting as RL methods in 2025 or tool-use methods in 2026.
-- **Terminology note:** I call the class of algorithms that operate like DPO on static preference data Direct Alignment Algorithms (DAAs). The name didn't stick much, but we'll see there are a ton of variants!
+[直接偏好优化（DPO）论文](https://arxiv.org/abs/2305.18290) [@rafailov2024direct] 在 RLHF 和后训练研究的普及化上是一次突破。
+
+一些背景：
+
+- DPO 论文发布于 **2023 年 5 月**，当时许多团队正为获得 RLHF 流水线的开源复现而挣扎。大多数所谓的"对齐"模型只是 SFT（监督微调）。
+- 人们到大约 2023 年秋天才弄清楚让 DPO 有效工作的数据和设置
+- **Zephyr-Beta、Tülu 2** 等模型在当年秋天打开了后训练研究的大门。在 2024 年迭代 DPO 相关方法的兴奋程度，相当于 2025 年 RL 方法或 2026 年工具使用方法的令人振奋程度。
+- **术语说明：** 我把在静态偏好数据上像 DPO 一样运行的算法统称为**直接对齐算法（DAAs, Direct Alignment Algorithms）**。这个称呼没有广泛流传，但我们会看到它下面变体众多！
 
 ---
 
 <!-- img-align: center -->
-## The DPO debate (DPO v RL)
+## DPO 争议（DPO 与 RL 之争）
 
-![When DPO was released it sparked a fierce debate about how best to do RLHF and preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
+![DPO 发布时引发了一场关于如何最好地进行 RLHF 和偏好学习的激烈争论。图片作者：Tom Goldstein。](assets/dpo_meme.jpeg)
 
 ---
 
 <!-- columns: 50/50 -->
-## This lecture
+## 本讲义内容
 
-We will **derive Direct Preference Optimization (DPO) from scratch**, then look at how it is used in practice.
+我们将**从零开始推导直接偏好优化（DPO）**，然后看看它在实践中如何使用。
 
-The promise of DPO:
+DPO 的承诺：
 
-- No separate reward model
-- No reinforcement learning loop
-- Just a single, directly-differentiable loss on preference pairs
+- 无需单独的奖励模型（reward model）
+- 无需强化学习循环
+- 只需在偏好对（preference pairs）上做一个可微分的损失函数
 
 |||
 
-The plan, in four steps:
+本讲义的计划分为四步：
 
-1. Solve the RLHF objective for its **optimal policy**
-2. Invert that to write the **reward in terms of the policy**
-3. Plug it into the **Bradley-Terry** preference model
-4. Read off the **DPO loss** and its **gradient**
+1. 求解 RLHF 目标的**最优策略（optimal policy）**
+2. 反解该式，用策略来表达**奖励（reward）**
+3. 代入**Bradley-Terry 偏好模型**
+4. 读出 **DPO 损失**及其**梯度**
 
-*Rafailov et al., 2023 — "Your Language Model is Secretly a Reward Model"* [@rafailov2024direct].
+*Rafailov 等人，2023 —"你的语言模型暗中是一个奖励模型"* [@rafailov2024direct]。
 
 ---
 
 <!-- rows: 60/40 -->
-## Recall: Where DPO sits in the pipeline
+## 回顾：DPO 在流水线中的位置
 
 <!-- row-columns: 48/52 -->
-Classic RLHF is three moving parts:
+经典的 RLHF 有三个组成部分：
 
-1. Collect human preference pairs
-2. Train a reward model $r_\phi(x,y)$
-3. Optimize the policy against $r_\phi$ with RL (e.g. PPO), under a KL penalty
+1. 收集人类偏好对
+2. 训练奖励模型 $r_\phi(x,y)$
+3. 以 KL 惩罚为约束，用强化学习（如 PPO）针对 $r_\phi$ 优化策略
 
 |||
 
-DPO collapses steps 2 and 3 into **one supervised-style loss**.
+DPO 将第 2、3 步合并为**一个监督学习风格的损失函数**。
 
-The key realization we will prove:
+我们将证明的关键洞察：
 
-> The optimal RLHF policy and the reward model are two views of the *same* object. If we know one, we know the other in closed form.
+> 最优 RLHF 策略和奖励模型是**同一对象**的两种视角。如果你知道其中一个，你就可以用闭式表达知道另一个。
 
-So we can train the policy *directly* on preferences.
+因此，我们可以**直接在偏好数据上训练策略**。
 
 ===
 
-![Modern post-training runs many rounds of feedback and optimization; DPO is one of the interchangeable optimizers in that loop.](assets/rlhf-complex.png)
+![现代后训练流程会进行多轮反馈和优化；DPO 是该循环中可互换的优化器之一。](assets/rlhf-complex.png)
 
 ---
 
 <!-- columns: 55/45 -->
-## DPO at a glance: Where we're headed
+## DPO 概览：我们的目标
 
-The whole derivation lands on two objects.
+整个推导最终落到两个核心对象上。
 
-**Optimal policy** — the RLHF solution in closed form:
+**最优策略**——RLHF 的闭式解：
 
 $$ \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big) $$
 
-**DPO loss** — what you actually train:
+**DPO 损失**——你实际训练的内容：
 
 $$ \mathcal{L}_{\text{DPO}} = -\mathbb{E}\Big[\log\sigma\big(\beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big)\Big] $$
 
 |||
 
-In practice, that loss is just a few lines:
+在实践中，这个损失只需几行代码：
 
 ```python
 pi_logratios  = policy_chosen_logps  - policy_rejected_logps
@@ -135,53 +137,39 @@ logits = pi_logratios - ref_logratios
 losses = -F.logsigmoid(beta * logits)
 ```
 
-Everything between here and the implementation is *why* this is the right loss.
+从公式到实现之间的一切内容，就是**为什么这个损失函数是正确的**。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO derivation P1/4: Deriving the optimal policy
+## DPO 推导 P1/4：推导最优策略
 
 ---
 
 <!-- valign: top -->
 <!-- align: center -->
-## Start with the RLHF optimization problem
+## 从 RLHF 优化问题出发
 
 $$
 \begin{aligned}
- & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}
+ & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{RLHF 目标}
 \end{aligned}
 $$
 
-We want to find the $\pi$ that solves this equation! But, without RL.
+我们要找到解出这个方程的 $\pi$！而且不使用 RL。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Fold the KL into the expectation
+## 将 KL 项折叠进期望
 
 $$
 \begin{aligned}
- & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}\\[6pt]
-={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{write KL}=\mathbb{E}_{x\sim\mathcal{D},y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]
-\end{aligned}
-$$
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Fold the KL into the expectation
-
-$$
-\begin{aligned}
- & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}\\[6pt]
-={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{write KL}=\mathbb{E}_{x\sim\mathcal{D},y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]\\[6pt]
-={}& \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{split into two terms}
+ & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{RLHF 目标}\\[6pt]
+={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{展开 KL}=\mathbb{E}_{x\sim\mathcal{D},y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]
 \end{aligned}
 $$
 
@@ -189,11 +177,13 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Flip to a minimization & clean-up
+## 将 KL 项折叠进期望
 
 $$
 \begin{aligned}
- & \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{where we left off}
+ & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{RLHF 目标}\\[6pt]
+={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{展开 KL}=\mathbb{E}_{x\sim\mathcal{D},y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]\\[6pt]
+={}& \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{拆为两项}
 \end{aligned}
 $$
 
@@ -201,12 +191,11 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Flip to a minimization & clean-up
+## 翻转为最小化并化简
 
 $$
 \begin{aligned}
- & \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{where we left off}\\[6pt]
-={}& \min_{\pi}\Big( -\mathbb{E}[r(x,y)] + \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{multiply by } -1:\ \max\to\min
+ & \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{上一轮结束的位置}
 \end{aligned}
 $$
 
@@ -214,13 +203,26 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Flip to a minimization & clean-up
+## 翻转为最小化并化简
 
 $$
 \begin{aligned}
- & \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{where we left off}\\[6pt]
-={}& \min_{\pi}\Big( -\mathbb{E}[r(x,y)] + \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{multiply by } -1:\ \max\to\min\\[6pt]
-={}& \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big] && \text{divide by }\beta\text{, recombine}
+ & \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{上一轮结束的位置}\\[6pt]
+={}& \min_{\pi}\Big( -\mathbb{E}[r(x,y)] + \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{乘以 } -1:\ \max\to\min
+\end{aligned}
+$$
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## 翻转为最小化并化简
+
+$$
+\begin{aligned}
+ & \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{上一轮结束的位置}\\[6pt]
+={}& \min_{\pi}\Big( -\mathbb{E}[r(x,y)] + \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{乘以 } -1:\ \max\to\min\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big] && \text{除以 }\beta\text{，重新组合}
 \end{aligned}
 $$
 
@@ -229,84 +231,84 @@ $$
 <!-- valign: top -->
 <!-- align: center -->
 <!-- animate: bullets -->
-## Fold the optimization target into one log-ratio
+## 将优化目标折叠为一个对数比率
 
-Pick up where we left off and fold the bracket into a single log-ratio, using $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$:
+从上一轮结束的位置继续，利用 $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$ 将括号折叠为一个单一的对数比率：
 
 $$
 \begin{aligned}
- & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big] && \text{where we left off}\\[6pt]
+ & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big] && \text{上一轮结束的位置}\\[6pt]
 ={}& \min_{\pi}\ \mathbb{E}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]
 \end{aligned}
 $$
 
-- $\pi$ is now measured against $\pi_{\text{ref}}\,e^{r/\beta}$: the **reference reweighted by reward** — each response's probability is multiplied by $e^{r/\beta}$, which is larger the higher its reward ($\beta$ sets how aggressive the reweighting is).
-- If that target were a probability distribution $q$, this $\min_{\pi}$ would be a **KL divergence**, $\mathbb{E}_{y\sim\pi}\!\big[\log\tfrac{\pi}{q}\big] = \mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — minimized *exactly*, in closed form ([Gibbs' inequality](https://en.wikipedia.org/wiki/Gibbs%27_inequality)).
+- $\pi$ 现在被与 $\pi_{\text{ref}}\,e^{r/\beta}$ 对比：每个响应的概率乘以 $e^{r/\beta}$，奖励越高乘得越多（$\beta$ 设定了重加权的多大胆程度）。
+- 如果目标本身就是一个概率分布 $q$，那么这个 $\min_{\pi}$ 就等价于一个 **KL 散度** $\mathbb{E}_{y\sim\pi}\!\big[\log\tfrac{\pi}{q}\big] = \mathcal{D}_{\text{KL}}(\pi\,\|\,q)$——可以被**精确地、用闭式方式**最小化（参见 [吉布斯不等式](https://en.wikipedia.org/wiki/Gibbs%27_inequality)）。
 
 ---
 
 <!-- valign: top -->
 <!-- align: center -->
-## Introduce the partition function $Z(x)$
+## 引入配分函数 $Z(x)$
 
-We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
+我们最小化的是 $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$。
 
-Why do we want $\pi$ to match that denominator?
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Introduce the partition function $Z(x)$
-
-We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
-
-Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
+为什么我们希望 $\pi$ 去匹配那个分母？
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Introduce the partition function $Z(x)$
+## 引入配分函数 $Z(x)$
 
-We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
+我们最小化的是 $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$。
 
-Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
-
-The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$ it does not equal $1$. 
+为什么我们希望 $\pi$ 去匹配那个分母？因为 $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ 是一个 **KL 散度** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$——它始终 $\ge 0$，且**仅在 $\pi = q$ 时等于 0**。因此最小化子就是分母中的那个分布 $q$。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Introduce the partition function $Z(x)$
+## 引入配分函数 $Z(x)$
 
-We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
+我们最小化的是 $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$。
 
-Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
+为什么我们希望 $\pi$ 去匹配那个分母？因为 $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ 是一个 **KL 散度** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$——它始终 $\ge 0$，且**仅在 $\pi = q$ 时等于 0**。因此最小化子就是分母中的那个分布 $q$。
 
-The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$ it does not equal $1$. 
-We normalize it with the partition function:
+问题在于：我们的分母 $\pi_{\text{ref}}\,e^{r/\beta}$ **不是一个合法的概率分布**——对 $y$ 求和时它不等于 1。
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## 引入配分函数 $Z(x)$
+
+我们最小化的是 $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$。
+
+为什么我们希望 $\pi$ 去匹配那个分母？因为 $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ 是一个 **KL 散度** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$——它始终 $\ge 0$，且**仅在 $\pi = q$ 时等于 0**。因此最小化子就是分母中的那个分布 $q$。
+
+问题在于：我们的分母 $\pi_{\text{ref}}\,e^{r/\beta}$ **不是一个合法的概率分布**——对 $y$ 求和时它不等于 1。
+我们用**配分函数**对其进行归一化：
 
 $$
 Z(x) = \sum_{y} \pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)
-\qquad\text{(depends on $x$ and $r$, not on $\pi$)}
+\qquad\text{(取决于 $x$ 和 $r$，不依赖于 $\pi$)}
 $$
 
 <!-- animate: bullets -->
-- Now $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r/\beta}$ **is** a valid distribution.
-- The objective becomes a genuine $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — minimized exactly at $\pi = q$ (made rigorous with [Gibbs' inequality](https://en.wikipedia.org/wiki/Gibbs%27_inequality) shortly).
-- Next we massage the inside of the objective so $Z(x)$ appears.
+- 现在 $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r/\beta}$ **是**一个合法的概率分布。
+- 目标变成了一个真正的 $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$——在 $\pi = q$ 处被精确最小化（稍后用 [吉布斯不等式](https://en.wikipedia.org/wiki/Gibbs%27_inequality)给出严格证明）。
+- 接下来我们将处理目标函数的内部结构，让 $Z(x)$ 出现。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Revisiting the objective with the partition function $Z(x)$
+## 用配分函数 $Z(x)$ 重新审视目标
 
 $$
 \begin{aligned}
- & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{上一轮结束的位置}
 \end{aligned}
 $$
 
@@ -314,12 +316,12 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Revisiting the objective with the partition function $Z(x)$
+## 用配分函数 $Z(x)$ 重新审视目标
 
 $$
 \begin{aligned}
- & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}\\[6pt]
-={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{add } 0 = \log Z - \log Z
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{上一轮结束的位置}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{加上 } 0 = \log Z - \log Z
 \end{aligned}
 $$
 
@@ -327,13 +329,13 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Revisiting the objective with the partition function $Z(x)$
+## 用配分函数 $Z(x)$ 重新审视目标
 
 $$
 \begin{aligned}
- & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}\\[6pt]
-={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{add } 0 = \log Z - \log Z\\[6pt]
-={}& \min_{\pi}\ \mathbb{E}\left[\, \big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \text{group terms}
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{上一轮结束的位置}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{加上 } 0 = \log Z - \log Z\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \text{组合项}
 \end{aligned}
 $$
 
@@ -341,13 +343,13 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Revisiting the objective with the partition function $Z(x)$
+## 用配分函数 $Z(x)$ 重新审视目标
 
 $$
 \begin{aligned}
- & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}\\[6pt]
-={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{add } 0 = \log Z - \log Z\\[6pt]
-={}& \min_{\pi}\ \mathbb{E}\left[\, \big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \text{group terms}\\[6pt]
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{上一轮结束的位置}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{加上 } 0 = \log Z - \log Z\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \text{组合项}\\[6pt]
 ={}& \min_{\pi}\ \mathbb{E}\left[\, \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)} - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \log a + \log b = \log ab
 \end{aligned}
 $$
@@ -356,9 +358,9 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Turn the objective into a KL divergence
+## 将目标化为一个 KL 散度
 
-Fold $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$ into the denominator of the first term in the objective (again, log rules) and name it $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}$ — a valid distribution over $y$. The objective is:
+把 $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$ 折叠进目标中第一项的分母（再次使用对数法则），并记 $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}$——这是 $y$ 上的一个合法概率分布。此时目标为：
 
 $$
 \min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi}\Big[\, \log\tfrac{\pi(y\mid x)}{q(y\mid x)} - \log Z(x) \,\Big]
@@ -366,7 +368,7 @@ $$
 
 <!-- step -->
 
-$\log Z(x)$ does not depend on $y$, so pull it out of the inner expectation:
+$\log Z(x)$ 与 $y$ 无关，因此将其从内层期望中提取出来：
 
 $$
 \min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\Big[\, \mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi(y\mid x)}{q(y\mid x)}\big] - \log Z(x) \,\Big]
@@ -374,7 +376,7 @@ $$
 
 <!-- step -->
 
-The inner expectation is exactly a **KL divergence**, $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big] = \mathcal{D}_{\text{KL}}(\pi\,\|\,q)$:
+内层期望恰好是一个 **KL 散度**，$\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big] = \mathcal{D}_{\text{KL}}(\pi\,\|\,q)$：
 
 $$
 \min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\big]
@@ -384,16 +386,16 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Apply Gibbs' inequality to read off $\pi^{*}$
+## 应用吉布斯不等式读出 $\pi^{*}$
 
-Where we landed -- the objective is now a KL plus a $\pi$-independent constant:
+我们到达的位置——目标现在变为一个 KL 散度加上一个与 $\pi$ 无关的常数：
 
 $$
 \min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\big]
 $$
 
-- $\log Z(x)$ does not depend on $\pi$ — only the KL term can be optimized.
-- A KL is $\ge 0$ and equals $0$ **only when $\pi = q$** ([Gibbs' inequality](https://en.wikipedia.org/wiki/Gibbs%27_inequality)), so the minimizer is $\pi^{*} = q$:
+- $\log Z(x)$ 不依赖于 $\pi$——只有 KL 项可以被优化。
+- KL 散度 $\ge 0$，且**仅在 $\pi = q$ 时等于 0**（[吉布斯不等式](https://en.wikipedia.org/wiki/Gibbs%27_inequality)），因此最小化子为 $\pi^{*} = q$：
 
 $$
 \boxed{\ \ \pi^{*}(y\mid x) = q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\ \ }
@@ -404,13 +406,13 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO derivation P2/4: Recovering the reward from the policy (needed to implement it)
+## DPO 推导 P2/4：从策略中恢复奖励（实现所需）
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Invert $\pi^{*}$ for the implicit reward
+## 反解 $\pi^{*}$ 得到隐式奖励
 
 $$
 \begin{aligned}
@@ -422,11 +424,11 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Invert $\pi^{*}$ for the implicit reward
+## 反解 $\pi^{*}$ 得到隐式奖励
 
 $$
 \begin{aligned}
- & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{take $\log$ of both sides}
+ & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{两边取对数}
 \end{aligned}
 $$
 
@@ -434,11 +436,11 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Invert $\pi^{*}$ for the implicit reward
+## 反解 $\pi^{*}$ 得到隐式奖励
 
 $$
 \begin{aligned}
- & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{take $\log$ of both sides}\\[6pt]
+ & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{两边取对数}\\[6pt]
  & \log \pi^{*}(y\mid x) = -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) && \log abc = \log a+\log b+\log c
 \end{aligned}
 $$
@@ -447,13 +449,13 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Invert $\pi^{*}$ for the implicit reward
+## 反解 $\pi^{*}$ 得到隐式奖励
 
 $$
 \begin{aligned}
- & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{take $\log$ of both sides}\\[6pt]
+ & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{两边取对数}\\[6pt]
  & \log \pi^{*}(y\mid x) = -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) && \log abc = \log a+\log b+\log c\\[6pt]
- & \tfrac{1}{\beta} r^{*}(x,y) = \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) && \text{rearrange for } r^{*}
+ & \tfrac{1}{\beta} r^{*}(x,y) = \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) && \text{移项解出 } r^{*}
 \end{aligned}
 $$
 
@@ -461,19 +463,19 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Invert $\pi^{*}$ for the implicit reward
+## 反解 $\pi^{*}$ 得到隐式奖励
 
 $$
 \begin{aligned}
- & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{take $\log$ of both sides}\\[6pt]
+ & \log \pi^{*}(y\mid x) = \log\!\Big( \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big) \Big) && \text{两边取对数}\\[6pt]
  & \log \pi^{*}(y\mid x) = -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) && \log abc = \log a+\log b+\log c\\[6pt]
- & \tfrac{1}{\beta} r^{*}(x,y) = \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) && \text{rearrange for } r^{*}\\[6pt]
- & r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x) && \text{multiply by }\beta
+ & \tfrac{1}{\beta} r^{*}(x,y) = \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) && \text{移项解出 } r^{*}\\[6pt]
+ & r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x) && \text{乘以 }\beta
 \end{aligned}
 $$
 
 $$
-\boxed{\ \ r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)\ \ }\qquad\text{\small your LM is secretly a reward model}
+\boxed{\ \ r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)\ \ }\qquad\text{\small 你的语言模型暗中是一个奖励模型}
 $$
 
 ---
@@ -481,35 +483,35 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
+## DPO 推导 P3/4：连接 Bradley-Terry 偏好模型（对齐数据的形态）
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Recall the Bradley-Terry model
+## 回顾 Bradley-Terry 模型
 
-A preference between two responses is a softmax over their rewards:
+两个响应之间的偏好是对它们奖励的 softmax：
 
 $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(r^{*}(x,y_1)\big)}{\exp\!\big(r^{*}(x,y_1)\big) + \exp\!\big(r^{*}(x,y_2)\big)}
 $$
 
-Now substitute the implicit reward $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)$.
+现在代入隐式奖励 $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)$。
 
-*New here? See [Lecture 2](https://rlhfbook.com/teach/course/lec2-chap4-5-9/) and [Chapter 5: Reward Modeling](https://rlhfbook.com/c/05-reward-models.html) for the Bradley-Terry model.*
+*新读者？请参阅 [讲义 2](https://rlhfbook.com/teach/course/lec2-chap4-5-9/) 和 [第 5 章：奖励模型](https://rlhfbook.com/c/05-reward-models.html) 了解 Bradley-Terry 模型。*
 
 ---
 
 <!-- valign: top -->
 <!-- align: center -->
-## Substitute the reward, then cancel $Z(x)$
+## 代入奖励并消去 $Z(x)$
 
 $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
 $$
 
-- Every term carries the same factor $\exp(\beta \log Z(x)) = Z(x)^{\beta}$.
+- 每一项都携带相同的因子 $\exp(\beta \log Z(x)) = Z(x)^{\beta}$。
 
 <!-- step -->
 
@@ -517,46 +519,46 @@ $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
 $$
 
-- Decompose $e^{a+b}=e^a e^b$ and cancel the shared $Z(x)^{\beta}$ — the **intractable term is gone**.
+- 分解 $e^{a+b}=e^a e^b$ 并消去共享因子 $Z(x)^{\beta}$——**不可计算的项消失了**。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Divide through to a sigmoid
+## 除以到 sigmoid
 
-Write $\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$, so the cancelled form is $p^{*} = \dfrac{e^{\Delta_1}}{e^{\Delta_1} + e^{\Delta_2}}$. Multiply numerator and denominator by $e^{-\Delta_1}$:
+记 $\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$，消去后的形式为 $p^{*} = \dfrac{e^{\Delta_1}}{e^{\Delta_1} + e^{\Delta_2}}$。分子分母同时乘以 $e^{-\Delta_1}$：
 
 $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{e^{\Delta_1}\,e^{-\Delta_1}}{e^{\Delta_1}\,e^{-\Delta_1} + e^{\Delta_2}\,e^{-\Delta_1}} = \frac{1}{1 + e^{\,\Delta_2 - \Delta_1}}
 $$
 
-- The numerator becomes $1$; the denominator holds an exponential of the **difference** $\Delta_2 - \Delta_1$.
+- 分子变为 1；分母中出现了**差值** $\Delta_2 - \Delta_1$ 的指数。
 
 <!-- step -->
 
-With $\sigma(z) = \tfrac{1}{1+e^{-z}}$, this is a sigmoid ($\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$):
+用 $\sigma(z) = \tfrac{1}{1+e^{-z}}$（sigmoid），这就是一个 sigmoid 形式（$\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$）：
 
 $$
 \boxed{\ \ p^{*}(y_1 \succ y_2 \mid x) = \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)\ \ }
 $$
 
-- A **sigmoid of the difference of two log-ratios** — Bradley-Terry, with the policy in place of the reward model.
+- 一个**sigmoid 函数作用于两个对数比率之差**——Bradley-Terry 模型，用策略替代了奖励模型。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO derivation P4/4: The loss function and gradient
+## DPO 推导 P4/4：损失函数与梯度
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## The DPO loss
+## DPO 损失
 
-Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$) -- this is making the probability more likely:
+最小化观测偏好的负对数似然（$y_c \succ y_r$）——即让观测到的偏好概率变大：
 
 $$
 \mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\big[ \log p(y_c \succ y_r \mid x) \big]
@@ -564,31 +566,31 @@ $$
 
 <!-- step -->
 
-Plug in the sigmoid form of $p$, with the trainable policy $\pi_{\theta}$ as the implicit reward:
+代入 $p$ 的 sigmoid 形式，用可训练策略 $\pi_{\theta}$ 作为隐式奖励：
 
 $$
 \mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
 $$
 
-This is directly differentiable — **no reward model, no sampling, no RL loop.**
+这个损失函数**可直接微分**——无需奖励模型、无需采样、无需 RL 循环。
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## The DPO gradient
+## DPO 梯度
 
-Start by taking the gradient of the previous loss function.
+从上面的损失函数出发取梯度。
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\nabla_{\theta}\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
 $$
 
-Let $u = \big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big)$ — the term inside $\sigma$.
+记 $u = \big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big)$——即 $\sigma$ 内部的项。
 
 <!-- step -->
 
-Chain rule, starting with $\tfrac{d}{dz}\log\sigma(z) = \tfrac{\sigma'(z)}{\sigma(z)}$ as the inner operation:
+从链式法则开始，内部操作为 $\tfrac{d}{dz}\log\sigma(z) = \tfrac{\sigma'(z)}{\sigma(z)}$：
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \tfrac{\sigma'(u)}{\sigma(u)}\,\nabla_{\theta} u \Big]
@@ -596,7 +598,7 @@ $$
 
 <!-- step -->
 
-Substitute $\sigma'(u) = \sigma(u)\big(1-\sigma(u)\big)$ and cancel $\sigma(u)$:
+代入 $\sigma'(u) = \sigma(u)\big(1-\sigma(u)\big)$ 并消去 $\sigma(u)$：
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \tfrac{\sigma(u)\big(1-\sigma(u)\big)}{\sigma(u)}\,\nabla_{\theta} u \Big] = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \big(1-\sigma(u)\big)\,\nabla_{\theta} u \Big]
@@ -606,13 +608,13 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## The DPO gradient
+## DPO 梯度
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \big(1-\sigma(u)\big)\,\nabla_{\theta} u \Big]
 $$
 
-The reflection identity $1-\sigma(u) = \sigma(-u)$ flips the argument, giving the compact form:
+利用反射恒等式 $1-\sigma(u) = \sigma(-u)$ 翻转自变量，得到紧凑形式：
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \sigma(-u)\,\nabla_{\theta} u \Big]
@@ -620,7 +622,7 @@ $$
 
 <!-- step -->
 
-Now differentiate $u$, where $-u = \beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}$. Only $\pi_{\theta}$ depends on $\theta$ — $\pi_{\text{ref}}$ is frozen, so its $\log$ terms drop:
+现在对 $u$ 求导。注意到 $-u = \beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}$。只有 $\pi_{\theta}$ 依赖于 $\theta$——$\pi_{\text{ref}}$ 是冻结的，因此它的对数项消失：
 
 $$
 \nabla_{\theta} u = \beta\big[\nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x)\big]
@@ -628,7 +630,7 @@ $$
 
 <!-- step -->
 
-Substitute $\nabla_{\theta} u$ and write $\sigma(-u)$ out in full:
+代入 $\nabla_{\theta} u$ 并将 $\sigma(-u)$ 完整写出：
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\beta\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \sigma\big(\beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}\big)\,\big[\nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x)\big] \Big]
@@ -639,130 +641,126 @@ $$
 <!-- valign: top -->
 <!-- title: center -->
 <!-- animate: bullets -->
-## The DPO gradient
+## DPO 梯度
 
 $$
 \begin{aligned}
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x) \big)\,\Big] \\[6pt]
-&\hspace{6em}\text{where}\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{有多 wrong}} \cdot \big( \nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x) \big)\,\Big] \\[6pt]
+&\hspace{6em}\text{其中}\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
 \end{aligned}
 $$
 
-- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen the loss is higher.
-- **The delta-gradient bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
-- **$\beta$** scales the step, trading correct ordering against drift from $\pi_{\text{ref}}$ (downstream of the KL penalty in the RLHF objective).
+- **权重 $w \in (0,1)$** 在模型*更 wrong* 时更大——当模型把被拒绝响应的排名放在被选响应之上时，损失更大。
+- **差值梯度项**提升了 $y_c$ 的似然并降低了 $y_r$ 的似然。
+- **$\beta$** 控制步长缩放，在正确排序与偏离 $\pi_{\text{ref}}$（源自 RLHF 目标中的 KL 惩罚）之间做权衡。
 
 ---
 
 <!-- rows: 55/45 -->
 <!-- title: center -->
-## Recap: The DPO derivation
+## 回顾：DPO 推导全貌
 
 $$
 \begin{aligned}
-\textbf{Objective} \;&:\; \max_{\pi}\, \mathbb{E}\big[r(x,y)\big] - \beta\, \mathcal{D}_{\text{KL}}(\pi \,\|\, \pi_{\text{ref}}) \\[4pt]
-\Rightarrow\ \textbf{Optimal policy} \;&:\; \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big) \\[4pt]
-\Rightarrow\ \textbf{Implicit reward} \;&:\; r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x) \\[4pt]
-\Rightarrow\ \textbf{Bradley-Terry} \;&:\; p^{*}(y_1 \succ y_2) = \sigma\!\big(r^{*}(x,y_1) - r^{*}(x,y_2)\big)\ \ (Z \text{ cancels}) \\[4pt]
-\Rightarrow\ \textbf{DPO loss} \;&:\; -\log \sigma\!\big(\beta \log \tfrac{\pi_{\theta}(y_c)}{\pi_{\text{ref}}(y_c)} - \beta \log \tfrac{\pi_{\theta}(y_r)}{\pi_{\text{ref}}(y_r)}\big)
+\textbf{目标} \;&:\; \max_{\pi}\, \mathbb{E}\big[r(x,y)\big] - \beta\, \mathcal{D}_{\text{KL}}(\pi \,\|\, \pi_{\text{ref}}) \\[4pt]
+\Rightarrow\ \textbf{最优策略} \;&:\; \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big) \\[4pt]
+\Rightarrow\ \textbf{隐式奖励} \;&:\; r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x) \\[4pt]
+\Rightarrow\ \textbf{Bradley-Terry} \;&:\; p^{*}(y_1 \succ y_2) = \sigma\!\big(r^{*}(x,y_1) - r^{*}(x,y_2)\big)\ \ (Z \text{ 消去}) \\[4pt]
+\Rightarrow\ \textbf{DPO 损失} \;&:\; -\log \sigma\!\big(\beta \log \tfrac{\pi_{\theta}(y_c)}{\pi_{\text{ref}}(y_c)} - \beta \log \tfrac{\pi_{\theta}(y_r)}{\pi_{\text{ref}}(y_r)}\big)
 \end{aligned}
 $$
 
 ===
 
-The reward model never had to be built — it was hiding inside the policy the whole time.
+奖励模型从来就不需要被单独构建——它一直都在策略内部"藏"着。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO weaknesses, variants, and implementation details
+## DPO 的局限性、变体与实现细节
 
 ---
 
 <!-- columns: 55/45 -->
-## A subtle risk: The chosen probability can fall
+## 一个微妙的风险：被选响应的概率可能下降
 
-The DPO loss only cares about the **margin** between the chosen and rejected log-ratios — not their absolute values.
-So the model can lower the loss by pushing the *rejected* probability down **faster** than the chosen, even while the **chosen probability also falls**.
+DPO 损失只关心被选和被拒响应的对数比率之间的**差值（margin）**——不关心它们的绝对值。因此模型可以通过让*被拒*响应的概率**下降更快**来降低损失，即便**被选响应的概率也同时在下降**。
 
-Mediated through the partition function $Z(x)$ in the derivation.
+这一现象在推导过程中通过配分函数 $Z(x)$ 被中介化。
 
-- Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
-- A reason some practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
-
+- 这被称为**概率位移（likelihood displacement）** [@razin2024unintentional] [@ren2024learning]；据推测它会推动概率向未覆盖的、分布外的行为偏移。
+- 这也是某些实践者会在被选响应上额外添加 SFT 项，或使用 Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo] 等修复方法的原因。
 
 |||
 
-![Sketch of likelihood displacement in DPO.](assets/dpo_displacement.png)
+![DPO 中概率位移的示意图。](assets/dpo_displacement.png)
 
 <!-- step -->
 
-**In a real run:** [Olmo 1B DPO](https://wandb.ai/rlhf-book/core/runs/fzy8k8go) — the chosen/rejected reward margin widens, yet the *chosen* log-prob itself can still drift down.
-
+**在实际运行中：** [Olmo 1B DPO](https://wandb.ai/rlhf-book/core/runs/fzy8k8go)——被选/被拒奖励的差值扩大，但被选对数概率自身仍可能下移。
 
 ---
 
-## The $\beta$ parameter and the static KL
+## $\beta$ 参数与静态 KL
 
-$\beta$ sets the strength of the KL constraint relative to reward maximization:
+$\beta$ 设定了 KL 约束相对于奖励最大化的强度：
 
-- **Large $\beta$** → policy stays close to $\pi_{\text{ref}}$; it barely moves.
-- **Small $\beta$** → policy is free to deviate; it can **over-optimize**.
+- **$\beta$ 较大**→ 策略贴近 $\pi_{\text{ref}}$；几乎不动。
+- **$\beta$ 较小**→ 策略可以自由偏离；可能**过优化**。
 
-Crucially, DPO's final KL distance is **static**: it steps directly to the *optimal* solution implied by the dataset and the chosen $\beta$. 
-Online RL instead takes steps based on freshly sampled batches and a per-sample KL penalty. Some RL runs even include dynamically adjusted KL controllers.
+关键之处在于，DPO 最终的 KL 距离是**静态的**：它直接走向由数据集和所选 $\beta$ 所隐含的*最优*解。在线 RL 则基于新采样的批次和逐样本 KL 惩罚来逐步推进。有些 RL 运行甚至包括动态调整的 KL 控制器。
 
 ---
 
 <!-- valign: top -->
-## A zoo of direct alignment algorithms
+## 直接对齐算法动物园
 
-Each variant tweaks the loss to fix a limitation — often a one-line change. I started calling all the variants Direct Alignment Algorithms (DAAs). Two to start:
+每个变体都会通过调整损失函数来修复一个局限性——往往只需一行代码。我开始将这些变体统称为直接对齐算法（DAAs）。先介绍两个：
 
 <!-- step -->
 
-- **Identity Preference Optimization (IPO)** [@azar2024general] — softens the preference probability away from Bradley-Terry to curb overfitting.
+- **Identity Preference Optimization（IPO, 恒等偏好优化）** [@azar2024general]——将偏好概率从 Bradley-Terry 模型软化，以抑制过拟合。
 
 $$ \mathcal{L}_{\text{IPO}} = \mathbb{E}_{(x,y_w,y_l)}\!\left[\left(\log\tfrac{\pi_\theta(y_w\mid x)\,\pi_{\text{ref}}(y_l\mid x)}{\pi_\theta(y_l\mid x)\,\pi_{\text{ref}}(y_w\mid x)} - \tfrac{1}{2\beta}\right)^2\right] $$
 
 <!-- step -->
 
-- **Conservative DPO (cDPO)** [@rafailov2024direct] (in the original DPO paper) — assumes the preference labels are noisy (flipped with probability $\varepsilon$) and softens the loss target accordingly.
+- **Conservative DPO（cDPO, 保守 DPO）** [@rafailov2024direct]（见原始 DPO 论文）——假设偏好标签有噪声（以概率 $\varepsilon$ 翻转），并相应地软化损失目标。
 
 <!-- step -->
 
-- **Offset DPO (ODPO)** [@amini2024direct] — requires the chosen to beat the rejected by a margin offset, scaled by how strong the preference is.
+- **Offset DPO（ODPO, 偏移 DPO）** [@amini2024direct]——要求被选响应以 margin offset 超过被拒响应，该偏移量按偏好的强度进行缩放。
 
 ---
 
 <!-- valign: top -->
-## A zoo of direct alignment algorithms
+## 直接对齐算法动物园（续）
 
-Two more that **drop the reference model** entirely:
+下面两个变体**完全不再需要参考模型（reference model）**：
 
 <!-- step -->
 
-- **Odds Ratio Preference Optimization (ORPO)** [@hong2024reference] — adds an odds-ratio pull toward the chosen response, folded directly into the SFT loss. The odds ratio uses only $\pi_\theta$, which allows dropping the reference model.
+- **Odds Ratio Preference Optimization（ORPO, 几率比偏好优化）** [@hong2024reference]——在被选响应上添加一个几率比拉项，直接融入 SFT 损失。几率比仅使用 $\pi_\theta$，因此允许删除参考模型。
 
 $$ \mathcal{L}_{\text{ORPO}} = \mathcal{L}_{\text{SFT}} - \lambda\,\mathbb{E}\!\left[\log \sigma\!\left(\log \tfrac{\text{odds}_\theta(y_w\mid x)}{\text{odds}_\theta(y_l\mid x)}\right)\right], \quad \text{odds}_\theta(y) = \tfrac{\pi_\theta(y)}{1-\pi_\theta(y)} $$
 
 <!-- step -->
 
-- **Simple Preference Optimization (SimPO)** [@meng2025simpo] — length-normalizes the reward into an average log-prob, with a target margin $\gamma$. $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
+- **Simple Preference Optimization（SimPO, 简单偏好优化）** [@meng2025simpo]——将奖励归一化为平均对数概率，带有目标 margin $\gamma$。$\tfrac{1}{|y|}$ 按长度归一化；$\gamma$ 为目标 margin；不需要 $\pi_{\text{ref}}$。
 
 $$ \mathcal{L}_{\text{SimPO}} = -\mathbb{E}\!\left[\log \sigma\!\left(\tfrac{\beta}{|y_w|}\log \pi_\theta(y_w\mid x) - \tfrac{\beta}{|y_l|}\log \pi_\theta(y_l\mid x) - \gamma\right)\right] $$
 
 <!-- step -->
 
-The algorithm matters **far less** than the base model and the data. Still, many papers continued to make minor algorithmic tweaks. Many more exist than were on these slides.
+算法本身比**基础模型和数据**重要的程度**低得多**。尽管如此，仍有大量论文进行了微小的算法调参。这些幻灯片之外的变体更多。
 
 ---
 
-## Implementation is genuinely simple
+## 实现确实非常简单
 
-No generation during training, no separate reward model — the heart of the loss is a few lines:
+训练时无需采样，无需单独的奖励模型——损失函数的核心只需几行代码：
 
 ```python
 # log-prob gaps for policy and frozen reference
@@ -774,68 +772,68 @@ logits = pi_logratios - ref_logratios
 losses = -F.logsigmoid(beta * logits)
 ```
 
-**Tip:** $\pi_{\text{ref}}$ is frozen, so precompute and cache its log-probs to cut peak memory ~50%. Reference code: `code/direct_alignment/`.
+**提示：** $\pi_{\text{ref}}$ 是冻结的，因此预计算并缓存其对数概率可以削减约 50% 的峰值内存。参考代码：`code/direct_alignment/`。
 
 ---
 
 <!-- animate: bullets -->
-## DAAs work with synthetic preference data
+## DAAs 可以配合合成偏好数据使用
 
-These algorithms need *feedback* data, not necessarily *human* feedback data — AI feedback works just as well.
+这些算法需要的是*反馈*数据，而不一定是*人类*反馈数据——AI 反馈的效果完全一样。
 
-- Most modern DPO uses preferences labeled by a strong model. **UltraFeedback** [@cui2023ultrafeedback] was the first prominent *open* synthetic preference dataset and helped kickstart the DPO era; Tülu 3 [@lambert2024t], SmolLM 2 [@allal2025smollm2], and others followed with larger synthetic-feedback recipes.
-- **On-policy data** (some completions from the model you are tuning) helps the contrastive loss optimize the right token space within a complex post-training recipe (studied this specifically in Tülu 3).
-- **Delta Learning** [@geng2025the]: later work argues the *gap* between chosen and rejected matters more than which models produced them (e.g. Qwen3-32B chosen vs Qwen3-0.6B rejected). Used this in Olmo 3!
+- 当前大多数 DPO 使用由强模型标注的偏好数据。**UltraFeedback** [@cui2023ultrafeedback] 是第一个著名的*开源*合成偏好数据集，推动了 DPO 时代的开启；Tülu 3 [@lambert2024t]、SmolLM 2 [@allal2025smollm2] 等随后采用了更大的合成反馈配方。
+- **同策略数据（on-policy data）**（你正在调优的模型本身的一些完成）有助于在复杂的后训练配方中对正确的 token 空间进行对比优化（在 Tülu 3 中对此进行了专门研究）。
+- **Delta Learning（差分学习）** [@geng2025the]：后续工作认为*被选和被拒之间的差距*比数据来源更重要（例如 Qwen3-32B 的被选 vs Qwen3-0.6B 的被拒）。Olmo 3 中使用了这一方法！
 
 ---
 
 <!-- columns: 50/50 -->
-## DPO vs. RL: Offline vs. online
+## DPO vs RL：离线 vs 在线
 
-**DPO and other DAAs**
+**DPO 及其他 DAAs**
 
-- Train on a fixed dataset collected ahead of time.
-- Simpler, more stable, fast to iterate on data.
-- Limited by the **coverage** of that dataset — a slightly lower performance ceiling.
+- 在事先收集的固定数据集上训练。
+- 更简单、更稳定，迭代数据更快。
+- 受限于该数据集的**覆盖率**——性能上限略低。
 
 |||
 
-**PPO / policy gradient is online**
+**PPO / 策略梯度是在线的**
 
-- Generate fresh completions during training, score with a reward model.
-- Can explore new regions → often higher peak performance [@ivison2024unpacking] [@xu2024dpo] [@tajwar2024preference].
-- More compute, more moving parts (four models in memory), more engineering complexity.
+- 训练中生成全新的完成样本，用奖励模型打分。
+- 可以探索新区域 → 通常获得更高的峰值性能 [@ivison2024unpacking] [@xu2024dpo] [@tajwar2024preference]。
+- 消耗更多计算、更多组件（四个模型驻留内存）、更多工程复杂度。
 
 ---
 
-## Where does this leave us today?
+## 我们今天处于什么位置？
 
-If so many models have used DPO well and it's so simple, why does it seem like it comes up so infrequently -- especially at the frontier?
-
----
-
-<!-- columns: 52/48 -->
-## Hypotheses for DPO's role today
-
-- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost performance in a simple pipeline.
-- **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
-- **Liquid AI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
-
-|||
+如果这么多模型都很好地使用了 DPO，而且它这么简单，为什么它似乎很少出现——特别是在前沿领域？
 
 ---
 
 <!-- columns: 52/48 -->
-## Hypotheses for DPO's role today
+## 关于 DPO 今日地位的几种假说
 
-- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost performance in a simple pipeline.
-- **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
-- **Liquid AI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
+- **Olmo 3**（2025 年 11 月）/ **SmolLM 3**（2025 年 7 月）——在 SFT 之后的推理轨迹上使用 DPO，在简单流水线中提升性能。
+- **NVIDIA Nemotron 3**（2025 年 12 月）——*混合偏好优化（Mixed Preference Optimization）*：DPO + 二分类器优化在一个离线阶段完成，数据由生成式奖励模型打分。
+- **Liquid AI LFM2**（2025 年 11 月）——在半在线数据上使用长度归一化的 DPO，之后再做一轮 RLVR。
 
 |||
 
-**How I see things:**
+---
 
-- DPO works well in wonky, distillation-heavy recipes like Olmo -- e.g. a model with a spikier distribution, with training data from many teacher models.
-- DPO still works in other settings, but most labs have the engineering resources to do other things with higher peak performance.
-- TLDR: DPO is a path to a good/solid model, but not to the best model. And DPO may do less in *cleaner* training recipes.
+<!-- columns: 52/48 -->
+## 关于 DPO 今日地位的几种假说（续）
+
+- **Olmo 3**（2025 年 11 月）/ **SmolLM 3**（2025 年 7 月）——在 SFT 之后的推理轨迹上使用 DPO，在简单流水线中提升性能。
+- **NVIDIA Nemotron 3**（2025 年 12 月）——*混合偏好优化（Mixed Preference Optimization）*：DPO + 二分类器优化在一个离线阶段完成，数据由生成式奖励模型打分。
+- **Liquid AI LFM2**（2025 年 11 月）——在半在线数据上使用长度归一化的 DPO，之后再做一轮 RLVR。
+
+|||
+
+**我对当前态势的看法：**
+
+- DPO 在类似 Olmo 那种曲折的、重度蒸馏的配方中效果不错——例如一个分布较"尖锐"的模型，其训练数据来自多个教师模型。
+- DPO 在其他设定下仍然有效，但大多数实验室拥有工程资源去做其他获得更高峰值性能的事。
+- TLDR：DPO 是一条通向好/扎实模型的路径，但通向不了最好的模型。而在*更干净*的训练配方中，DPO 的作用可能更小。

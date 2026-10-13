@@ -1,120 +1,92 @@
 ---
-title: "Lecture 7: Synthetic Data and Modern Post-Training Methods"
+title: "第 7 讲：合成数据与现代后训练方法"
 author: "Nathan Lambert"
-fonts:
-  heading: "Rubik"
-  body: "Poppins"
-bibliography: refs.bib
-figure_captions: true
+font_cjk: "Noto Sans SC"
 footer:
   left: "rlhfbook.com/course"
-  center: "Lecture 7"
+  center: "第 7 讲"
   right: "Lambert {n}/{N}"
-custom_css: |
-  .slide--section-break { background: #F28482; }
-  :root {
-    --colloquium-progress-fill: #F28482;
-  }
-  .slide--title-sidebar h1 {
-    font-size: 2.5em;
-    letter-spacing: 0;
-  }
-  /* Bulleted lists should never be centered (markers float, looks bad).
-     Target lists only — leave titles and display-math paragraphs centered. */
-  .slide ul, .slide ol, .slide li { text-align: left; }
 ---
 
-<!-- Source note: build with `make teach`, which copies assets/ into the output. A single-file `colloquium build -o ...` does NOT copy assets/, so the figures 404 in that standalone build. -->
-<!-- Notation note: chapter 12 is careful about u = teacher trajectory (u~pi_T, forward KL) vs a = student-sampled action (a~pi_theta, reverse KL). Keep q=pi_T, p=pi_theta consistent. KL is written D_{\mathrm{KL}} throughout this deck (matching the chapter). -->
+# 第 7 讲：合成数据与现代后训练方法
 
-<!-- layout: title-sidebar -->
-<!-- valign: bottom -->
-
-# Lecture 7: Synthetic Data and Modern Post-Training Methods
-
-<div class="colloquium-title-eyebrow">rlhfbook.com</div>
-
-<div class="colloquium-title-meta">
-<p class="colloquium-title-name">Nathan Lambert</p>
-</div>
-
-<p class="colloquium-title-note">Post-training course. Chapter 12 on Synthetic Data.</p>
+> 后训练课程 · 第 12 章：合成数据
 
 ---
 
 <!-- animate: bullets -->
-## Why synthetic data took over
+## 为什么合成数据成为主导
 
-When the first models were trained with RLHF, human data was *the only* way to get high-quality responses and reliable feedback. As models got better, that assumption broke down fast.
+当第一批模型使用 RLHF 进行训练时，人类数据是获取高质量响应和可靠反馈的**唯一**方式。但随着模型的不断变强，这一假设很快就被打破了。
 
-- **Cheaper, faster iteration** -- synthetic data lowered the price of a post-training experiment, opening the field to everyone who was priced out of human-data pipelines. The time-to-collect it is also far faster, enabling the RSI arguments we hear today.
-- **A capability threshold** -- synthetic data in post-training only worked once GPT-4-class models arrived. Llama 2 and GPT-3.5-Turbo were not reliable enough to generate *or* supervise data; the LLM-as-a-judge ability emerged in the GPT-3.5 → GPT-4 jump.
-- **The center of gravity of post-training** -- today, leading models *need* synthetic data to reach the frontier. Distillation is the general word for how to transfer capabilities from a stronger model to a student.
+- **更便宜、更快的迭代** -- 合成数据大幅降低了后训练实验的成本，让那些曾经因人类数据管道而被挡在门外的研究人员也都能参与进来。其收集速度也远快于人类数据，这正是我们今天听到的 RSI（RL 缩放）论点的核心。
+- **跨越能力门槛** -- 合成数据在后训练中真正发挥作用，是在 GPT-4 级别的模型出现之后。Llama 2 和 GPT-3.5-Turbo 还不足以可靠地生成数据或作为监督数据；LLM 作为裁判（judge）的能力正是在 GPT-3.5 → GPT-4 的跃迁中出现的。
+- **后训练的核心重心** -- 今天，领先模型**必须**使用合成数据才能达到前沿水平。知识蒸馏（Distillation）是将能力从更强的模型转移到较弱学生的通用方式。
 
 ---
 
 <!-- columns: 50/50 -->
-## This lecture
+## 本讲内容
 
-We survey how synthetic data has replaced or expanded much of the post-training pipeline -- then derive **on-policy distillation** from scratch as the technical core.
+我们调查合成数据如何取代或扩展了后训练流水线的许多环节 -- 然后从头推导**同策略蒸馏（On-Policy Distillation）**，作为本讲的技术核心。
 
-**Definition:** Synthetic data is any training data used for an AI model that is generated in some part from another AI model. This is very broad!
+**定义：** 合成数据是指在 AI 模型训练过程中，部分或全部由另一个 AI 模型生成的任何训练数据。这个定义非常广泛！
 
 |||
 
 ```box
-title: The plan, roughly
+title: 大致计划
 tone: accent
 content: |
-  1. The **roles** of synthetic data
-  2. **General distillation** with synthetic data
-  3. The path to **on-policy distillation** (the technical core)
-  4. **AI feedback** & **Constitutional AI**
-  5. **Rubrics** -- prompt-specific AI feedback
+  1. 合成数据的**作用**
+  2. 用合成数据进行**通用蒸馏**
+  3. 通向**同策略蒸馏**的路径（技术核心）
+  4. **AI 反馈**与**宪法 AI**
+  5. **评分表** -- 面向特定提示的 AI 反馈
 ```
 
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 7: Where it sits
+## 第 7 讲：在全局中的位置
 
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Overview
+title: 总览
 tone: muted
 compact: true
 content: |
-  1. Introduction
-  2. Key related works
-  3. Training overview
+  1. 引言
+  2. 关键相关工作
+  3. 训练总览
 ```
 
 |||
 
 ```box
-title: Core training pipeline
+title: 核心训练流水线
 tone: muted
 compact: true
 content: |
-  4. Instruction tuning
-  5. Reward models
-  6. Reinforcement learning
-  7. Reasoning
-  8. Direct alignment
-  9. Rejection sampling
+  4. 指令微调
+  5. 奖励模型
+  6. 强化学习
+  7. 推理
+  8. 直接对齐
+  9. 拒绝采样
 ```
 
 |||
 
 ```box
-title: Data & preferences
+title: 数据与偏好
 tone: accent
 compact: true
 content: |
-  10. What are preferences
-  11. Preference data
-  12. **Synthetic data & CAI**
+  10. 偏好是什么
+  11. 偏好数据
+  12. **合成数据与 CAI**
 ```
 
 ===
@@ -122,193 +94,193 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical considerations
+title: 实际考量
 tone: muted
 compact: true
 content: |
-  13. Tool use
-  14. Over-optimization
-  15. Regularization
-  16. Evaluation
-  17. Product & character
+  13. 工具使用
+  14. 过度优化
+  15. 正则化
+  16. 评估
+  17. 产品与角色
 ```
 
 |||
 
 ```box
-title: Appendices
+title: 附录
 tone: surface
 compact: true
 content: |
-  - A. Definitions
-  - B. Style & information
-  - C. Practical issues
+  - A. 定义
+  - B. 风格与信息
+  - C. 实际问题
 ```
 
 |||
 
 ```box
-title: Course home
+title: 课程主页
 tone: surface
 compact: true
 content: |
   - [rlhfbook.com](https://rlhfbook.com)
-  - [GitHub repo](https://github.com/natolambert/rlhf-book)
+  - [GitHub 仓库](https://github.com/natolambert/rlhf-book)
 ```
 
 ---
 
 
 <!-- rows: 60/40 -->
-## Recall: Where synthetic data sits in a pipeline
+## 回顾：合成数据在流水线中的位置
 
 <!-- row-columns: 48/52 -->
-The post-training pipeline is many moving parts:
+后训练流水线涉及许多环节：
 
-1. Collect / generate **prompts**
-2. Generate **completions** for SFT
-3. Collect **preferences** for RLHF
-4. Score **rewards** for RLVR
-5. Filtering, cleaning, all of the above
+1. 收集 / 生成**提示（prompts）**
+2. 为 SFT 生成**补全（completions）**
+3. 收集用于 RLHF 的**偏好（preferences）**
+4. 为 RLVR 给**奖励（rewards）**打分
+5. 过滤、清理，以及上述所有环节
 
 |||
 
-Synthetic data from other language models now feed every box: writing prompts from seeds, generating completions, labeling preferences, and verifying answers for RL.
+来自其他语言模型的合成数据现在渗透到每一个环节：从种子提示生成新的提示、生成补全、标注偏好、以及为 RL 验证答案。
 
-We will cover a few training methods that emerged around these ideas too.
+我们还将介绍围绕这些理念出现的一些训练方法。
 
 ===
 
-![Modern post-training runs many rounds of feedback and optimization; synthetic data now feeds most of the loop.](assets/rlhf-complex.png)
+![现代后训练涉及多轮反馈和优化循环；合成数据现在为整个循环的各个环节提供输入。](assets/rlhf-complex.png)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: The roles of synthetic data
+## 第一部分：合成数据的作用
 
 ---
 
 <!-- animate: bullets -->
-## What synthetic data is used for
+## 合成数据的用途
 
-"Synthetic data" in modern post-training spans the whole pipeline -- a single model is reused for many roles:
+现代后训练中的"合成数据"贯穿整条流水线 -- 同一个模型被复用于多种角色：
 
-- **Generate new prompts** from seed examples [@wang2022self]
-- **Modify / expand** existing prompts
-- **Generate completions** to prompts [@numina_math_7b]
-- **Provide AI feedback** to create preference data [@cui2023ultrafeedback]
-- **Filter completions** for quality [@li2024superfiltering]
-- **Verify** answers as rewards for RL
+- 从种子示例**生成新提示** [@wang2022self]
+- **修改 / 扩充**现有提示
+- **生成对提示的补全** [@numina_math_7b]
+- 提供 **AI 反馈**以创建偏好数据 [@cui2023ultrafeedback]
+- **过滤补全**以提升质量 [@li2024superfiltering]
+- **验证**答案，作为 RL 的奖励
 
 ---
 
-## The balance between human and synthetic data
+## 人类数据与合成数据的平衡
 
-Synthetic data has not replaced human data uniformly across the pipeline.
+合成数据并未在整个后训练流水线中均匀地取代人类数据。
 
-- **Instruction data (SFT):** synthetic has largely *won* -- distillation beats most human writers at scale.
-- **Preference data (RLHF):** *mixed* -- academic work shows it performs comparably, yet frontier labs treat human preference data as a competitive moat.
-- **Evaluation:** LLM-as-a-judge scales *scoring* cheaply, but benchmarks and ground-truth labels still need human grounding/correlation.
+- **指令数据（SFT）：** 合成数据已**基本胜出** -- 大规模蒸馏优于大多数人工编写者。
+- **偏好数据（RLHF）：** **混合** -- 学术研究显示二者表现相当，但前沿实验室仍将人类偏好数据视为竞争护城河。
+- **评估：** LLM 作为裁判能以低成本扩展**评分**，但基准测试和真实标签仍然需要人类 grounding/相关性验证。
 
-Human data curation is heavily involved in determining the frontier of models and seeding initial progress, then synthetic data is used to scale it.
+人类数据在确定模型前沿和优化初始进度方面至关重要，然后才用合成数据将其规模化。
 
-Around the launch of ChatGPT, human data was a central driver of progress.
+在 ChatGPT 发布前后，人类数据是进步的核心驱动力。
 
 ---
 
 <!-- columns: 58/42 -->
-## Model collapse: An outdated worry
+## 模型崩溃：一个过时的担忧
 
-![Recursive self-training narrows the distribution over generations; the tails go first. Source: Shumailov et al. (2024).](assets/model-collapse-shumailov.png)
+![递归自训练会使每代的分布逐渐收窄；尾部最先消失。来源：Shumailov 等人（2024）。](assets/model-collapse-shumailov.png)
 
 |||
 
-A common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
+一种常见批评是：反复在模型自身的生成结果上训练，会缩小有效的训练分布 [@shumailov2024ai]。
 
-The argument follows as:
-*As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.*
-
----
-
-## Model collapse: An outdated worry
-
-But collapse is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
-
-- mixing in real / human data,
-- using diverse teachers,
-- deduplication,
-- strong quality filters.
-
-Evidence suggests synthetic data can -- and should -- be used at scale without the catastrophic regressions of the strongest collapse story [@gerstgrasser2024model] [@feng2024beyond].
+其推理链条是：
+*随着多样性下降，罕见事实和风格会被边缘化，小的错误在迭代中不断累积。*
 
 ---
 
-## Canonical, early synthetic datasets and their scale
+## 模型崩溃：一个过时的担忧
 
-A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kickstarted the DPO revolution), **Stanford Alpaca** (early chat SFT), **Tülu 3** [@lambert2024t] (pre RLVR SFT set), and **OpenThoughts 3** [@guha2025openthoughts] (general reasoning set).
+但崩溃主要发生在**未经过滤、单模型、自训练**循环中。在实践中，通过以下方式可以避免：
 
-| | Prompts | Tokens (approx.) |
+- 混合真实 / 人类数据，
+- 使用多样化的教师，
+- 去重，
+- 严格的质量过滤。
+
+有证据表明，合成数据可以而且应该大规模使用，而不会出现最严重崩溃故事中的灾难性退化 [@gerstgrasser2024model] [@feng2024beyond]。
+
+---
+
+## 典型的早期合成数据集及其规模
+
+以下数据集定义了各个时期：**UltraFeedback** [@cui2023ultrafeedback]（开启了 DPO 革命）、**Stanford Alpaca**（早期聊天 SFT）、**Tülu 3** [@lambert2024t]（RLVR SFT 之前的集合），以及 **OpenThoughts 3** [@guha2025openthoughts]（通用推理集合）。
+
+| | 提示数 | 近似 token 数 |
 | :--- | :---: | :---: |
-| **Stanford Alpaca** (2023) | 52K | ~10M |
-| **Tülu 3** (2024) | ~1M | ~500M |
-| **OpenThoughts 3** (2025) | 1.2M | ~10B |
+| **Stanford Alpaca** (2023) | 5.2 万 | ~1000 万 |
+| **Tülu 3** (2024) | ~100 万 | ~5 亿 |
+| **OpenThoughts 3** (2025) | 120 万 | ~100 亿 |
 
 ---
 
 <!-- columns: 50/50 -->
-## Two meanings of "distillation"
+## "蒸馏"的两种含义
 
-**Technical (Knowledge Distillation):** train a smaller *student* to match a stronger *teacher's* full output distribution -- *soft* labels, not one-hot targets [@hinton2015distilling]. More on this later in the lecture.
+**技术含义（知识蒸馏）：** 训练一个较小的**学生**来匹配更强的**教师**的完整输出分布 -- 使用*软*标签，而非独热目标 [@hinton2015distilling]。本讲稍后会详细讨论。
 
 |||
 
-**Colloquial (today's usage):** "train a weaker model on the outputs of a stronger model." It's what people mean when they say something like "Chinese models distill from GPT/Claude."
+**通俗含义（如今常用）：** "用更强模型的输出来训练较弱模型"。当人们说"中国模型从 GPT/Claude 蒸馏"时，指的就是这个意思。
 
 
 ---
 
-## Aside: Distillation on Interconnects this year
+## 插曲：今年 Interconnects 上的蒸馏讨论
 
 ```box
-title: Further reading
+title: 延伸阅读
 tone: surface
 content: |
-  - [**How much does distillation really matter for Chinese LLMs?**](https://www.interconnects.ai/p/how-much-does-distillation-really) (Feb 2026) - how much of Chinese open models' gains actually trace to distilling frontier APIs.
-  - [**The distillation panic**](https://www.interconnects.ai/p/the-distillation-panic) (May 2026) - why reacting quickly to frontier lab's fear-based messaging on distillation could be bad for the broader AI ecosystem.
+  - [**中国 LLM 的蒸馏到底有多重要？**](https://www.interconnects.ai/p/how-much-does-distillation-really)（2026 年 2 月）-- 中国开源模型的增长中，究竟有多少可以追溯到对前沿 API 的蒸馏。
+  - [**蒸馏恐慌**](https://www.interconnects.ai/p/the-distillation-panic)（2026 年 5 月）-- 为什么对前沿实验室基于恐惧的蒸馏宣传做出快速反应，可能对更广泛的 AI 生态系统不利。
 ```
 
 ---
 
 <!-- img-align: center -->
 <!-- cite-right: hinton2015distilling -->
-## Distillation 1: Classic knowledge distillation
+## 蒸馏（1）：经典知识蒸馏
 
-![Knowledge distillation trains a student to match the soft probability distribution of a larger teacher via KL divergence. Both models see the same input, and temperature scaling ($\tau > 1$) softens the distributions to expose relationships between classes.](assets/knowledge_distillation_tikz.png)
+![知识蒸馏训练学生以匹配更大教师的软概率分布，通过 KL 散度实现。两个模型看到相同的输入，温度缩放（$\tau > 1$）使分布更平滑，以暴露类别之间的关系。](assets/knowledge_distillation_tikz.png)
 
 ---
 
 <!-- columns: 52/48 -->
 <!-- valign: center -->
-## Distillation 2: The synthetic-data generation pipeline
+## 蒸馏（2）：合成数据生成流水线
 
-![Prompts are passed through a strong model to generate completions, which are paired into a training dataset and used to fine-tune smaller models with standard supervised learning. More complex pipelines edit completions, generate preference pairs, or filter for quality.](assets/synthetic_data_distillation_tikz.png)
+![将提示通过强模型以生成补全，然后配对形成训练数据集，用标准监督学习微调较小的模型。更复杂的流水线会编辑补全、生成偏好对或过滤以提升质量。](assets/synthetic_data_distillation_tikz.png)
 
-Yes, this is intentionally very simple as a diagram.
+是的，这个示意图确实故意画得很简单。
 
 |||
 
 ```box
-title: What changed with reasoning models
+title: 推理模型带来的变化
 tone: muted
 content: |
-  Early on this was simple: train on a strong model's API outputs.
+  早期非常简单：在强模型的 API 输出上训练即可。
 
-  Reasoning models made it harder -- you want the *reasoning traces*, and closed APIs stopped returning them. Distillation shifted to:
+  推理模型让事情变得复杂 -- 你需要的是*推理轨迹*，而封闭式 API 不再返回它们。蒸馏转向了以下方式：
 
-  - **More aggressive jailbreaking** to recover hidden traces (controversial).
-  - **Open models** more often -- having the weights lets you get the full trace.
+  - **更激进的越狱**来恢复隐藏轨迹（有争议）。
+  - **开源模型**更常见 -- 拥有权重意味着你可以获取完整轨迹。
 ```
 
 ---
@@ -316,30 +288,30 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: The path to on-policy distillation (OPD)
+## 第二部分：通向同策略蒸馏（OPD）的路径
 
 ---
 
 <!-- valign: top -->
-## Setup and notation
+## 设定与符号
 
-Knowledge distillation, introduced by Hinton, Vinyals & Dean [@hinton2015distilling], in its original form uses **soft** labels -- the full distribution over next tokens -- rather than the one-hot target of next-token prediction. To apply it to autoregressive LMs, decompose the loss per token.
+知识蒸馏由 Hinton、Vinyals 和 Dean 引入 [@hinton2015distilling]，其原始形式使用**软**标签 -- 即整个下一个 token 的完整分布 -- 而非下一个 token 预测的独热目标。为了将其应用于自回归 LLM，按 token 分解损失。
 
-Let:
+设：
 
-- $s$ -- the source prompt
-- $u = (u_1, \ldots, u_J)$ -- a complete output sequence from the **teacher**
-- $\mathcal{V}$ -- the output vocabulary (tokenizer)
-- $q$ -- the teacher's next-token distribution, $p$ -- the student's
+- $s$ -- 源提示
+- $u = (u_1, \ldots, u_J)$ -- **教师**的完整输出序列
+- $\mathcal{V}$ -- 输出词表（分词器）
+- $q$ -- 教师的下一个 token 分布，$p$ -- 学生的
 
-**Notation discipline:** $u$ is a *teacher* trajectory; we reserve $a$ for the *student*-sampled completion in the on-policy / RL notation later. This $u$-vs-$a$ split is the whole point of "on-policy."
+**符号规范：** $u$ 代表**教师**轨迹；我们保留 $a$ 给后续同策略 / RL 符号中的**学生**采样补全。这个 $u$ 与 $a$ 的区分正是"同策略"的关键所在。
 
 ---
 
 <!-- valign: top -->
-## Word-level (per-token) distillation
+## 词元级（per-token）蒸馏
 
-**Standard teacher-student distillation for an LLM** [@kim-rush-2016-sequence] -- the classic Hinton soft-label idea applied at every token position:
+**LLM 的经典教师-学生蒸馏** [@kim-rush-2016-sequence] -- 将 Hinton 的软标签思想应用到每一个 token 位置：
 
 $$
 \mathcal{L}_{\mathrm{WORD\text{-}KD}}
@@ -347,102 +319,102 @@ $$
 q(u_j = k \mid s, u_{<j})\,\log p(u_j = k \mid s, u_{<j}).
 $$
 
-At each position, this matches the teacher's *full* next-token distribution over the entire vocabulary on a pre-existing training corpus $\mathcal{V}$ -- soft labels, not the one-hot target. The inner $\sum_{k=1}^{|\mathcal{V}|}$ runs over *every possible next token*.
+在每个位置，这与教师在预训练语料库 $\mathcal{V}$ 上**整个词表**的完整下一个 token 分布进行匹配 -- 软标签，而非独热目标。内层的 $\sum_{k=1}^{|\mathcal{V}|}$ 遍历*每一个可能的下一个 token*。
 
-Matching a distribution over every token sounds expensive, but it is **tractable**: it is just $|\mathcal{V}|$ probabilities per position -- the same $O(J\,|\mathcal{V}|)$ cost as ordinary cross-entropy. Matching over whole *sequences* is the hard part (next slide).
+在每个位置匹配一个词表分布听起来很昂贵，但它是**可行的**：每个位置只需要 $|\mathcal{V}|$ 个概率 -- 与标准交叉熵的 $O(J\,|\mathcal{V}|)$ 成本相同。对整个*序列*进行匹配才是难题（见下一张幻灯片）。
 
-<!-- footnote-right: Read "word-level" as per-token over the tokenizer. -->
-
----
-
-<!-- valign: top -->
-## Sequence-level distillation
-
-Word-level KD gives soft per-token distributions. The goal of sequence-level distillation from the paper is to apply this to data that the teacher generated, providing fresh training data/signal, and improving performance!
-
-(WORD-KD is the baseline in the Kim & Rush paper.)
+<!-- footnote-right: 可将"词元级"理解为按分词器的 per-token。 -->
 
 ---
 
 <!-- valign: top -->
-## Sequence-level distillation
+## 序列级蒸馏
 
-Sequence-level KD instead approximates the teacher's distribution over *whole sequences* $\mathcal{U}$ -- an intractable sum over exponentially many sequences -- by its mode: the *teacher* generates one high-probability output $\hat{u} = \mathrm{BeamSearch}_q(s)$ and the student trains on it with plain NLL:
+词元级 KD 给出每个 token 的软分布。论文中序列级蒸馏的目标是将其应用到教师生成的数据上，提供新的训练数据/信号，从而提升性能！
+
+（WORD-KD 是 Kim & Rush 论文中的基线。）
+
+---
+
+<!-- valign: top -->
+## 序列级蒸馏
+
+序列级 KD 转而近似教师对*整个序列* $\mathcal{U}$ 的分布 -- 这是指数级数量的序列之和，不可行 -- 而是用其**模式（mode）**近似：*教师*生成一个高概率输出 $\hat{u} = \mathrm{BeamSearch}_q(s)$，学生用标准 NLL 在其上训练：
 
 $$
 \begin{aligned}
 \mathcal{L}_{\mathrm{SEQ\text{-}KD}}(s)
-&= -\sum_{u \in \mathcal{U}} q(u \mid s)\log p(u \mid s) && \text{sum over all sequences: intractable}\\[4pt]
-&\approx -\log p(\hat{u} \mid s) && \text{teacher} \approx \text{point mass on } \hat{u}\\[4pt]
-&= -\sum_{j=1}^{|\hat{u}|}\log p(\hat{u}_j \mid s, \hat{u}_{<j}) && \text{autoregressive factorization}
+&= -\sum_{u \in \mathcal{U}} q(u \mid s)\log p(u \mid s) && \text{遍历所有序列：不可行}\\[4pt]
+&\approx -\log p(\hat{u} \mid s) && \text{教师} \approx \text{集中在 } \hat{u} \text{ 上的点质量}\\[4pt]
+&= -\sum_{j=1}^{|\hat{u}|}\log p(\hat{u}_j \mid s, \hat{u}_{<j}) && \text{自回归分解}
 \end{aligned}
 $$
 
 ```box
 tone: muted
 content: |
-  **Aside**: A first wave of offline-KD models were classifiers -- DistilBERT [@sanh2019distilbert] and TinyBERT [@jiao2020tinybert] -- pairing offline distillation with other LM advances. Not *sequence* distillation because these are embedding models, but building on related momentum in the area.
+  **插曲**：第一波离线 KD 模型是分类器 -- DistilBERT [@sanh2019distilbert] 和 TinyBERT [@jiao2020tinybert] -- 将离线蒸馏与其他 LM 进展相结合。不是*序列*蒸馏，因为这些是嵌入模型，但建立在了该领域的相关势头之上。
 ```
 
 ---
 
 <!-- valign: top -->
-## Finding a connection between SEQ-KD and SFT
+## 寻找 SEQ-KD 与 SFT 之间的联系
 
-To start, recall the cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses:
+首先，回顾教师 $q$ 和学生 $p$ 的交叉熵 -- 与 KD 损失形式相同：
 
 $$
 \begin{aligned}
-H(q,p) &= -\sum_z q(z)\log p(z) && \text{definition}
+H(q,p) &= -\sum_z q(z)\log p(z) && \text{定义}
 \end{aligned}
 $$
 
 <!-- step -->
 
-Add and subtract the teacher's own log-probabilities, $\sum_z q(z)\log q(z)$ -- does not involve $p$ at all:
+加上并减去教师自身的对数概率 $\sum_z q(z)\log q(z)$ -- 这部分完全不涉及 $p$：
 
 $$
 \begin{aligned}
-H(q,p) &= \underbrace{-\sum_z q(z)\log q(z)}_{H(q)} \;+\; \sum_z q(z)\log q(z) - \sum_z q(z)\log p(z) && \text{add and subtract}
+H(q,p) &= \underbrace{-\sum_z q(z)\log q(z)}_{H(q)} \;+\; \sum_z q(z)\log q(z) - \sum_z q(z)\log p(z) && \text{加再减}
 \end{aligned}
 $$
 
 <!-- step -->
 
-The last two sums share the weight $q(z)$, so they fold into one log-ratio (log rules):
+最后两项共享权重 $q(z)$，因此可以折叠为一个对数比（对数法则）：
 
 $$
 \begin{aligned}
-H(q,p) &= H(q) \;+\; \sum_z q(z)\log\frac{q(z)}{p(z)} = H(q) + D_{\mathrm{KL}}(q\|p) && \text{definition of KL}
+H(q,p) &= H(q) \;+\; \sum_z q(z)\log\frac{q(z)}{p(z)} = H(q) + D_{\mathrm{KL}}(q\|p) && \text{KL 散度定义}
 \end{aligned}
 $$
 
 ---
 
 <!-- valign: top -->
-## Finding a connection between SEQ-KD and SFT
+## 寻找 SEQ-KD 与 SFT 之间的联系
 
-We just showed cross-entropy decomposes into the teacher's entropy plus a KL:
+我们刚刚证明了交叉熵可以分解为教师的熵加上一个 KL 散度：
 
 $$ H(q,p) = H(q) + D_{\mathrm{KL}}(q\|p) $$
 
 <!-- step -->
 
-$H(q)$ depends only on the fixed teacher, so minimizing cross-entropy *is* minimizing the forward KL:
+$H(q)$ 仅依赖于固定的教师，因此最小化交叉熵*等价于*最小化前向 KL 散度：
 
-$$ \boxed{\ \min_p H(q,p)\ \equiv\ \min_p D_{\mathrm{KL}}(q\|p)\quad\text{(forward KL: the direction of offline KD and SFT)}\ } $$
+$$ \boxed{\ \min_p H(q,p)\ \equiv\ \min_p D_{\mathrm{KL}}(q\|p)\quad\text{（前向 KL：离线 KD 和 SFT 的方向）}\ } $$
 
 <!-- step -->
 
-So sequence-level KD reduces to SFT on the teacher's generated text -- "offline KD," generations produced often ahead of time by a teacher model.
+因此，序列级 KD 退化为在教师生成的文本上执行 SFT -- 即"离线 KD"，由教师模型提前生成的补全。
 
 
 ---
 
 <!-- valign: top -->
-## Exposure bias in offline KD: The train / test mismatch
+## 离线 KD 中的暴露偏差（Exposure Bias）：训练 / 测试不匹配
 
-Offline KD samples **teacher** trajectories $u \sim \pi_T$ and matches per-token (here $q = \pi_T$, $p = \pi_\theta$):
+离线 KD 对**教师**轨迹 $u \sim \pi_T$ 采样，并按 token 匹配（此处 $q = \pi_T$，$p = \pi_\theta$）：
 
 $$
 \mathcal{L}_{\mathrm{KD}}(\theta)
@@ -450,29 +422,31 @@ $$
 \sum_t D_{\mathrm{KL}}\!\left(\pi_T(\cdot \mid s, u_{<t}) \,\|\, \pi_\theta(\cdot \mid s, u_{<t})\right).
 $$
 
-But at test time the student rolls out under its own policy ($\ell_{\mathrm{task}}(s, a)$ is the loss function for that test-time domain):
+但在测试时，学生按自身的策略 rollout（$\ell_{\mathrm{task}}(s, a)$ 是该测试域的损失函数）：
 
 $$
 \mathcal{L}_{\mathrm{eval}}(\theta)
 = \mathbb{E}_{s \sim \mathcal{D}_{\mathrm{test}},\, a \sim \pi_\theta(\cdot \mid s)}\ \ell_{\mathrm{task}}(s, a).
 $$
 
-Since $\pi_T \neq \pi_\theta$, training and test prefixes come from different state distributions -- **exposure bias** is the propensity for the student to accumulate errors [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge].
+由于 $\pi_T \neq \pi_\theta$，训练和测试的前缀来自不同的状态分布 -- 这就是**暴露偏差**：学生倾向于累积错误的倾向 [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge]。
+
+<!-- 译者注：暴露偏差（Exposure Bias）是序列生成中的经典问题。训练时模型看到的是教师生成的真实前缀（ground truth prefix），而测试时模型看到自己生成的前缀。如果两个分布不一致，小的错误会在长序列中不断累积。 -->
 
 ---
 
 <!-- valign: top -->
-## The DAgger analogy: Compounding error
+## DAgger 类比：误差累积
 
-On-policy distillation connects to **imitation learning**: DAgger trains an agent on its own rollouts, with an oracle (teacher) labeling the action it *should* have taken [@ross2011reduction].
+同策略蒸馏与**模仿学习**相关联：DAgger 在智能体自身的 rollout 上训练，由一个预言机（教师）标记其*应该*采取的动作 [@ross2011reduction]。
 
-Suppose the student matches the teacher within per-step error $\epsilon$ on teacher-induced states:
+假设学生在其诱导的状态上与教师的每步误差在 $\epsilon$ 之内：
 
 $$ \mathbb{E}_{s_t \sim d_{\pi_T}}\!\left[\mathbb{I}\!\left(\pi_\theta(s_t) \neq \pi_T(s_t)\right)\right] \leq \epsilon. $$
 
 <!-- step -->
 
-The supervised imitation-learning analysis [@ross2011reduction] shows that the expected loss accumulated along a length-$L$ trajectory sampled from the student can scale quadratically in $L$ [@song2026surveyonpolicydistillationlarge]:
+监督式模仿学习分析 [@ross2011reduction] 表明，沿学生采样的长度-$L$ 轨迹累积的预期损失可以关于 $L$ 以二次方缩放 [@song2026surveyonpolicydistillationlarge]：
 
 $$
 \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\left[\sum_{t=1}^{L} \ell\!\left(s, a_{<t}\right)\right] \leq O(\epsilon L^2).
@@ -480,25 +454,25 @@ $$
 
 <!-- step -->
 
-For LLMs this is more of an analogy -- token losses are distributional (KL), not 0-1 action disagreement (indicator function in the first equation on this slide returns 0 or 1).
+对于 LLM 而言，这更多是一个类比 -- token 损失是分布式的（KL 散度），而非 0-1 的动作不一致（第一个公式中的指示函数返回 0 或 1）。
 
 ---
 
 <!-- animate: bullets -->
-## From off-policy to on-policy
+## 从离策略到同策略
 
-Sampling from the student rather than the teacher minimizes a lot of the distributional errors we've covered.
-- In offline KD, a single suboptimal token can nudge the student generation slightly **out-of-distribution**; the model, never having seen that token in training, is more likely to err again.
-- On-policy distillation iteratively samples from the student and supervises it with the teacher at *its own* visited states.
-- Under DAgger's interactive analysis, this drops compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$ [@ross2011reduction].
-- **MiniLLM** introduced a reverse-KL objective inside a policy-gradient frame [@gu2024minillm]; concurrent work connected on-policy KD to imitation learning [@agarwal2024policy] (this paper is closer to the modern distillation form used today).
+从学生（而非教师）采样可以最小化我们之前讨论过的许多分布误差。
+- 在离线 KD 中，一个次优的 token 可能会将学生的生成略微**推离分布**；模型在训练中从未见过这个 token，因此更容易再次出错。
+- 同策略蒸馏迭代地从学生采样，并在学生*自身*访问的状态上由教师提供监督。
+- 在 DAgger 的交互分析下，这将误差累积从 $O(\epsilon L^2)$ 降至 $O(\epsilon L)$ [@ross2011reduction]。
+- **MiniLLM** 在策略梯度框架中引入了一个反向 KL 目标 [@gu2024minillm]；同时期的工作将同策略 KD 与模仿学习联系起来 [@agarwal2024policy]（这篇论文更接近今天使用的现代蒸馏形式）。
 
 ---
 
 <!-- valign: top -->
-## The on-policy distillation objective
+## 同策略蒸馏的目标
 
-Let $a = (a_1, \ldots, a_L)$ be a completion sampled from the **student** $\pi_\theta(\cdot \mid s)$, with token-level state $s_t = (s, a_{<t})$. The teacher $\pi_T$ is fixed:
+设 $a = (a_1, \ldots, a_L)$ 是从**学生** $\pi_\theta(\cdot \mid s)$ 采样的补全，token 级状态为 $s_t = (s, a_{<t})$。教师 $\pi_T$ 固定：
 
 $$
 \boxed{\
@@ -508,66 +482,66 @@ $$
 \ }
 $$
 
-This is now in the sampling / expectation framework of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. 
+现在它位于第 6 章（策略梯度）的采样 / 期望框架内 -- 这是通向现代 RL 训练基础设施（交替生成和更新）的自然桥梁。
 
-Sampling from the *student* is also what flips the KL direction we minimize (forward $D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta)$ → reverse $D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T)$ -- next slide).
+从*学生*采样也是翻转 KL 方向的因素（前向 $D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta)$ → 反向 $D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T)$ -- 见下一张幻灯片）。
 
 ---
 
 <!-- rows: 18/82 -->
-## Forward vs. reverse KL
+## 前向 KL vs. 反向 KL
 
-Sampling completions from the student is what puts $\pi_\theta$ on the **left** of the KL -- which flips its direction (estimating the KL and its direction relies on which distribution you sample from):
+从学生采样补全是将 $\pi_\theta$ 放在 KL 的**左侧** -- 这翻转了它的方向（估计 KL 及其方向取决于从哪个分布采样）：
 
 ===
 
 <!-- row-columns: 50/50 -->
-**Offline KD / SFT** (forward KL) -- the expectation is over the *teacher*, $z \sim \pi_T$ (**off-policy**: a fixed teacher dataset):
+**离线 KD / SFT**（前向 KL）-- 期望对*教师*进行，$z \sim \pi_T$（**离策略**：固定的教师数据集）：
 
 $$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\log\frac{\pi_T(z)}{\pi_\theta(z)}\right] $$
 
-*Mass-covering* -- weighted by **teacher** mass: wherever the teacher has mass and $\pi_\theta \to 0$, the log-ratio blows up, so the student must cover *everything* the teacher might say.
+*质量覆盖* -- 以**教师**质量为权重：教师在何处有质量而 $\pi_\theta \to 0$，对数比就会爆炸，因此学生必须覆盖教师*可能说的所有内容*。
 
 |||
 
-**On-policy distillation** (reverse KL) -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
+**同策略蒸馏**（反向 KL）-- 期望对*学生*进行，$z \sim \pi_\theta$（**同策略**：你采样正在训练的模型）：
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\left[\log\frac{\pi_\theta(z)}{\pi_T(z)}\right] $$
 
-*Mode-seeking* -- weighted by the **student's** own mass: penalized only where *it* puts probability the teacher dislikes, so it collapses onto the teacher's modes. (Why reverse KL is often better: Chapter 15.)
+*模式搜索* -- 以**学生自身的**质量为权重：仅在学生自身赋予概率但教师不喜欢的地方受惩罚，因此它会坍缩到教师的模式上。（为什么反向 KL 通常更好：第 15 章。）
 
 ---
 
 <!-- valign: top -->
-## KD as an RL advantage
+## KD 作为 RL 优势
 
-Recent implementations take the KD distance directly as a reward: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. The reverse KL at state $s_t$ is an expectation over *student*-sampled tokens:
+近期实现直接将 KD 距离作为奖励使用：将负的 per-token 反向 KL 贡献替换为优势 [@lu2025onpolicy]。状态 $s_t$ 的反向 KL 是*学生*采样 token 上的期望：
 
 $$ D_{\mathrm{KL}}\!\left(\pi_\theta(\cdot \mid s_t) \,\|\, \pi_T(\cdot \mid s_t)\right) = \mathbb{E}_{a_t \sim \pi_\theta(\cdot \mid s_t)}\!\left[\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)\right]. $$
 
-In practice you never sum over the vocabulary: the single sampled token is an unbiased estimate $\hat{D}_{\mathrm{KL}}$ of that KL [@schulman2020klapprox], and the per-token advantage is its negative:
+实践中你不会对整个词表求和：单个采样 token 是该 KL 的无偏估计 $\hat{D}_{\mathrm{KL}}$ [@schulman2020klapprox]，per-token 优势是其负值：
 
 $$ A_t^{\mathrm{OPD}} = -\hat{D}_{\mathrm{KL}} = -\left(\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)\right) = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
 
 ---
 
-## KD as an RL advantage
-In practice you never sum over the vocabulary: the single sampled token is an unbiased estimate $\hat{D}_{\mathrm{KL}}$ of that KL [@schulman2020klapprox], and the per-token advantage is its negative:
+## KD 作为 RL 优势
+实践中你不会对整个词表求和：单个采样 token 是该 KL 的无偏估计 $\hat{D}_{\mathrm{KL}}$ [@schulman2020klapprox]，per-token 优势是其负值：
 
 $$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
 
 <!-- step -->
-- Tokens more likely for the teacher → positive advantage; less likely → negative.
-- Same form, opposite KL: $\log \pi_T - \log \pi_\theta$ *looks* like a forward-KL term -- what makes it **reverse** KL is sampling $a_t \sim \pi_\theta$ (the student), not the sign.
-- The teacher log-prob gap is dense, token-level feedback -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
-- This layers into modern RL machinery -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
+- 对教师更可能的 token → 正优势；不太可能 → 负优势。
+- 与相反 KL 相同形式：$\log \pi_T - \log \pi_\theta$ *看起来*像一个前向-KL 项 -- 使其成为**反向** KL 的是采样 $a_t \sim \pi_\theta$（学生），而非符号。
+- 教师的 log-prob 差距是密集的、token 级反馈 -- 可能比稀疏的可验证奖励或单一标量奖励模型评分更丰富。
+- 它可以层叠到现代 RL 基础设施中 -- 例如，将其与 GRPO 的组级规范化一起添加，以实现更复杂的奖励塑造。
 
 ---
 
 <!-- valign: top -->
-## Multi-teacher on-policy distillation (MOPD)
+## 多教师同策略蒸馏（MOPD）
 
-Use several teachers -- domain specialists (math, code) or earlier checkpoints -- each with a per-prompt mixture weight $w_k(s)$ (with $\sum_k w_k(s) = 1$) [@mimo2025flash]:
+使用多个教师 -- 领域专家（数学、代码）或早期检查点 -- 每个教师有一个每提示的混合权重 $w_k(s)$（满足 $\sum_k w_k(s) = 1$）[@mimo2025flash]：
 
 $$
 \mathcal{L}_{\mathrm{MOPD}}(\theta)
@@ -575,181 +549,181 @@ $$
 \sum_t \sum_k w_k(s)\, D_{\mathrm{KL}}\!\left(\pi_\theta(\cdot \mid s_t) \,\|\, \pi_{T_k}(\cdot \mid s_t)\right).
 $$
 
-At scale, this lets a growing org divide labor: many groups train expert teachers that later distill into one final student (DeepSeek-V4-Pro [@deepseekai2026deepseekv4], MiMo-V2-Flash [@mimo2025flash]).
+在大规模情况下，这使一个不断扩大的组织能够分工合作：多个团队训练专家教师，然后蒸馏到一个最终学生模型中（DeepSeek-V4-Pro [@deepseekai2026deepseekv4]、MiMo-V2-Flash [@mimo2025flash]）。
 
-For more, see the [conversation](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9) I had with Finbarr Timbers that maps MOPD across the 2026 frontier recipes.
+更多内容，参见我与 Finbarr Timbers 的[讨论](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9)，他将 MOPD 映射到了 2026 年的前沿方案上。
 
 ---
 
 <!-- valign: top -->
 <!-- animate: bullets -->
-## Self-distillation: Pushing the frontier
+## 自蒸馏：推向前沿
 
-At the absolute frontier there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint the student model won't have at inference [@zhao2026selfdistilled]. The self-distillation gradients will teach the model that tokens after the hint were a mistake, absorbing the lesson with an OPD-style loss.
+在绝对的前沿，没有更强的模型可供蒸馏。**同策略自蒸馏（On-Policy Self-Distillation, OPSD）** 绕过了这个问题：教师是*同一个模型在特权信息下的条件版本* -- 一种学生在推理时不会看到的提示 [@zhao2026selfdistilled]。自蒸馏的梯度将教导模型认识到提示后的 token 是错误的，并通过 OPD 风格的损失吸收教训。
 
-**Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25] (highly recommend watching [this video](https://x.com/dwarkesh_sp/status/2062353335529935114)!):
+**Cursor 的 Composer 2.5**（来自 Kimi K2.5）就是这样训练的 [@cursor2026composer25]（强烈推荐观看[这个视频](https://x.com/dwarkesh_sp/status/2062353335529935114)！）：
 
-- A judge reviews RL trajectories against a list of common bugs.
-- On a bug, it inserts a hint into the sequence -- privileged information the model wouldn't see at test time.
-- The model takes a KD loss toward its own hinted continuation, learning to reach it *unaided*.
-- A hint in token space is enough to self-correct -- *how* to structure that signal is an active area ("privileged information") [@penaloza2026privileged].
+- 一个评判器根据常见错误清单审查 RL 轨迹。
+- 当发现错误时，它在序列中插入一个提示 -- 一种模型在测试时看不到的特权信息。
+- 模型对其自身的带提示的延续执行 KD 损失，学习*不借助外部帮助*也能到达那里。
+- token 空间的提示足以自我纠正 -- *如何*构建这种信号是一个活跃的研究领域（"特权信息"）[@penaloza2026privileged]。
 
 ---
 
-## On-policy distillation is becoming very popular
+## 同策略蒸馏正变得非常流行
 
-A resurgence of teacher-student KD has accompanied the shift toward reasoning and agentic models. Leading models trained with new forms of knowledge distillation include:
+教师-学生 KD 的复兴伴随着向推理和智能体模型的转变。采用新型知识蒸馏训练的领先模型包括：
 
-- **Qwen3** (Alibaba) [@yang2025qwen3]
-- **MiMo-V2-Flash** (Xiaomi) [@mimo2025flash] (introduced MOPD)
+- **Qwen3**（阿里巴巴）[@yang2025qwen3]
+- **MiMo-V2-Flash**（小米）[@mimo2025flash]（引入了 MOPD）
 - **DeepSeek-V4-Pro** [@deepseekai2026deepseekv4]
 
-One caveat: per-token KD needs the student and teacher to share a tokenizer -- unusual among post-training methods, and part of why it thrives inside a lab's own model family.
+一个需要注意的点：per-token KD 需要学生和教师共享同一个分词器 -- 这在后训练方法中并不常见，也是为什么它更青睐于实验室内部的模型系列。
 
 ---
 
 <!-- img-align: center -->
 <!-- valign: center -->
-## From offline KD to self-distillation
+## 从离线 KD 到自蒸馏
 
-![**Sequence KD**: the teacher generates the rollout offline, and the student is trained to match those fixed targets with a cross-entropy loss.](assets/distillation_directionality_1.png)
-
----
-
-<!-- img-align: center -->
-<!-- valign: center -->
-## From offline KD to self-distillation
-
-![**On-policy distillation** flips who generates: the rollout comes from the student (e.g. inside an RL loop), and a separate teacher scores every visited token with a per-token KL.](assets/distillation_directionality_2.png)
+![**序列 KD**：教师离线生成 rollout，学生用交叉熵损失训练以匹配这些固定目标。](assets/distillation_directionality_1.png)
 
 ---
 
 <!-- img-align: center -->
 <!-- valign: center -->
-## From offline KD to self-distillation
+## 从离线 KD 到自蒸馏
 
-![**On-policy self-distillation**: one model plays both roles -- privileged information (a hint) added to the context creates the teacher trajectory, with no separate teacher model.](assets/distillation_directionality_3.png)
+![**同策略蒸馏**翻转了生成者的角色：rollout 来自学生（例如在 RL 循环内），而独立的教师用 per-token KL 对每个访问过的 token 评分。](assets/distillation_directionality_2.png)
+
+---
+
+<!-- img-align: center -->
+<!-- valign: center -->
+## 从离线 KD 到自蒸馏
+
+![**同策略自蒸馏**：一个模型同时扮演两个角色 -- 在上下文中添加特权信息（提示）来创建教师轨迹，无需单独的教师模型。](assets/distillation_directionality_3.png)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: AI feedback & Constitutional AI
+## 第三部分：AI 反馈与宪法 AI
 
 ---
 
-## Reinforcement learning from AI feedback (RLAIF)
+## 来自 AI 反馈的强化学习（RLAIF）
 
-Soon after RLHF took off, **RL from AI Feedback (RLAIF)** emerged -- using AIs to approximate the human-data step, starting with pairwise preferences [@lee2023rlaif] [@sharma2024critical] [@castricato2024suppressing].
+RLHF 迅速兴起后不久，**来自 AI 反馈的强化学习（RLAIF）** 应运而生 -- 使用 AI 来近似人类数据的步骤，从成对偏好开始 [@lee2023rlaif] [@sharma2024critical] [@castricato2024suppressing]。
 
-After initial debates if this worked well, eventually it became the default. Cost was one of the obvious advantages (estimates):
+在经历了初期关于这种方法是否有效的争论后，它最终成为了默认方法。成本是显而易见优势之一（估算值）：
 
-- One piece of *human* preference data: **\$1 -- \$10+** per prompt.
-- *AI* feedback (e.g. GPT-4o): **< \$0.01** per prompt.
+- 一条*人类*偏好数据：每条提示 **\$1 -- \$10+**。
+- *AI* 反馈（如 GPT-4o）：每条提示 **< \$0.01**。
 
-Human labor cost is roughly flat; model price-per-performance keeps dropping. 
-This opened RLHF experimentation to a population previously priced out.
-
----
-
-## The bias-variance tradeoff
-
-I've heard a colloquial rule of thumb in early RLHF v RLAIF debates. There's an intuitive nature to it.
-
-**Human data** -- *high-noise, low-bias.*
-
-Harder to collect and filter, but when wrangled it gives a very reliable signal.
-
-
-**Synthetic preference data** -- *low-noise, high-bias.*
-
-Easier to start with, but can carry tricky second-order effects that are *systematically* baked into the data.
+人类劳动成本大致持平；模型价格 / 性能比持续下降。
+这让 RLHF 实验对之前因成本而被挡在门外的人群敞开了大门。
 
 ---
 
-## Balancing human and AI feedback
+## 偏差-方差权衡
 
-No clear literature on the ultimate limits between human and AI preference data. Some context includes:
+在早期的 RLHF 与 RLAIF 争论中，我听过一条经验法则。它具有一定的直观性质。
 
-- Early RLAIF literature claimed AI feedback could fully replace human data -- especially on chat tasks [@lee2023rlaif] [@cui2023ultrafeedback].
-- Later work is more nuanced: on broader evaluations (incl. reasoning), the best mix routes hard data points to humans while sending most to AI [@miranda2024hybrid] [@xu2025rlthf].
-- No study has mapped the human/AI balance across *all* domains, highlighting a general limitation of open academic work to wrangle high-quality human data.
-- **Industry reality:** human preference data is still treated as a substantial moat. Could be more from prompt distributions, implicit feedback, etc. Human data still is used.
+**人类数据** -- *高噪声，低偏差。*
 
----
+更难收集和过滤，但一旦整理好，它会给出非常可靠的信号。
 
-## Building specialized judge models
 
-If you're using substantial AI feedback or LLM-as-a-judge evaluations, the question arises as to if you should have a specialized model for that purpose. The question is -- how well do they work?
+**合成偏好数据** -- *低噪声，高偏差。*
 
-- Some research is done to understand the performance of LLMs in these feedback domains. Results include how LLMs are inconsistent evaluators [@wang2023large] and show **self-preference bias** -- they favor their own generations [@panickssery2024llm].
-- Dedicated judge / critic models exist -- Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], and others -- but are not widely adopted in documented post-training recipes.
-- Equilibrium: Frontier models are already trained hard for judging, so you rarely need your own -- *unless* your task has private data not on the public internet.
+更容易入手，但可能携带难以处理的次级效应，这些效应*系统地*嵌入到数据中。
 
 ---
 
-## CAI: The earliest large-scale synthetic RLHF data
+## 平衡人类与 AI 反馈
 
-Constitutional AI (CAI) -- Anthropic's post-training method for the Claude models -- is the earliest documented, large-scale use of synthetic data for RLHF [@bai2022constitutional]. CAI refers to a specific set of techniques for their early Claude models, and definitely has shifted substantially (though Anthropic still uses a constitution -- yes, confusing).
+关于人类与 AI 偏好数据的最终界限，没有明确的文献。一些背景信息包括：
 
-The term **RLAIF** was coined in this paper as well, prompting confusion on the relation of the two.
+- 早期 RLAIF 文献声称 AI 反馈可以完全替代人类数据 -- 尤其是在聊天任务上 [@lee2023rlaif] [@cui2023ultrafeedback]。
+- 后续研究更加细致：在更广泛的评估（包括推理）中，最佳方案是将困难的数据点路由给人类，同时将其余大多数发送给 AI [@miranda2024hybrid] [@xu2025rlthf]。
+- 没有研究映射过*所有*领域的人类/AI 平衡，这凸显了开放学术研究在处理高质量人类数据方面的一个普遍局限。
+- **行业现实：** 人类偏好数据仍被视为重要的护城河。可能更多来自提示分布、隐式反馈等。人类数据仍然在使用。
 
-> CAI is the example that kickstarted the broader field of RLAIF. CAI ⊂ RLAIF.
+---
 
-CAI generates synthetic data in two ways -- one for instructions, one for preferences. 
-The well-known and more influential part of it is preferences.
+## 构建专用评判模型
+
+如果你使用了大量 AI 反馈或 LLM-as-a-judge 评估，就会浮现出一个问题：你是否应该为此拥有一个专用模型。关键问题是 -- 它们的效果如何？
+
+- 有一些研究致力于理解 LLM 在这些反馈领域中的表现。结果包括 LLM 是不一致的评估者 [@wang2023large]，以及表现出**自我偏好偏差** -- 它们更偏好自身的生成 [@panickssery2024llm]。
+- 专用评判 / 批评模型存在 -- Prometheus [@kim2023prometheus]、Prometheus 2 [@kim2024prometheus] 等 -- 但在记录在案的后训练方案中并未广泛采用。
+- 平衡状态：前沿模型已经经过了严格的评判训练，所以你很少需要自己的模型 -- *除非*你的任务包含不在公开互联网上的私有数据。
+
+---
+
+## CAI：最早的大规模合成 RLHF 数据
+
+宪法 AI（CAI）-- Anthropic 为 Claude 模型设计的后训练方法 -- 是最早被记录的在 RLHF 中大尺度使用合成数据的方法 [@bai2022constitutional]。CAI 指的是其早期 Claude 模型的一套特定技术，虽然现在已经发生了实质性的变化（尽管 Anthropic 仍然在使用宪法 -- 是的，令人困惑）。
+
+**RLAIF** 这个术语也是在这篇论文中首次提出的，引发了对两者关系的困惑。
+
+> CAI 是开启更广泛 RLAIF 领域的例子。CAI ⊂ RLAIF。
+
+CAI 以两种方式生成合成数据 -- 一种用于指令，一种用于偏好。
+其中最广为人知和最具影响力的部分是偏好。
 
 ---
 
 <!-- img-align: center -->
 <!-- cite-right: bai2022constitutional -->
-## Constitutional AI: The original diagram
+## 宪法 AI：原始示意图
 
-![Two stages. Supervised (top): the model critiques and revises its own red-teamed responses against a constitution, fine-tuning into SL-CAI. RL (bottom, RLAIF): a preference model trained on AI comparisons drives RL into the final RL-CAI model. Source: Bai et al. (2022).](assets/cai-overview.png)
+![两个阶段。监督（上部）：模型根据其宪法对经过红队攻击的响应进行批评和修改，微调进入 SL-CAI。强化学习（下部，RLAIF）：在 AI 比较上训练的偏好模型驱动 RL 进入最终的 RL-CAI 模型。来源：Bai 等人（2022）。](assets/cai-overview.png)
 
 ---
 
 <!-- valign: top -->
-## Stage 1: Critique and revise → SFT data
+## 阶段 1：批评与修订 → SFT 数据
 
-A **constitution** $\mathcal{C}$ is a human-written set of principles (e.g. *"Is the answer encouraging violence?"*, *"Is the answer truthful?"*).
+一个**宪法** $\mathcal{C}$ 是一组人类编写的基本原则（例如，*"这个答案是否在鼓励暴力？"*，*"这个答案是否真实？"*）。
 
 <!-- step -->
 
-The model repeatedly samples a principle $c_i \in \mathcal{C}$ and revises its latest output $y^i$ to the prompt $x$ to align with $c_i$:
+模型反复采样一个原则 $c_i \in \mathcal{C}$，并将它对提示 $x$ 的最新输出 $y^i$ 修订为与 $c_i$ 对齐：
 
 $$
 \{c_0, c_1, \ldots, c_{n-1}\}\ \longrightarrow\ \{y^0, y^1, \ldots, y^n\}
 \qquad\Longrightarrow\qquad
-\text{SFT point } (x, y^n).
+\text{SFT 数据点 } (x, y^n).
 $$
 
-The model is then fine-tuned on the refined dataset. 
-These critique methods are also used broadly for data filtering and synthetic-data generation.
+然后模型在精炼后的数据集上进行微调。
+这些批评方法也被广泛用于数据过滤和合成数据生成。
 
 ---
 
 <!-- valign: top -->
-## Stage 2: AI preference labels → RLAIF
+## 阶段 2：AI 偏好标签 → RLAIF
 
-Construct preferences by giving a feedback model:
+通过向反馈模型提供以下内容来构建偏好：
 
-- a prompt $x$,
-- a subset of principles $\{c_0, \ldots, c_n\}$,
-- two completions $y_0, y_1$ labeled (A) / (B).
+- 一个提示 $x$，
+- 一组选定的原则 $\{c_0, \ldots, c_n\}$，
+- 两个补全 $y_0, y_1$，标记为 (A) / (B)。
 
-The model selects which answer is higher quality and more aligned with the principle. Then RLHF proceeds as normal -- hence *RLAIF*.
+模型选择哪个答案质量更高、更符合该原则。然后 RLHF 像往常一样继续 -- 因此称为 *RLAIF*。
 
 <!-- step -->
 
 ```box
 tone: muted
 content: |
-  Aside: Also linked to literature like generative reward models and progression in the LLM-as-a-judge field. See Chapter 5 / Lecture 2.
+  插曲：也与生成式奖励模型和 LLM-as-a-judge 领域的进展相关。参见第 5 章 / 第 2 讲。
 
-  - **Earlier:** prompt with `The answer is: ` and read which of A / B has higher token probability.
-  - **Modern:** a **generative reward model** explains its reasoning, then selects [@mahan2024generative] (cf. principle-guided reward models [@sun2024salmon]).
+  - **早期**：用 `The answer is: ` 提示，阅读 A / B 中哪个 token 概率更高。
+  - **现代**：一个**生成式奖励模型**解释其推理，然后做出选择 [@mahan2024generative]（参见原理引导的奖励模型 [@sun2024salmon]）。
 ```
 
 ---
@@ -757,113 +731,113 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: Rubrics -- prompt-specific AI feedback
+## 第四部分：评分表 -- 面向特定提示的 AI 反馈
 
 ---
 
-## Why did rubrics become popular?
+## 为什么评分表变得流行？
 
-Rubrics became a popular tool for scaling RL on the long-tail of domains. They're also used to help with domain-specific evaluations and any other place domain expertise needs to be "trained into" the models.
-- A way to extend ideas from RL with verifiable rewards (Chapter 7) to tasks *without* clearly verifiable answers.
-- Write nearly-verifiable criteria for a prompt, generate multiple answers, and RL-update toward the best ones.
-- Emerged in late 2024 → 2025 as LLM judges and synthetic-data practices matured. Also likely a function of making RL more broadly accessible to frontier post-training.
-- Already delivering gains in scientific reasoning and factuality [@gunjal2025rubrics] [@viswanathan2025checklists] [@rezaei2025onlinerubrics] [@liu2025openrubrics].
-
----
-
-<!-- valign: top -->
-## A rubric example
-
-For a prompt with no single right answer, score against tagged criteria [@liu2025openrubrics]. An example, abbreviated rubric is below:
-
-```text
-Prompt: As a museum curator, suggest five obscure artifacts for a
-"Mysteries of the Ancient World" exhibit ...
-
-Rubric:
-1. Includes exactly five distinct artifacts.            [Hard Rule]
-2. Each from a different culture and time period.       [Hard Rule]
-3. Brief description of each artifact's significance.   [Hard Rule]
-6. Communicates clearly and is well-organized.          [Principle]
-8. Uses engaging language that stimulates curiosity.    [Principle]
-```
-
-`[Hard Rule]` = atomic, must-pass checklist items; `[Principle]` = softer quality criteria. The tags encode priority (numbers also work). Subcomponents of a rubric contribute to the score.
+评分表已成为在长尾领域扩展 RL 的流行工具。它们也被用于领域特定评估和任何需要将领域专业知识"训练"到模型中的地方。
+- 一种将第 7 章中有可验证奖励的 RL 思想扩展到*没有*明确可验证答案的任务的方法。
+- 为提示编写近乎可验证的标准，生成多个答案，然后用 RL 更新到最佳答案。
+- 在 2024 年末 → 2025 年涌现，随着 LLM 裁判和合成数据实践走向成熟。也可能反映了让 RL 更广泛地可用于前沿后训练。
+- 已经在科学推理和事实准确性方面交付了增益 [@gunjal2025rubrics] [@viswanathan2025checklists] [@rezaei2025onlinerubrics] [@liu2025openrubrics]。
 
 ---
 
 <!-- valign: top -->
-## Per-prompt generation via a meta-prompt
+## 一个评分表示例
 
-Rubrics are generated per prompt to ensure quality and robustness to over-optimization. E.g. a per-domain base rubric, refined per-prompt by a supervising LM [@gunjal2025rubrics].
+对于没有单一正确答案的提示，根据标记标准进行评分 [@liu2025openrubrics]。以下是一个简化的评分表示例：
 
 ```text
-You are an expert rubric writer for science questions ...
-Choose 7-20 rubric items based on question complexity.
-Each item: title (2-4 words), description (category prefix +
-  what to look for), weight.
-  - Essential : critical facts; omission invalidates the answer  (1-5)
-  - Important : key reasoning / completeness                     (1-5)
-  - Optional  : nice-to-have depth or style                      (1-5)
-  - Pitfall   : common mistakes to penalize                    (-1,-2)
-Output: a JSON array of {title, description, weight}.
+提示：作为博物馆策展人，为"古代世界之谜"展览
+建议五个冷门的文物 ...
+
+评分标准：
+1. 恰好包含五个不同的文物。                  [硬性规则]
+2. 每个来自不同的文化和时代。                [硬性规则]
+3. 每个文物的意义简要描述。                     [硬性规则]
+6. 表达清晰，组织良好。                         [原则]
+8. 使用引人入胜的语言来激发好奇心。            [原则]
 ```
 
-(Truncated -- real meta-prompts are long and tuned to the training setup.)
+`[硬性规则]` = 原子级的、必须通过的检查项；`[原则]` = 较软的质量标准。标签编码了优先级（数字也可以表示优先级）。评分表的各个组成部分对总分做出贡献。
 
 ---
 
-## Where rubrics are going
+<!-- valign: top -->
+## 通过元提示生成每提示评分表
 
-Rubric-based RL is a frontier of AI-feedback-driven training, expanding beyond its early uses:
+为确保质量和对过度优化的鲁棒性，评分表是每提示生成的。例如，每个领域的基础评分表，由监督 LM 针对每提示进行精炼 [@gunjal2025rubrics]。
 
-- **Advanced instruction-following** [@he2025advancedif]
-- **Deep research** agents [@shao2025drtulu]
-- **Evaluating** research agents [@sharma2025researchrubrics]
-- **Long-form generation** with structured checklists [@ruan2025expertlongbench]
+```text
+你是一个科学问题的专家评分表撰写者 ...
+根据问题复杂度选择 7-20 个评分项。
+每个项：标题（2-4 个词），描述（类别前缀 +
+  寻找什么），权重。
+  Essential : 关键事实；遗漏使答案无效  (1-5)
+  Important : 关键推理 / 完整性             (1-5)
+  Optional  : 可有可无的深度或风格          (1-5)
+  Pitfall   : 需要惩罚的常见错误        (-1,-2)
+输出：{title, description, weight} 的 JSON 数组。
+```
 
-Very general tool!
+（已截断 -- 实际的元提示很长，并且针对训练设置进行优化。）
+
+---
+
+## 评分表的未来
+
+基于评分表的 RL 是 AI 反馈驱动的训练的前沿，正在扩展其早期用途：
+
+- **高级指令遵循** [@he2025advancedif]
+- **深度研究**智能体 [@shao2025drtulu]
+- **评估**研究智能体 [@sharma2025researchrubrics]
+- 使用结构化检查表的**长文生成** [@ruan2025expertlongbench]
+
+非常通用的工具！
 
 ---
 <!-- layout: section-break -->
 
-## Conclusions
+## 总结
 
 ---
 
-## Synthetic data is the single most common tool used by researchers (other than building infra) to make great models
+## 合成数据是研究人员（除构建基础设施外）用来构建优秀模型的最常见工具
 
-The techniques surveyed here will continue to grow in complexity, and it's super fun to see.
-When I started writing this book, it was still a struggle to set up some synthetic data workflows!
-Knifecuts can happen, but overall it's a well-known workflow now.
+这里介绍的这些技术将继续变得越来越复杂，而且看到它们的发展非常有趣。
+当我开始写这本书时，搭建某些合成数据工作流仍然是一个挑战！
+偶尔会出现问题，但总体上这已经是一个众所周知的工作流程。
 
-There are many, minute open questions on how best to do this, but it often is a domain specific reflection of the technical problem at hand.
+关于如何最好地做这件事，有许多微小的开放性问题，但通常这反映的是面对具体技术问题时的领域特定的思考。
 
 ---
 
-## Course outline
+## 课程大纲
 
-1. Introduction & training overview -- Chapters 1-3
-2. IFT, reward models, rejection sampling -- Chapters 4, 5, 9
-3. RL theory -- Chapter 6 (Part 1)
-4. RL implementation & practice -- Chapter 6 (Part 2)
-5. Reasoning -- Chapter 7
-6. Direct alignment algorithms -- Chapter 8
-7. Synthetic data -- Chapter 12
-8. Preferences & preference data -- Chapters 10/11
+1. 引言与训练总览 -- 第 1-3 章
+2. IFT、奖励模型、拒绝采样 -- 第 4、5、9 章
+3. RL 理论 -- 第 6 章（第一部分）
+4. RL 实现与实践 -- 第 6 章（第二部分）
+5. 推理 -- 第 7 章
+6. 直接对齐算法 -- 第 8 章
+7. 合成数据 -- 第 12 章
+8. 偏好与偏好数据 -- 第 10/11 章
 
 ...
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions / discussion
+提问与讨论
 
-Contact: nathan@natolambert.com
+联系方式：nathan@natolambert.com
 
-Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+Newsletter：[interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
 

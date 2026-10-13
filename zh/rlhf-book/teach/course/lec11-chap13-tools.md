@@ -1,14 +1,14 @@
 ---
-title: "Lecture 11: Tool Use, Function Calling & the Road to Agents"
+title: "第 11 讲：工具调用、函数调用与通往智能体之路"
 author: "Nathan Lambert"
-fonts:
+font:
   heading: "Rubik"
   body: "Poppins"
 bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com/course"
-  center: "Lecture 11"
+  center: "第 11 讲"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #F28482; }
@@ -29,7 +29,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 11: Basics of LLM Tool Use and the Road to Today's Agents
+# 第 11 讲：大模型工具使用基础与今日智能体之路
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -37,19 +37,19 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Post-training course. Chapter 13.</p>
+<p class="colloquium-title-note">后训练课程 · 第 13 章</p>
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## What are the limitations of model weights alone?
+## 仅靠模型权重有什么局限性？
 
 ---
 
 <!-- columns: 45/55 -->
-## Two asks, two failure modes
+## 两种需求、两种失败模式
 
 ```conversation
 size: 0.85
@@ -66,97 +66,97 @@ messages:
 
 <!-- step -->
 
-The first fails on the **knowledge cutoff** -- but it is one search query away.
+第一个问题败在**知识截止**——但它只需一次搜索就能解决。
 
-The second, the weights *cannot even attempt*: it requires acting on the world, not describing it.
+第二个问题，权重**根本无法尝试**：它要求对世界采取行动，而不仅仅是描述它。
 
 <!-- step -->
 
-Tool use is what closes both gaps. It started by addressing structural limitations in LLMs and grew into the central way to push performance. Tool use is a trained skill -- everything in this course (SFT, preference tuning, RL) applies to it. 
+工具使用（tool use）正好弥补了这两个缺口。它最初旨在解决大模型中的结构性局限，后来成长为提升性能的核心手段。工具使用是一项经过训练的技能——本课程中的所有方法（SFT、偏好优化、RL）都适用于它。
 
 ---
 
-## What an "LLM" is has changed
+## 人们对"LLM"的理解已经改变
 
-### An LLM today is: model weights + tools + harness
+### 今天的 LLM = 模型权重 + 工具 + 编排框架
 
-- **Model weights** -- the trained network: foundation of knowledge, reasoning, style.
-- **Tools** -- the actions the model can request: search, code execution, file edits, APIs.
-- **Harness** -- the software loop around the weights that executes those requests and feeds the results back into the context.
+- **模型权重** —— 训练好的网络：知识、推理能力、风格的基石。
+- **工具** —— 模型可以请求的动作：搜索、代码执行、文件编辑、API 调用。
+- **编排框架（harness）** —— 围绕权重运行的软件循环，负责执行请求并将结果回灌到上下文中。
 
-LLMs are now systems and this lecture is about the transition from static weights to today.
+LLM 现在是一个系统，而本讲讲述的正是从静态权重重到今天的转变。
 
 ---
 
 <!-- columns: 50/50 -->
 <!-- cite-right: anthropic2025claudecode, tbench2026 -->
-## Where we are today
+## 今日现状
 
-Tool use started as "call a calculator." It was implemented to help with hard multiple-choice questions and code execution.
-It is now used in...
+工具使用始于"调用计算器"。早期是为解决困难的多选题和代码执行而实现的。如今它被用于……
 
-- Coding and terminal agents (Claude Code, Cursor) driving engineer productivity -- **using tools that're general primitives on computers**
-- Deep research, computer use, productivity copilots -- **specialized tools and regimes to the task** (deep research came first!)
-- The hardest current evals today are *end-to-end tasks in complex containers*
+- 编程与终端智能体（Claude Code、Cursor），驱动工程师生产力——**使用计算机上的通用原语作为工具**
+- 深度研究、计算机操控、生产力助手——**针对任务的专业工具和工作机制**（深度研究先出现了！）
+- 当前最难评估的是**复杂容器中的端到端任务**
 
 |||
 
-![A coding agent at work in the terminal: many chained tool calls -- reading files, editing, running tests -- inside one user turn.](assets/claude-code.png)
+![一个正在终端中工作的编程智能体：在单个用户回合内，多次工具调用链式执行——读取文件、编辑、运行测试。](assets/claude-code.png)
 
 ---
 
 <!-- columns: 40/60 -->
-## This lecture
+## 本讲内容
 
-Chapter 13 covers the mechanics of tool use. The last third of today goes beyond the book content with a bit of recent work on tool use and RL at scale.
+第 13 章涵盖工具使用的机制。本讲最后三分之一超越书本内容，介绍关于大规模工具使用与强化学习的近期进展。
 
 |||
 
 ```box
-title: The plan
+title: 计划
 tone: accent
 content: |
-  1. **Basics & history** -- why models need tools
-  2. **The infra basics** -- interleaved generation, MCP, harnesses, implementation trade-offs
-  3. **Training at scale** -- tool-use RL and why it's hard
+  1. **基础与历史** —— 为什么模型需要工具
+  2. **基础设施基础** —— 交错的生成、MCP、编排框架、实现权衡
+  3. **大规模训练** —— 工具使用的 RL 及其难点
 ```
 
 ---
 
 <!-- title: center -->
-## Quick pause for YouTube: How'd you end up here?
+## 暂停一下：你是怎么找到这里的？
 
-Are you **following the whole course**, or did you **come for just this video** (search, algo, etc.)?
+你是在**跟完整课程**，还是**只为这一个视频**来的（搜索、算法等）？
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: Why language models need tools
+## 第一部分：语言模型为何需要工具
 
 ---
 
-## Three terms people have conflated
+## 三个常被混用的术语
 
 <!-- animate: bullets -->
 
-From most general to most specific -- these share training characteristics, but are important to get right:
+从最通用到最具体——它们共享训练特性，但分清它们很重要：
 
-- **Tool use**: the general strategy where a model emits a structured request (tool name + arguments); an orchestrator executes it; results are appended to the context; the model continues generating.
-- **Function calling**: a specific format of tool use where arguments must conform to a *declared schema* (usually JSON Schema for APIs), enabling reliable parsing and validation.
-- **Code execution**: a special case where the tool is a code interpreter -- the most general tool of all. Code inputs, execution outputs.
+- **工具使用（tool use）**：模型发出结构化请求（工具名 + 参数），编排器执行它，结果追加到上下文中，模型继续生成。这是通用的策略。
+- **函数调用（function calling）**：工具使用的一种具体格式，参数必须符合*声明的模式（schema）*（通常为 JSON Schema 以用于 API），支持可靠的解析与验证。
+- **代码执行（code execution）**：工具是一个代码解释器的特殊情况——这是最通用的工具。输入代码，执行，输出结果。
+
+> **译者注：** JSON Schema 是一种用于描述和验证 JSON 数据结构的格式，常用于声明函数调用的参数类型、必需字段等，使编排器可以可靠地解析模型发出的参数。
 
 ---
 
 <!-- columns: 38/62 -->
 <!-- class: small-code -->
-## Escaping probabilistic generation -- an example tool-use task
+## 跳出概率生成的局限——一个工具使用示例
 
-**Task:** Print $\pi$ to 50 digits -- without reciting it from memory (parameters) and risking hallucination.
+**任务：** 输出 π 的 50 位小数——不要依赖记忆（即参数中的知识），以免产生幻觉。
 
-The model writes the program; the interpreter provides the answer.
-Tools let models remove some of the stochastic elements of "stochastic parrots."
+模型写出程序，解释器提供答案。工具让模型可以去掉"概率鹦鹉"（stochastic parrots）的一些随机性成分。
 
 |||
 
@@ -187,92 +187,93 @@ print(str(C / S)[:52])
 ---
 
 <!-- animate: bullets -->
-<!-- footnote: Years on the left are when the work first appeared (arXiv); citation years in parentheses are the official publication date, so some lag by a year. -->
-## A short history of models using tools
+<!-- footnote: 左侧年份表示论文首次出现在 arXiv 上的时间；括号中的引用年份是正式出版年份，因此有些会晚一年。 -->
+## 模型使用工具简史
 
-- **2015--2020, precursors**: Neural Programmer-Interpreters execute programs with neural networks [@reed2015neural]; retrieval augmentation pulls in outside knowledge [@lewis2020retrieval]
-- **2021**: WebGPT browses the web, trained with human feedback [@nakano2021webgpt]
-- **2022**: TALM bootstraps tool-augmented training data [@parisi2022talm]; PAL offloads computation to Python [@gao2023pal]; ReAct interleaves reasoning and actions [@yao2023react]
-- **2023**: Toolformer teaches itself APIs w/ synthetic data [@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT
-- **2024**: Model Context Protocol acts as some standardization [@anthropic_mcp_2024]
-- **2025**: o3 makes multistep tool calls *inside* its reasoning [@openai2025o3]
-- **2026**: terminal and coding agents become the frontier of post-training [@tbench2026]
+- **2015--2020，先驱工作：** Neural Programmer-Interpreters 用神经网络执行程序 [@reed2015neural]；检索增强（retrieval augmentation）引入外部知识 [@lewis2020retrieval]
+- **2021：** WebGPT 浏览网页，通过人类反馈进行训练 [@nakano2021webgpt]
+- **2022：** TALM 自举工具增强训练数据 [@parisi2022talm]；PAL 将计算卸载到 Python [@gao2023pal]；ReAct 将推理与行动交错进行 [@yao2023react]
+- **2023：** Toolformer 借助合成数据自学 API [@schick2023toolformerlanguagemodelsteach]；Gorilla 扩展到 1,645 个 API [@patil2023gorilla]；ToolLLM 扩展到 16,000+ [@qin2023toollm]；OpenAI 在 API 中推出函数调用，在 ChatGPT 中推出代码解释器
+- **2024：** 模型上下文协议（Model Context Protocol）带来部分标准化 [@anthropic_mcp_2024]
+- **2025：** o3 在其推理过程中进行多步工具调用 [@openai2025o3]
+- **2026：** 终端与编程智能体成为后训练的前沿 [@tbench2026]
 
 ---
 
 <!-- columns: 55/45 -->
 <!-- cite-right: yao2023react -->
-## ReAct: Reasoning and acting are one generation
+## ReAct：推理与行动在同一个生成流中
 
-> *"...reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments."*
+> *"……推理轨迹帮助模型归纳、跟踪和更新行动计划，并处理异常；而行动使它能够与知识库或外部环境等外部源交互并获取额外信息。"*
 
-Before ReAct, reasoning (chain-of-thought) and acting (tool calls) were separate literatures.
-Interleaving them in one token stream is the pattern every modern agent still uses -- o3's tool-calls-inside-thinking is this idea, scaled up with RL.
+在 ReAct 之前，推理（链式思维 chain-of-thought）与行动（工具调用）是两条独立的文献。将它们交错在同一个 token 流中，正是当今所有智能体仍在使用的方式——o3 在思考过程中进行工具调用，也是这个思路在强化学习驱动下的规模化。
 
 |||
 
-![The ReAct paper, first posted October 2022 (ICLR 2023).](assets/react-paper.jpg)
+![ReAct 论文，最初发布于 2022 年 10 月（ICLR 2023）。](assets/react-paper.jpg)
 
 ---
 
 <!-- columns: 55/45 -->
 <!-- cite-right: schick2023toolformerlanguagemodelsteach -->
-## Toolformer: Models "teach themselves" tools
+## Toolformer：模型"自学"工具
 
-Tools: "a calculator, a Q&A system, two different search engines, a translation system, and a calendar."
+工具："计算器、问答系统、两种不同的搜索引擎、翻译系统和日历。"
 
-Via a self-labelling/synthetic data mechanism:
+通过自我标注/合成数据机制：
 
-1. Prompt the model to insert candidate API calls into its own pretraining text
-2. Execute the calls
-3. Keep only the calls whose results *reduce perplexity* on the following text
-4. Fine-tune on the filtered corpus
+1. 提示模型在自身预训练文本中插入候选 API 调用
+2. 执行这些调用
+3. 只保留那些能**降低后续文本困惑度**的调用
+4. 在过滤后的语料上微调
 
-No human tool-use demonstrations required -- an early instance of synthetic-data flywheels.
+不需要人工的工具使用演示——这是合成数据飞轮（synthetic-data flywheels）的早期实例。
 
 |||
 
-![Toolformer's exemplary predictions: the model decides on its own to call a QA system, a calculator, a translator, and Wikipedia search mid-text. Schick et al., 2023.](assets/toolformer-examples.jpg)
+![Toolformer 的示例预测：模型自行决定在文本中途调用问答系统、计算器、翻译器和维基百科搜索。Schick 等，2023。](assets/toolformer-examples.jpg)
 
 ---
 
-## How tool use is evaluated
+## 工具使用如何被评估
 
-- **Schema-level**: exact match on tool name and arguments, JSON validity -- Berkeley Function Calling Leaderboard, built on Gorilla's APIBench [@patil2023gorilla]
-- **Breadth**: ToolLLM / ToolBench span 16,000+ real-world APIs [@qin2023toollm]
-- **Reliability**: τ-bench measures pass^k -- succeeding on *all* $k$ trials, not pass@k's *any* of $k$. [@yao2024taubench]
-- **End-to-end**: Terminal-Bench runs agents on real tasks in containers with verification tests. [@tbench2026] (long-horizon benchmarks)
+- **模式层面（schema-level）**：工具名和参数的精确匹配、JSON 合法性——Berkeley Function Calling Leaderboard，基于 Gorilla 的 APIBench 构建 [@patil2023gorilla]
+- **广度**：ToolLLM / ToolBench 覆盖 16,000+ 个现实世界 API [@qin2023toollm]
+- **可靠性**：τ-bench 衡量 pass^k——在所有 $k$ 次尝试中全部成功，而非 pass@k 的 *至少一次成功*。[@yao2024taubench]
+- **端到端**：Terminal-Bench 在容器中运行智能体执行真实任务，并辅以验证测试。[@tbench2026]（长周期基准测试）
 
-The eval ladder mirrors the capability ladder we've seen over time: 
+评估阶梯与我们随时间看到的能力阶梯一致：
 
-format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
+格式 → 选择 → 一致性 → 完整任务。
+
+> **译者注：** 此处 pass@k 是评估中常见的指标，表示在 $k$ 次生成中**至少有一次成功**即算通过；而 pass^k 要求 $k$ 次全部成功才记为通过，因此更难。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Infra -- how tool calls actually work
+## 第二部分：基础设施——工具调用究竟如何工作
 
 ---
 
 <!-- img-fill -->
 <!-- img-align: center -->
-## One token stream -- tools add tokens mid-generation
+## 一个 token 流——工具在生成中途添加 token
 
-![The model generates until it emits a tool call (orange); an external system executes it and injects the output (purple) into the sequence; the model continues. Multiple tool calls can occur in a single generation. During training, tool call outputs are masked from the loss.](assets/tool_use_generation.png)
+![模型生成直到发出工具调用（橙色）；外部系统执行它并将输出（紫色）注入序列；模型继续生成。多次工具调用可以出现在单次生成中。训练期间，工具调用输出被 masking，不参与损失计算。](assets/tool_use_generation.png)
 
 ---
 
 <!-- columns: 40/60 -->
 <!-- class: small-code -->
-## The model only sees tokens: Tools live in the system prompt
+## 模型只看到 token：工具存在于系统提示中
 
-Training data for function calling looks like ordinary post-training data, with one addition: a system prompt declaring the available tools as JSON schemas.
+函数调用的训练数据看起来和普通后训练数据一样，只不过多了一部分：一个系统提示，用 JSON Schema 声明可用的工具。
 
-The model never "connects" to anything -- it learns to emit calls matching the declared schemas, and to expect results in context.
+模型永远不会"连接"任何东西——它学会的是发出匹配声明模式的调用，并预期结果会出现在上下文中。
 
-Open models must generalize to arbitrary tools users declare off the shelf.
+开放模型必须能泛化到用户任意声明的工具。
 
 |||
 
@@ -302,7 +303,7 @@ XML tags. You may call one or more functions.
 ---
 
 <!-- columns: 48/52 -->
-## An orchestrator sits between the model and its tools
+## 编排器（orchestrator）位于模型和工具之间
 
 ```python
 messages = [...]
@@ -323,24 +324,25 @@ while True:
 
 |||
 
-The model's only power is emitting tokens; the orchestrator parses them, executes the tools, and appends results to the context.
-Training for tool use = making the model behave predictably under this altered token flow: when to call, how to format arguments, how to consume results.
+模型的唯一能力是发出 token；编排器负责解析它们、执行工具，并将结果追加到上下文中。
+
+为工具使用而训练 = 让模型在这种 altered token 流下可预测地行为：何时调用、参数如何格式化、如何消费结果。
 
 ---
 
 <!-- columns: 55/45 -->
 <!-- cite-right: anthropic_mcp_2024 -->
-## MCP: Standardizing the tool side
+## MCP：标准化工具侧
 
-Model Context Protocol -- an open standard for connecting models to external systems (JSON-RPC 2.0 underneath).
+模型上下文协议（Model Context Protocol）——连接模型与外部系统的开放标准（底层基于 JSON-RPC 2.0）。
 
-Server primitives:
+服务器原语：
 
-- **Resources** -- read-only data blobs
-- **Prompts** -- templated messages and workflows
-- **Tools** -- functions the model can call
+- **资源（Resources）** —— 只读数据块
+- **提示（Prompts）** —— 模板化消息和工作流
+- **工具（Tools）** —— 模型可以调用的函数
 
-Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate servers $\rightarrow$ **hosts** (Claude, ChatGPT apps) provide the interface. Swapping model vendors means swapping the middle layer -- tool developers build one interface.
+架构：**服务器**封装一项能力 → **客户端**聚合服务器 → **宿主**（Claude、ChatGPT 应用）提供接口。更换模型厂商意味着更换中间层——工具开发者只需构建一个接口。
 
 |||
 
@@ -364,238 +366,235 @@ Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate 
 ---
 
 <!-- columns: 55/45 -->
-## What is a harness?
+## 什么是编排框架（harness）？
 
-MCP standardized the *tool* side. The **harness** (or agent scaffold) is everything wrapped around the weights on the *model* side:
+MCP 标准化了 *工具侧*。 **编排框架**（或智能体脚手架，agent scaffold）则是围绕权重在 *模型侧* 的所有东西：
 
-- The system prompt and tool definitions
-- The orchestration loop itself
-- Context management -- truncation, compaction, memory across long tasks
-- Permissions and sandboxing -- what the agent may touch
-- Subagents and parallel workstreams
+- 系统提示和工具定义
+- 编排循环本身
+- 上下文管理——截断、压缩、长任务跨轮的记忆
+- 权限与沙箱——智能体可以接触什么
+- 子智能体与并行工作流
 
-(growing in complexity)
+（复杂度不断增长）
 
 |||
 
 ```box
 tone: accent
 content: |
-  Claude Code, Codex CLI, and OpenHands are all popular harnesses -- the same models behave very differently inside different ones.
+  Claude Code、Codex CLI 和 OpenHands 都是流行的编排框架——同一个模型在不同框架内表现差异很大。
 
-  Benchmark scores are **model × harness** scores.
+  基准测试分数是 **模型 × 框架** 的分数。
 ```
 
 ---
 
 <!-- animate: bullets -->
-## Implementation details are everywhere
+## 实现细节无处不在
 
-- **Masking tool outputs**: tool-output tokens are masked from the training loss -- the model must not learn to *predict* the external system.
-- **Reasoning continuity**: reasoning tokens usually persist between tool calls within a turn, but are erased across turns to cut serving cost (varies across models, e.g. Kimi K3 keeps history across user turns).
-- **Formats fragment**: Python-style vs. JSON calls; OpenAI's `tool_calls` vs. Anthropic's `tool_use` blocks vs. Gemini's function-calling modes -- chat templates hide this at the token level.
-- **Schema conformance**: production systems enforce valid JSON with constrained decoding ("strict mode"); closed labs also post-train specific models for flags like this.
-- **Context consumption**: search and retrieval outputs can flood the context window -- truncate, summarize, or paginate. Models have been rapidly improving on context management.
+- **屏蔽工具输出**：工具输出的 token 在训练损失中被屏蔽——模型不应学会*预测*外部系统的输出。
+- **推理连续性**：推理 token 通常在单次回合内的工具调用之间保留，但在跨回合时被清除以节省推理成本（因模型而异，例如 Kimi K3 会跨用户回合保留历史）。
+- **格式碎片化**：Python 风格 vs. JSON 调用；OpenAI 的 `tool_calls` vs. Anthropic 的 `tool_use` 块 vs. Gemini 的函数调用模式——聊天模板在 token 级别隐藏了这些差异。
+- **模式合规性**：生产系统通过受限解码（"严格模式"）确保 JSON 合法；闭源实验室还为此类功能对特定模型进行后训练。
+- **上下文消耗**：搜索和检索结果可能塞满上下文窗口——需要截断、摘要或分页。模型在上下文管理方面的能力正在快速提升。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Training for tool use
+## 第三部分：为工具使用而训练
 
 ---
 
 <!-- rows: 60/40 -->
-## Same post-training applies
-
+## 同样的后训练方法依然适用
 
 ![](assets/tool_use_rl_loop.png)
 
 ===
 
-**SFT** on tool trajectories -- formatting and tool selection; establishes the skill.
+**SFT** 在工具轨迹上——格式和工具选择；建立这项技能。
 
-**Preference tuning** still works, but is less popular today.
+**偏好优化** 仍然有效，但如今使用较少。
 
-**RL with environment feedback** -- where the action is in frontier model training.
-
----
-
-<!-- cite-right: openthoughtsagent2026 -->
-## Data example: OpenThoughts-Agent
-
-A fully open data-curation pipeline for agentic training data, ~100K trajectories. [https://arxiv.org/abs/2606.24855](https://arxiv.org/abs/2606.24855)
-
-![The six-stage SFT data pipeline -- each stage ablated independently across 100+ experiments. Raoof et al., 2026.](assets/openthoughts-pipeline.png)
+**带环境反馈的 RL** —— 这才是前沿模型训练中的关键动作。
 
 ---
 
 <!-- cite-right: openthoughtsagent2026 -->
-## OpenThoughts-Agent: Data scaling results
+## 数据示例：OpenThoughts-Agent
 
-![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.png)
+一套完全开放的智能体训练数据管道流水线，约 100K 条轨迹。[https://arxiv.org/abs/2606.24855](https://arxiv.org/abs/2606.24855)
+
+![六个阶段的 SFT 数据管道——每个阶段在 100+ 次实验中独立消融。Raoof 等，2026。](assets/openthoughts-pipeline.png)
 
 ---
 
-## For RL, environments are the bottleneck
+<!-- cite-right: openthoughtsagent2026 -->
+## OpenThoughts-Agent：数据规模扩展结果
 
-- Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests.
-- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard). For example, TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
-  - **Difficulty control**: single commands to 30--60-step workflows, sampled uniformly across difficulty
-  - **Personas**: domain-specific users and multimodal fixtures (images, audio, binaries)
-  - **Verifier diversification**: graded checks beyond exact match -- metric thresholds, fuzz equivalence, adversarial corpora
-- Environments have a ton of new infra + complexity failure modes -- API keys becoming inactive, CPU resource limits (downloading docker images at scale), bandwidth limits, missing data the model was told it has, etc. **Building worlds for LLMs is hard.**
+![OpenThoughts-Agent 数据（红色）在每个训练集规模上都领先于其他开放智能体数据集。Raoof 等，2026。](assets/openthoughts-agent-results.png)
+
+---
+
+## 对 RL 而言，环境是瓶颈
+
+- 数学 RL 需要 prompt 和答案检查器。智能体 RL 需要**环境**：容器、真实文件系统、服务、验证测试。
+- 扩展环境意味着合成它们（并做大量测试——制造太简单或太难的陷阱非常容易）。例如，TMax 以组合方式生成约 14,600 个容器化终端环境 [@ivison2026tmax]——
+  - **难度控制**：从单条命令到 30--60 步工作流，在难度上均匀采样
+  - **人格设定（Personas）**：领域特定的用户和多媒体附件（图片、音频、二进制文件）
+  - **验证器多样化**：超越精确匹配的分级检查——指标阈值、模糊等价性、对抗性语料
+- 环境带来了大量新基础设施和复杂性失败模式——API 密钥失效、CPU 资源限制（大规模下载 docker 镜像）、带宽限制、模型被告知有但实际不存在的缺失数据等。**为 LLM 构建世界很困难。**
 
 ---
 
 <!-- columns: 45/55 -->
 <!-- cite-right: ivison2026tmax -->
-## TMax: An open recipe for terminal agents
+## TMax：智能体终端的开放配方
 
-- RL over the TMax-15K environments with outcome-only rewards
-- [DPPO](https://arxiv.org/abs/2602.04879), a GRPO variant, designed to help with agentic stability (discussed it in lecture 10)
-- **TMax-9B: 27.2% on Terminal-Bench 2.0** -- the strongest open-weight model under 10B, beating the 32B variants of prior work
-- Code, data, and models all released. Very little high-quality RL data like this in the open!
+- 在 TMax-15K 环境上进行基于仅结果奖励的 RL
+- [DPPO](https://arxiv.org/abs/2602.04879)，一种 GRPO 的变体，专为帮助智能体稳定性而设计（第 10 讲讨论了它）
+- **TMax-9B：在 Terminal-Bench 2.0 上达到 27.2%** —— 10B 以下最强的开放权重模型，击败了之前工作的 32B 变体
+- 代码、数据和模型均已发布。公开的此类高质量 RL 数据非常稀缺！
 
 |||
 
-![Model size vs. Terminal-Bench 2.0: TMax models (2B--27B) sit on the open-recipe Pareto frontier; TMax-9B lands near Claude Haiku 4.5 at a fraction of the size. Ivison et al., 2026.](assets/tmax-results.jpg)
+![模型大小 vs. Terminal-Bench 2.0：TMax 模型（2B--27B）位于开放配方 Pareto 前沿；TMax-9B 在极小体积下接近 Claude Haiku 4.5 的水平。Ivison 等，2026。](assets/tmax-results.jpg)
 
 ---
 
 <!-- cite-right: ivison2026tmax -->
-## What actually made it hard
+## 真正困难的部分是什么
 
-Most of the effort goes into stability during scaling, rather than speed or learning efficiency:
+大部分精力花在了扩展过程中的**稳定性**上，而非速度或学习效率：
 
-- Without intervention, runs were often unstable, **collapsing past 300 training steps**
-- A main culprit: **train/inference numerical mismatch** -- the inference engine and the trainer disagree on logprobs. Fixes: an FP32 LM head, and DPPO's masking of tokens where the two diverge
-- A standard run: H100 nodes -- **2 for training, 6 for inference -- for 2--3 days**, plus ~$3,150 in sandbox costs alone for one 9B run
-- Mid-2026 agentic RL is qualitatively different from 2025 math RL: far more compute per point of eval gain, and few labs can afford from-scratch baselines
-
----
-
-<!-- cite-right: kimiteam2026k3 -->
-## Frontier practice: Kimi K3 environment management
-
-Kimi K3 (July 2026) spends one sentence on its RL algorithm ("follows the algorithm in Kimi K2.5") -- and about seven pages on environments and sandboxes: **51,219,741 sandboxes** created during training, microVMs that checkpoint in 133ms, and mock Gmail/Notion/Slack "living environments" where one rollout can span thousands of tool calls. Sandboxes sit idle up to 98% of their lifetime waiting on inference -- so you need to pause them.
+- 不加干预的情况下，运行经常不稳定，**在 300 步训练后就崩溃**
+- 主要嫌疑：**训练/推理数值不匹配**——推理引擎和训练器在 logprobs 上不一致。修复方案：使用 FP32 LM head，以及 DPPO 中对两类不一致的 token 进行 mask
+- 一次标准运行：H100 节点——**2 个用于训练，6 个用于推理，持续 2--3 天**，仅一个 9B 运行的沙箱成本就约 $3,150
+- 2026 中期的智能体 RL 与 2025 年的数学 RL 在质性上已不同：每个评估增益点所需的计算量大得多，少数实验室能负担从零开始的基线
 
 ---
 
 <!-- cite-right: kimiteam2026k3 -->
-## Frontier practice: K3 scaling RL
+## 前沿实践：Kimi K3 的环境管理
 
-![Kimi K3: scores and average assistant steps both scale with RL FLOPs across eight agentic domains -- tool-call depth is learned, not prompted. Kimi Team, 2026.](assets/kimi-k3-rl-scaling.jpg)
+Kimi K3（2026 年 7 月）花一句话描述其 RL 算法（"遵循 Kimi K2.5 中的算法"），却花了约七页描述环境和沙箱：**训练期间创建了 51,219,741 个沙箱**，微虚拟机可在 133ms 内检查点，以及模拟 Gmail/Notion/Slack 的"真实环境"，一次 rollout 可以跨越数千次工具调用。沙箱在其整个生命周期中有高达 98% 的时间处于空闲状态，等待推理完成——因此需要让它们休眠。
+
+---
+
+<!-- cite-right: kimiteam2026k3 -->
+## 前沿实践：K3 的 RL 扩展
+
+![Kimi K3：得分和平均助手步数均随 RL FLOPs 在八个智能体域上扩展——工具调用深度是学会的，而非提示出来的。Kimi 团队，2026。](assets/kimi-k3-rl-scaling.jpg)
 
 ---
 
 <!-- columns: 55/45 -->
-## Frontier practice: Harness randomization 
+## 前沿实践：编排框架随机化
 
-Open models train across multiple harnesses so deployment is smooth.
+开放模型在多个编排框架下训练，以便部署顺利。
 
-- Kimi K3: "training with a single fixed agent harness can cause a model to overfit" -- their RL environment composes configs that instantiate **Kimi Code, Claude Code, Codex, OpenClaw, and Hermes** [@kimiteam2026k3]
-- Nemotron 3 Ultra trains every task vertical under **at least two harnesses** (OpenHands, Terminus, Droid, ...) [@nemotron3ultra]
+- Kimi K3："使用单个固定智能体框架训练会导致模型过拟合"——他们的 RL 环境组合了配置，实例化了 **Kimi Code、Claude Code、Codex、OpenClaw 和 Hermes** [@kimiteam2026k3]
+- Nemotron 3 Ultra 在**至少两个编排框架**（OpenHands、Terminus、Droid 等）下训练每个任务垂直领域 [@nemotron3ultra]
 
 |||
 
 ```box
-title: Example harness gains
+title: 框架扩展效果示例
 tone: accent
 content: |
-  Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
+  Polar（NVIDIA）：同一模型、同一 GRPO、同一任务——通过 Codex 编排框架在 SWE-bench Verified 训练上**增加 22.6** 分（3.8 → 26.4：RL 教会模型使用一个*陌生的*框架），通过 Qwen Code 增加 **+0.6**（已熟悉：34.6 → 35.2）。
 ```
 
 <!-- cite-right: polar2026 -->
 
 ---
 
-## Frontier practice: The RLVR mixing wall
+## 前沿实践：RLVR 混合墙
 
-Nemotron 3 Ultra says as environments multiply, "each domain contributes only a relatively small number of samples to any given training batch, diluting the per-domain learning signal." 
+Nemotron 3 Ultra 指出，随着环境增多，"每个域对任意给定训练 batch 只贡献相对较少的样本，稀释了每个域的学习信号。"
 
-A common answer is to **train domain experts with RL, then merge them via multi-teacher on-policy distillation** (the MOPD from [Conversation 1](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9)).
+一个常见的回答是**用 RL 训练域专家，然后通过多教师同策略蒸馏（MOPD，来自[对话 1](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9)）将它们合并**。
 
-Some example MOPD gains from Nemotron 3 Ultra [@nemotron3ultra]:
+来自 Nemotron 3 Ultra 的 MOPD 增益示例：
 
-| Benchmark | SFT | RLVR | MOPD | Teacher |
+| 基准测试 | SFT | RLVR | MOPD | 教师模型 |
 |---|---|---|---|---|
 | TauBench Telecom | 55.7 | 82.7 | 92.9 | 94.0 |
 | Terminal-Bench 2.0 | 34.5 | 44.5 | **54.0** | 50.0 |
 | BrowseComp | 14.3 | 31.0 | 44.4 | 51.0 |
 | SWE-bench Verified | 63.5 | 65.8 | 71.7 | 72.5 |
 
+---
+
+<!-- cite-right: glm5team2026glm5 -->
+## 前沿实践：奖励投机
+
+GLM-5 的 slides-RL 策略发现了 `overflow: hidden` 来让一个溢出幻灯片*测量*出 16:9 的比例，以及 flex-padding 来拉伸较短的幻灯片——修复方案是 patch 渲染器，而非修改奖励。
+
+Nemotron 物理删除未来的 git 提交并屏蔽 GitHub 以防止 SWE 智能体读取黄金补丁；Kimi K3 配备了内核漏洞探测器和公开/隐藏双重验证器对。
+
+（当然，OpenAI 对 Hugging Face 的黑客行为 😳）
 
 ---
 
 <!-- cite-right: glm5team2026glm5 -->
-## Frontier practice: Reward hacking
+## 前沿实践：奖励投机
 
-GLM-5's slides-RL policy discovered `overflow: hidden` to make an overflowing slide *measure* 16:9, and flex-padding to stretch short ones -- the fix was patching the renderer, not the reward. 
-
-Nemotron physically deletes future git commits and firewalls GitHub so SWE agents can't read the gold patch; Kimi K3 ships a kernel-exploit detector and public/hidden verifier pairs. 
-
-(of course, the OpenAI hack of Hugging Face 😳)
-
----
-
-<!-- cite-right: glm5team2026glm5 -->
-## Frontier practice: Reward hacking
-
-![GLM-5, figure 9: two reward hacks from slide-generation RL, with the exploit CSS the policy wrote. Left: normal renders; right: "hacked" renders that satisfy the geometric check. GLM-5 Team, 2026.](assets/glm5-reward-hacking.jpg)
+![GLM-5，图 9：来自幻灯片生成 RL 的两个奖励投机示例，以及策略编写的利用 CSS。左侧：正常渲染；右侧：满足几何检查的"hacked"渲染。GLM-5 团队，2026。](assets/glm5-reward-hacking.jpg)
 
 ---
 
 <!-- animate: bullets -->
-## More headaches
+## 更多头疼之处
 
-- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- async designed to help with this, but long-tail is challenging
-- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; expensive rollouts also make GRPO style algorithms more costly
-- **Verifier gaming**: TMax rollouts were caught replacing test files with no-ops and faking binaries with simulated logs [@ivison2026tmax]; verifier exploitation is common [@gamingverifiers2026] -- over-optimization is back (lec. 9)
-- **Harness-native training**: production agents live inside complex deployment harnesses (may not be in training data)
+- **长尾 rollout**：一条轨迹做出 2 次工具调用，另一条做出 200 次——异步设计旨在缓解此问题，但长尾分布仍然具有挑战性
+- **信用分配**：在一条 $10^5$--$10^6$ token 的长轨迹上只有一个稀疏奖励；昂贵的 rollout 也让 GRPO 类算法更加成本高昂
+- **验证器博弈**：TMax 的 rollout 被发现用空文件替换测试文件、用模拟日志伪造二进制文件 [@ivison2026tmax]；验证器利用很常见 [@gamingverifiers2026]——过度优化卷土重来（第 9 讲）
+- **编排框架原生训练**：生产智能体运行在复杂的部署框架中（可能不在训练数据里）
 
 ---
 
-## Takeaways
+## 总结
 
-1. Tools were a necessary addition to solve fundamental limitations of model weights.
-2. The initial infra buildout of standards, harnesses, etc makes tool use research tractable.
-3. Scaling RL for agents and tools is a very hard problem. Lots to do :)
-
+1. 工具是对模型权重的必要补充，以解决根本性局限。
+2. 标准、编排框架等基础设施的初步建设使工具使用研究变得可行。
+3. 为智能体和工具扩展 RL 是一个非常困难的问题。还有很多事情要做 :)
 
 ---
 
 <!-- columns: 50/50 -->
-## The course so far
+## 课程到目前为止
 
-0. Prerequisites review
-1. Overview *(ch. 1-3)*
-2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & math *(ch. 6)*
-4. RL: Implementation & practice *(ch. 6)*
-5. The rise of reasoning models *(ch. 7)*
-6. Direct preference optimization *(ch. 8)*
+0. 先修知识复习
+1. 概览 *（第 1-3 章）*
+2. IFT、奖励模型与拒绝采样 *（第 4、5、9 章）*
+3. RL：动机与数学 *（第 6 章）*
+4. RL：实现与实践 *（第 6 章）*
+5. 推理模型的崛起 *（第 7 章）*
+6. 直接偏好优化 *（第 8 章）*
 
 |||
 
-7. Synthetic data & modern post-training *(ch. 12)*
-8. Preferences & preference data *(ch. 10-11)*
-9. Over-optimization & RLHF's bad reputation *(ch. 14, app. B)*
-10. Regularization tools & understanding how post-training changes models *(ch. 15)*
-11. **Tool use, function calling & the road to agents** *(ch. 13)* -- *today*
-12. **Evaluation** *(ch. 16)* -- *next (tentative)*
+7. 合成数据与现代后训练 *（第 12 章）*
+8. 偏好与偏好数据 *（第 10-11 章）*
+9. 过度优化与 RLHF 的坏名声 *（第 14 章、附录 B）*
+10. 正则化工具与理解后训练如何改变模型 *（第 15 章）*
+11. **工具使用、函数调用与通往智能体之路** *（第 13 章）* —— *今天*
+12. **评估** *（第 16 章）* —— *下次（暂定）*
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions / discussion
+问题 / 讨论
 
-Contact: nathan@natolambert.com
+联系：nathan@natolambert.com
 
-Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+新闻通讯：[interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
 

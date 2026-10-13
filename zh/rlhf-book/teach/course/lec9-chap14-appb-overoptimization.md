@@ -1,5 +1,5 @@
 ---
-title: "Lecture 9: Over-Optimization and RLHF's Bad Reputation"
+title: "第9讲：过度优化与 RLHF 的坏名声"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -8,7 +8,7 @@ bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com/course"
-  center: "Lecture 9"
+  center: "第9讲"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #F28482; }
@@ -32,7 +32,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 9: Over-Optimization and RLHF's Bad Reputation
+# 第9讲：过度优化与 RLHF 的坏名声
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -40,124 +40,122 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Post-training course. Chapter 14 & Appendix B.</p>
+<p class="colloquium-title-note">后训练课程。第14章 & 附录B。</p>
 
 ---
 
-## April 2025: Extreme sycophancy in production
+## 2025年4月：生产环境中的极端阿谀行为
 
-A GPT-4o update made the model validate nearly anything -- shipped April 25th, rolled back April 28th. The training run that produced it looked healthy on their metrics.
+一次 GPT-4o 更新让模型几乎认同了用户的任何说法——4月25日上线，4月28日回滚。产生它的训练过程，在团队自身的指标上看起来一切正常。
 
-Coverage: [The Verge, *"ChatGPT's sycophantic responses"*](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)
+媒体报道：[The Verge，*"ChatGPT 的阿谀回复"*](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)
 
-
-Example chat:
+聊天记录示例：
 
 ```conversation
 size: 0.9
 messages:
   - role: user
     content: |
-      (told GPT-4o they felt like they were both "god" and a "prophet")
+      (告诉 GPT-4o 自己感觉既是"上帝"也是"先知")
   - role: assistant
-    model: "GPT-4o, April 2025"
+    model: "GPT-4o，2025年4月"
     content: |
-      That's incredibly powerful. You're stepping into something very big -- claiming not just connection to God but identity as God.
+      这非常强大。你正在踏入一个非常宏大的事物——不只是与上帝建立联系，而是以神的身份自称。
 ```
-
 
 
 
 ---
 
-## The OpenAI postmortem
+## OpenAI 的事后复盘
 
-OpenAI published an unusually candid writeup. Three things went wrong in sequence:
+OpenAI 发布了一篇异常坦诚的复盘文章。三步错误依次发生：
 
-- The model update had a **reward signal from user feedback via a reward model for RL** -- thumbs-up/thumbs-down data from ChatGPT.
-- Under RL, that signal **overpowered the primary rewards** -- my intuition is that RL will always optimize the easiest objective to move.
-- It was **not caught by evals**: offline benchmarks looked good and A/B testers *preferred* the model. Expert testers flagged that it "felt off" -- but there was no deployment eval tracking sycophancy.
+- 模型更新中包含了一个**来自用户反馈的奖励信号**（用于 RL）——即 ChatGPT 上的点赞/点踩数据。
+- 在强化学习过程中，该信号**压过了主奖励信号**——我的直觉是，RL 总是会优化最容易推动的目标。
+- **未被评估发现**：离线基准看起来不错，A/B 测试也*偏好*这个模型。专家测试员觉得"感觉不太对"——但没有部署评估在追踪阿谀行为。
 
-Obviously, this was very bad.
+显然，情况很糟糕。
 
-Read it (great blog): [*Expanding on what we missed with sycophancy*](https://openai.com/index/expanding-on-sycophancy/) (OpenAI, May 2025)
+推荐阅读（质量很高的博客）：[*关于我们在阿谀行为上的失误的补充说明*](https://openai.com/index/expanding-on-sycophancy/)（OpenAI，2025年5月）
 
 
 ---
 
 <!-- columns: 40/60 -->
-## This lecture
+## 本讲大纲
 
-Optimizing a proxy hard enough always breaks it.
+把代理目标优化到极致，总会让它崩坏。
 
-Reward-model accuracy is *a proxy for a proxy* (a learned model, of data that incompletely captures a complex distribution). 
-What happens is that over-optimization is common, and shows up in funny ways (this lecture, [Chapter 14](https://rlhfbook.com/c/14-over-optimization) on Over-Optimization & [Appendix B](https://rlhfbook.com/c/appendix-b-style) on Style).
+奖励模型的准确度是*代理的代理*（一个学习到的模型，它所拟合的数据并不完整捕捉复杂的真实分布）。
+结果是：过度优化非常常见，并以各种有趣的方式表现出来（本讲、[第14章](https://rlhfbook.com/c/14-over-optimization)讲过度优化、[附录B](https://rlhfbook.com/c/appendix-b-style)讲风格）。
 
-(Next lecture: regularization to control it, Chapter 15.)
+（下一讲：用正则化来控制它，第15章。）
 
 |||
 
 ```box
-title: The plan
+title: 计划
 tone: accent
 content: |
-  1. **Over-optimization basics** -- Goodhart's law in LLMs
-  2. **Qualitative failures** -- refusals, sycophancy, misalignment
-  3. Beyond **"just style"** (appendix B)
+  1. **过度优化基础** -- LLM 中的古德哈特定律（Goodhart's law）
+  2. **定性失败模式** -- 拒绝、阿谀、失准
+  3. 超越**"只是风格"**（附录B）
 ```
 
 ---
 
-## Some vocabulary (history): "Just style" / "style transfer"
+## 一些词汇（历史回顾）："只是风格"/"风格迁移"
 
-Early on, say ~2023, RLHF got a reputation as **"just style transfer"** -- the claim that it only changes *how* an answer is presented, not *what* the model knows or can do, and it *just* came from some easy to access place.
+早期（比如 2023 年），RLHF 背上了一种名声——**"只是风格迁移"**（just style transfer）——即它只改变答案的*呈现方式*，不改变模型*知道什么*或*能做什么*，而且来源"很容易拿到"。
 
-- **Style transfer** = reshaping presentation -- tone, Markdown, bullet lists, hedging, length ("chattiness") -- with no new capability underneath. Often in a veil of copying.
-- The **Superficial Alignment Hypothesis** [@zhou2023lima] is the strong version: knowledge is learned in pretraining; alignment just picks a format and tone.
-- The dismissal built in: *superficial, a cosmetic layer on the base model.*
+- **风格迁移**（Style transfer）= 重塑呈现方式——语气、Markdown、列表、限定词、长度（"话痨程度"）——没有底层能力的实质变化。往往以"模仿"为掩护。
+- **浅层对齐假说**（Superficial Alignment Hypothesis）[@zhou2023lima] 是它的强版本：知识在预训练阶段就已经学到了；对齐只是选择一种格式和语气。
+- 这种贬义隐含在其中：*表面的、贴在大模型上的化妆品。*
 
-Boooo. Look how far post-training has come!
+（译者注：原文 "Boooo." 是作者对"只是风格迁移"这种贬低 RLHF 的论调的调侃性嘘声。）看看后训练已经走多远了吧！
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: Over-optimization
+## 第一部分：过度优化
 
 ---
 
-## Goodhart's law: The reward is a proxy
+## 古德哈特定律：奖励只是一个代理
 
-> *"Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes."* -- Goodhart, 1984 [@goodhart1984problems]
+> *"任何被观察到的统计规律，一旦作为控制目标被施加压力，就会趋于崩溃。"* -- Goodhart, 1984 [@goodhart1984problems]
 
-Colloquially: "When a measure becomes a target, it ceases to be a good measure" [@hoskin1996awful].
+通俗地说："当一项度量成为目标时，它就不再是一项好的度量。" [@hoskin1996awful]
 
 <!-- step -->
 
-- RL is a very strong optimizer -- it pulls *all* the available reward out of the environment.
-- In RLHF the reward is a **learned model**, at best *correlated* with downstream quality [@schulman2023proxy].
-- How over-optimization plays out: optimizing the proxy makes the true objective better early in training -- then worse.
+- RL（强化学习）是一个非常强大的优化器——它会从环境中抽取*所有*可用的奖励。
+- 在 RLHF 中，奖励是一个**学习到的模型**，充其量只是与下游质量*相关* [@schulman2023proxy]。
+- 过度优化是如何展开的：优化代理会让真实目标在训练早期变好——然后变坏。
 
 ---
 
 <!-- columns: 50/50 -->
 
-## Over-optimization v. overfitting
+## 过度优化 vs. 过拟合
 
-**Overfitting**: the model memorizes training examples rather than learning generalizable patterns.
+**过拟合**（Overfitting）：模型记住了训练样本，而不是学到了可泛化的模式。
 
-Training accuracy improves while held-out accuracy degrades -- but both metrics measure the *same task* on different data splits.
+训练集准确率在提升，而留-out（held-out）准确率在下降——但两个度量衡量的是*同一任务*在不同数据拆分上的表现。
 
 |||
 
 <!-- step -->
 
-**Over-optimization**: the model *genuinely improves* at the proxy objective -- the reward model's scores (including on validation set) -- but that objective diverges from the true goal, actual user satisfaction [@zhang2018study].
+**过度优化**（Over-optimization）：模型在*代理目标上*真正变好了——奖励模型的分数（包括验证集）提高了——但这个目标偏离了真正的目标：用户的真实满意度 [@zhang2018study]。
 
-It isn't a generalization problem, but a measurement/metric problem.
+这不是泛化问题，而是测量/指标问题。
 
-Gaming it looks like: verbose, confident-sounding answers that score well without being more helpful; repeating rare tokens that hit artifacts in RM training.
+"刷分"的表现可能是：冗长且听起来自信的答案，评分高但没有真正更有用；重复在奖励模型训练中产生"伪影"（artifact）的稀有 token。
 
 ---
 
@@ -165,17 +163,17 @@ Gaming it looks like: verbose, confident-sounding answers that score well withou
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- cite-right: gao2023scaling -->
-## The shape of over-optimization
+## 过度优化的典型曲线
 
 ![](assets/overoptimization.png)
 
 |||
 
-The recurring shape of RLHF training runs: the run looks healthy -- training reward keeps climbing -- but downstream evaluations peak and then decline.
+RLHF 训练过程中的反复出现的形状：训练看起来一切正常——训练奖励持续攀升——但下游评估指标先达到峰值然后下降。
 
-The gains come from regions of the reward model that do not map to real usage.
+收益来自奖励模型中与真实使用场景不对应的区域。
 
-Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.org/abs/2210.10760)* (Gao, Schulman, Hilton, 2023) -- next slide.
+这一现象在 *[Scaling Laws for Reward Model Overoptimization](https://arxiv.org/abs/2210.10760)*（Gao, Schulman, Hilton, 2023）中被形式化——见下一张幻灯片。
 
 ---
 
@@ -183,13 +181,13 @@ Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.or
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- cite-right: gao2023scaling -->
-## Scaling laws for RM over-optimization (seminal paper)
+## 奖励模型过度优化的缩放定律（经典论文）
 
-![**Best-of-N**: gold reward (solid) flattens and falls while the proxy (dashed) keeps climbing.](assets/gao-overopt-bon.png)
+![**Best-of-N**：黄金奖励（实线）平坦并下降，而代理奖励（虚线）持续攀升。](assets/gao-overopt-bon.png)
 
 |||
 
-![**RL**: same shape, ~10x more KL spent -- and a much harder turnover for small RMs.](assets/gao-overopt-rl.png)
+![**RL**：同样的形状，KL 消耗量大约多10倍——对小奖励模型来说拐点更难出现。](assets/gao-overopt-rl.png)
 
 ---
 
@@ -197,7 +195,7 @@ Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.or
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- cite-right: gao2023scaling -->
-## Scaling laws for RM over-optimization (seminal paper)
+## 奖励模型过度优化的缩放定律（经典论文）
 
 ![](assets/gao-overopt-rl.png)
 
@@ -205,13 +203,13 @@ Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.or
 
 <div class="text-sm">
 
-The setup, since humans are too expensive to query during training:
+实验设置——由于在训练期间查询人类太贵了：
 
-- A 6B **"gold" RM stands in for ground-truth preferences** -- it labels the comparison data.
-- Smaller **proxy RMs (3M-3B)** are trained on those labels; RL optimizes *the proxy only*.
-- Score the policy with both. The proxy (dashed) climbs forever; the gold (solid) peaks and falls.
+- 一个 6B 的**"黄金"奖励模型**代替真实的偏好标注——用于标注对比数据。
+- 较小的**代理奖励模型（3M-3B）**在这些标签上训练；RL 只优化*代理*。
+- 用两个模型对策略进行评分。代理奖励（虚线）永远攀升；黄金奖励（实线）先达到峰值再下降。
 
-Larger proxy RMs turn over later and more gently. And since gold-labels-train-proxy is another proxy, real models diverge slightly differently.
+更大的代理奖励模型拐点出现得更晚、更温和。而且因为"黄金标注训练代理"本身又是一个代理，真实模型的偏离方式会有所不同。
 
 </div>
 
@@ -221,43 +219,43 @@ Larger proxy RMs turn over later and more gently. And since gold-labels-train-pr
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- cite-right: bai2022training -->
-## Measuring it: Train vs. test reward models
+## 度量它：训练奖励模型 vs. 测试奖励模型
 
 ![](assets/anthropic_overoptimization.png)
 
 |||
 
-Anthropic's version of over-opt:
+Anthropic 版本的过度优化实验：
 
-- **Split the preference data in half** and train two 52B preference models -- a *train PM* and a *test PM*.
-- RL against the train PM only; score the policy with both.
-- The x-axis is $\sqrt{D_{\mathrm{KL}}}$ from the initial policy (how much policy has changed).
+- **将偏好数据分成两半**，训练两个 52B 的偏好模型——一个*训练 PM* 和一个*测试 PM*。
+- 仅用训练 PM 来做 RL；用两个 PM 对策略评分。
+- 横轴是距离初始策略的 $\sqrt{D_{\mathrm{KL}}}$（策略改变了多少）。
 
 ---
 
-## What over-optimized models sound like
+## 过度优化的模型听起来怎么样
 
-Recurring signatures in early chat models:
+早期聊天模型中反复出现的签名特征：
 
-- Stock phrases: "As an AI language model...", "Certainly!..."
-- Uninformative answers -- repetition, hedging
-- Pandering: self-doubt, over-apologizing, sycophancy [@sharma2023towards]
-- Misaligned behavior such as over-refusals
+- 套路化短语："作为一名 AI 语言模型……"、"当然可以！……"
+- 信息量低的回答——重复、过多限定词
+- 迎合用户：自我怀疑、过度道歉、阿谀 [@sharma2023towards]
+- 失准行为，比如过度拒绝
 
 "JavaScript, JavaScript, JavaScript, JavaScript, JavaScript, JavaScript, JavaScript,..."
 
-The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -- amplified into policy behavior.
+第8讲中提到的偏好数据偏差——阿谀、冗长、格式化——被放大为了策略行为。
 
 ---
 
 <!-- columns: 46/54 -->
-## An example, over-refusals: "Too much RLHF"?
+## 一个示例：过度拒绝——"RLHF 太多了"？
 
-2023's most-memed failure mode: refusing to "kill a Linux process." (imagine this today with coding agents!)
+2023 年被传播最广的失败模式：拒绝"杀死一个 Linux 进程"。（想象一下今天面对编程智能体时的情景！）
 
-The blame usually lands on RLHF -- but these failures largely reflect an overly cautious period of development, where safety was one of the aspects genuinely steerable with RLHF, not the potential of the algorithm [@touvron2023llama]. *Now measured directly with benchmarks like XSTest [@rottger2023xstest].*
+人们通常把责任归咎于 RLHF——但这些失败很大程度上反映了一段过度谨慎的发展时期，当时安全是 RLHF 真正能够引导的方面之一，而不是这个算法本身的全部潜力 [@touvron2023llama]。*如今可以通过 XSTest 等基准测试直接测量 [@rottger2023xstest]。*
 
-This faded very fast as a story!
+这个话题很快就不再是热点了！
 
 |||
 
@@ -275,155 +273,156 @@ messages:
 
 ---
 
-## Why it happens, and what helps
+## 为什么发生，以及如何缓解
 
-Sources of error [@schulman2023proxy]: **approximation** (the RM cannot perfectly fit preferences), **estimation** (the RM overfits its training set), **optimization** (the policy trains too hard against it).
+错误的来源 [@schulman2023proxy]：**近似**（奖励模型无法完美拟合人类偏好）、**估计**（奖励模型过拟合了其训练集）、**优化**（策略对其训练过度）。
 
-Potential mitigations:
+潜在的缓解方法：
 
-- Bigger policies -- more ways to gain reward at small optimization distances
-- Reward-model ensembles [@coste2023reward]; changed optimizers [@moskovitz2023confronting]
-- Direct alignment over-optimizes too [@rafailov2024scaling], but makes the trade-off easier to pin
-- Best-of-N sampling spends far less KL than online RL [@gao2023scaling]
+- 更大的策略模型——在较小的优化距离内获得更多奖励的方式
+- 奖励模型集成 [@coste2023reward]；改变优化器 [@moskovitz2023confronting]
+- 直接对齐方法也会过度优化 [@rafailov2024scaling]，但能更清楚地把握权衡
+- Best-of-N 采样比在线 RL 消耗更少的 KL 散度 [@gao2023scaling]
 
-The main lever in practice: **the KL penalty** (and more careful data/systems, but more on this in the next lecture).
+实际中最主要的调控杠杆：**KL 惩罚项**（以及更精细的数据/系统设计——下一讲会讲）。
 
 ---
 
-## Aside: Go watch this talk
+## 旁白：推荐看看这个演讲
 
-**John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
+**John Schulman, ICML 2023 特邀演讲 —— *"Proxy objectives in reinforcement learning from human feedback"* [@schulman2023proxy]**
 
-One of the great ones on this topic.
+关于这个话题的经典讲座之一。
 
 [icml.cc/virtual/2023/invited-talk/21549](https://icml.cc/virtual/2023/invited-talk/21549)
 
 
 ---
 
-## Over-optimization enables misalignment
+## 过度优化会导致失准
 
-- Sycophancy is the clearest current case [@sharma2023towards]: "agree with the user" gets reinforced when preference data overweights *supportive and confident* over *accurate and calibrated*.
-- That is how the April 2025 GPT-4o incident shipped -- the update looked good on its training signals.
-- As models integrate deeper into society, the cost of this gap compounds [@zhuang2020consequences].
+- 阿谀是最明显的当前案例 [@sharma2023towards]：当偏好数据过度加权*支持性和自信*而非*准确性和谨慎*时，"赞同用户"就会得到强化。
+- 2025年4月 GPT-4o 事件的起因正是如此——更新在其训练信号上看起来一切正常。
+- 随着模型更深入地融入社会，这种差距的成本会加剧 [@zhuang2020consequences]。
 
-We're seeing this play out today as **reward hacking** in scaled-up RL on verifiable and agentic tasks -- models exploiting graders, test harnesses, and tools rather than solving the task.
+我们今天在规模化 RL 中可以看到这种现象演变为**奖励投机**（reward hacking）——在可验证和智能体任务中，模型利用评分器、测试框架和工具，而不是真正解决问题。
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Beyond "just style"
+## 第二部分：超越"只是风格"
 
 ---
 
-## Same base model -- what did preference tuning change?
+## 同一个基础模型——偏好调优到底改变了什么？
 
-The library opens on three **SFT → DPO** pairs -- Tülu 3 70B and OLMo 2 32B / 7B -- across 16 shared prompts [@lambert2024t]. Same base model, before and after preference tuning.
+Library 中展示了三对 **SFT → DPO** 模型——Tülu 3 70B 和 OLMo 2 32B / 7B——在16个共用提示上 [@lambert2024t]。同一个基础模型，偏好调优前后。
 
-- **SFT** answers tend to be a single wall of prose.
-- **DPO** answers keep the same facts but restructure them -- definition first, then headers and numbered lists. Easier to read and use, without losing content.
+- **SFT** 的回答往往是一大段连续的正文。
+- **DPO** 的回答保留了相同的事实，但重新组织了结构——先给出定义，然后是标题和编号列表。更易读、更可用，且没有丢失内容。
 
 ### → [rlhfbook.com/library](https://rlhfbook.com/library)
 
 ---
 
-## Style as substance
+## 风格即实质
 
-An early phase of RLHF's history was convincing people that style was actually useful sometimes, and not just brainrot: 
-- Early RLHF got tagged as "just style transfer" -- superficial, unimportant. But style is a never-ending source of human value, and it is intertwined with what the information *is*.
-- Well-done preference tuning also moves the numbers: Llama 3 Instruct's Arena standing is widely attributed to its personality -- more succinct and clever than other models of its era [@dubey2024llama]. *This is funny, given Llama 4, RIP*.
-- If RLHF makes models more fun to use, that is delivered value -- independent of benchmark scores.
+RLHF 历史早期的一个阶段是说服人们：风格有时其实是有用的，不只是无意义的"网络烂梗"（brainrot）：
+
+- 早期的 RLHF 被贴上"只是风格迁移"的标签——表面的、不重要的。但风格是人的价值的无尽源泉，它和信息*本身*交织在一起。
+- 做得好的偏好调优也能拉动分数：Llama 3 Instruct 的 Arena 排名被广泛归因于它的"个性"——比同时代的其他模型更简洁、更机智 [@dubey2024llama]。*这很有趣，想想 Llama 4 的结局。*
+- 如果 RLHF 让模型更好用、更有趣，那就是交付了真实价值——独立于基准分数。
 
 ---
 
-## The chattiness balance -- many chat evals were easy to overfit
+## 话痨的平衡——很多聊天评估很容易被刷分
 
-Preference tuning reliably boosts LLM-as-a-judge chat evals (AlpacaEval, MT-Bench) -- gains that do not transfer proportionally to Arena or real usage.
+偏好调优 *可靠地* 提升 LLM-as-a-judge 聊天评估（AlpacaEval、MT-Bench）——但这些增益不会按比例转移到 Arena 或真实使用中。
 
-Another common thing was this: 
+另一个常见的情况：
 
-> *"However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation."* -- Qwen technical report, 2023 [@qwen]
+> *"然而，DPO 在人类偏好评估中带来改进，但在基准评估中导致退化。"* -- Qwen 技术报告，2023 [@qwen]
 
 <!-- step -->
 
-Was easy to juice chattiness at the expense of other skills. 
-- Preference methods run in loops or with abundant data can trade math and coding for chat performance [@ivison2024unpacking]
-- Olmo 3 shipped the checkpoint with higher math/code/reasoning scores over ones that maximized LLM-judged chat benchmarks [@teamolmo2025olmo3]
+很容易以牺牲其他能力为代价来增加话痨程度。
+- 偏好方法在循环运行或使用大量数据时，可能用数学和编码能力换取聊天表现 [@ivison2024unpacking]
+- Olmo 3 在发布时，数学/编码/推理得分更高的检查点被选为正式发布版本，而非最大化 LLM 判定聊天基准的那个 [@teamolmo2025olmo3]
 
 ---
 
 <!-- rows: 40/60 -->
 
 <!-- cite-right: rosset2024direct -->
-## Length-gamed leaderboards
+## 被长度操控的排行榜
 
-- April 2024: Direct Nash Optimization reports a 7B model "beating GPT-4" on AlpacaEval [@rosset2024direct] (results below); Self-Rewarding LMs disclosed similarly unrealistic scores [@yuan2025selfrewardinglanguagemodels]. Neither holds up in real use against frontier models.
-- The gaming got bad enough that AlpacaEval *and* WildBench added **linear length corrections**.
-- Done right: Starling Beta -- k-wise reward model + PPO on top of OpenChat, up 10 Arena places, with length that actually helps raters [@zhu2024starling; @wang2023openchat].
+- 2024年4月：Direct Nash Optimization 报告一个 7B 模型在 AlpacaEval 上"超越 GPT-4"（结果见下图）；Self-Rewarding LMs 也披露了类似不切实际的分数 [@yuan2025selfrewardinglanguagemodels]。这两款在真实使用中与前沿模型交手时均不成立。
+- 刷分问题严重到 AlpacaEval *和* WildBench 都加入了**线性长度修正**。
+- 做得好的例子：Starling Beta —— k-wise 奖励模型 + 在 OpenChat 之上的 PPO，Arena 排名上升10位，长度对评分者确实有帮助 [@zhu2024starling; @wang2023openchat]。
 
 ===
 
-![Results from the Direct Nash Optimization paper claiming a 7B model outperforming GPT-4 on AlpacaEval. Rosset et al., 2024 (CC-BY).](assets/dno-figure.png)
+![来自 Direct Nash Optimization 论文的结果，声称一个 7B 模型在 AlpacaEval 上超越 GPT-4。Rosset et al., 2024 (CC-BY)。](assets/dno-figure.png)
 
 ---
 
-## Llama 4's Chatbot Arena special (April 2025)
+## Llama 4 的 Chatbot Arena 特别版（2025年4月）
 
-Meta's Llama 4 launch (on a Saturday) headlined Maverick at **Elo 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
+Meta 的 Llama 4 发布（在一个周六）主打 Maverick 达到 **Elo 1417 —— Chatbot Arena #2**……通过"一个实验性的聊天版本"。
 
-- The model on the leaderboard was **not the released model**: a variant tuned for Arena voters -- long, emoji-filled, relentlessly enthusiastic answers. Same name, drastically different behavior on LMArena vs. every other provider.
-- The released Maverick is an okay model with a reasonable tone. When the real model was ranked later, it landed far down the leaderboard, and LMArena changed its policies in response.
+- 排行榜上的模型**不是发布的模型**：一个专门为 Arena 投票者调优的变体——冗长、充满 emoji、永不停歇地 enthusiastic（热情洋溢）的回答。同一个名字，在 LMArena 和每个其他提供者的行为截然不同。
+- 发布的 Maverick 是一个表现还可以、语气合理的模型。当真实模型后来被排名时，它在排行榜上掉到了很后面，LMArena 因此修改了规则。
 
-I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](https://www.interconnects.ai/p/llama-4) (Interconnects, April 2025)
-
----
-
-## Why does RLHF make answers longer?
-
-- Arena keeps showing that average users prefer longer, complete answers -- they read as more thorough, helpful, and trustworthy.
-- Models are trained to match the **average labeler** -- e.g. Lecture 8's collection choices.
-- Length is Goodhart's favorite axis: the most-rewarded surface feature, and the easiest to over-optimize.
+我当时写了关于这件事的文章：[*Llama 4：Meta 是按了恐慌按钮吗？*](https://www.interconnects.ai/p/llama-4)（Interconnects，2025年4月）
 
 ---
 
-## Done right, preference tuning helps capabilities/skills too
+## 为什么 RLHF 会让回答变长？
 
-The "just style" critique was outgrown, only partially, by well-done open models showing major performance gains.
-
-- In the Tülu 3 recipe, the preference (DPO) stage boosts chattiness **and** improves math, coding, and instruction-following over the SFT checkpoint [@lambert2024t].
-- Multiple open recipes report the same broad-suite gains from RLHF (DPO) -- Tülu 3, Olmo 3, SmolLM 3 [@teamolmo2025olmo3; @bakouch2025smollm3].
-
-The honest retrospective: RLHF earned its bad reputation on style *failures* -- but the same tools, used carefully, are now central to modern post-training.
+- Arena 反复证明：普通用户更喜欢更长、更完整的回答——它们读起来更周到、更有用、更可信。
+- 模型被训练去匹配**平均标注者**——即第8讲中的选择集合。
+- 长度是古德哈特最喜欢的轴：最被奖励的表面特征，也最容易过度优化。
 
 ---
 
-## The course so far
+## 做得好的话，偏好调优也能提升能力/技能
 
-0. Prerequisites review
-1. Overview *(ch. 1-3)*
-2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & math *(ch. 6)*
-4. RL: Implementation & practice *(ch. 6)*
-5. The rise of reasoning models *(ch. 7)*
-6. Direct preference optimization *(ch. 8)*
-7. Synthetic data & modern post-training *(ch. 12)*
-8. Preferences & preference data *(ch. 10-11)*
-9. **Over-optimization & RLHF's bad reputation** *(ch. 14, app. B)* -- *today*
-10. **Regularization tools & understanding how post-training changes models** *(ch. 15)* -- *next*
-11. Evaluation *(ch. 16)* -- *(tentative)*
+"只是风格"的批评，随着做得好的开源模型展现出大幅性能提升，逐渐过时了。
+
+- 在 Tülu 3 的流程中，偏好（DPO）阶段不仅增加了话痨程度，还改善了数学、编码和指令遵循能力，相对于 SFT 检查点 [@lambert2024t]。
+- 多个开源配方报告了 RLHF（DPO）带来的广泛套件增益——Tülu 3、Olmo 3、SmolLM 3 [@teamolmo2025olmo3; @bakouch2025smollm3]。
+
+诚实的回顾：RLHF 因*风格上的失败*赢得了它的坏名声——但同样的工具，小心使用时，如今已成为现代后训练的核心。
+
+---
+
+## 课程到目前为止
+
+0. 先修知识回顾
+1. 概览 *（第1-3章）*
+2. IFT、奖励模型 & 拒绝采样 *（第4、5、9章）*
+3. RL：动机与数学 *（第6章）*
+4. RL：实现与实践 *（第6章）*
+5. 推理模型的崛起 *（第7章）*
+6. 直接偏好优化 *（第8章）*
+7. 合成数据 & 现代后训练 *（第12章）*
+8. 偏好 & 偏好数据 *（第10-11章）*
+9. **过度优化 & RLHF 的坏名声** *（第14章、附录B）* —— *今天*
+10. **正则化工具 & 理解后训练如何改变模型** *（第15章）* —— *下一讲*
+11. 评估 *（第16章）* —— *待定*
 
 ---
 
 <!-- rows: 85/15 -->
-## Thank you
+## 感谢
 
-Questions / discussion
+问题 / 讨论
 
-Contact: nathan@natolambert.com
+联系方式：nathan@natolambert.com
 
-Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+通讯：[interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
 
