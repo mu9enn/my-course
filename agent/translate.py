@@ -73,9 +73,10 @@ def execute(name, relative, source, target, state):
     log = AGENT / 'logs' / name / (relative.replace('/', '__') + '.' + run_id + '.log')
     log.parent.mkdir(parents=True, exist_ok=True)
     env = {k: v for k, v in os.environ.items() if not k.startswith(('ANTHROPIC_', 'CLAUDE'))}
+    credentials = json.loads((AGENT / 'secrets.local.json').read_text())
     env.update({
-        'ANTHROPIC_API_KEY': json.loads((AGENT / 'secrets.local.json').read_text())['api_key'],
-        'ANTHROPIC_BASE_URL': CONFIG['base_url'],
+        'ANTHROPIC_API_KEY': credentials['api_key'],
+        'ANTHROPIC_BASE_URL': credentials['base_url'],
         'ANTHROPIC_MODEL': CONFIG['model'],
         'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC': '1',
         'CLAUDE_CODE_MAX_OUTPUT_TOKENS': str(CONFIG['max_output_tokens']),

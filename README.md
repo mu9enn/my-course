@@ -77,7 +77,7 @@ python3 agent/translate.py run --book rlhf-book --all
 python3 agent/translate.py status
 ```
 
-密钥需放在本机 `agent/secrets.local.json`，该文件、运行日志和本机状态均不提交。仓库仅提供无密钥的示例配置。
+密钥和接口地址需放在本机 `agent/secrets.local.json`，该文件、运行日志和本机状态均不提交。仓库仅提供无密钥的示例配置。
 
 ## 阅读、构建与贡献
 

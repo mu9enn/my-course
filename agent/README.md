@@ -25,7 +25,7 @@ Python 3 标准库即可，无第三方 Python 依赖。CLI 配置与本机全�
 - [TERMS.md](TERMS.md)：共用术语和课程术语。
 - [config.json](config.json)：模型、文档范围、超时和输出上限。
 - [sources.lock.json](sources.lock.json)：上游提交版本，与 submodule 一致。
-- `secrets.local.json`：本机密钥，不提交。
+- `secrets.local.json`：本机密钥与接口地址，不提交。
 - `progress.json` 和 `logs/`：本机运行状态与文本日志，不提交。
 
 ```bash

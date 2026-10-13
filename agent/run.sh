@@ -48,14 +48,15 @@ git add README.md LICENSE NOTICE.md .gitignore .gitmodules agent original zh || 
 python3 - <<'PY'
 import json,subprocess
 from pathlib import Path
-secret=json.loads(Path('agent/secrets.local.json').read_text())['api_key'].encode()
+credentials=json.loads(Path('agent/secrets.local.json').read_text())
+private_values=[credentials[k].encode() for k in ('api_key','base_url')]
 files=subprocess.check_output(['git','diff','--cached','--name-only','--diff-filter=ACM','-z']).split(b'\0')
 for raw in files:
     if not raw:continue
     name=raw.decode()
     if not Path(name).is_file():continue
     body=subprocess.check_output(['git','show',':'+name])
-    if secret in body:raise SystemExit('Credential found in staged file; publication stopped: '+name)
+    if any(value in body for value in private_values):raise SystemExit('Private API configuration found in staged file; publication stopped: '+name)
 PY
 if [ "$?" -ne 0 ]; then exit 1; fi
 if ! git diff --cached --quiet; then
