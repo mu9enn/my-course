@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "2019 Lectures"
+title: "2019 课程讲座"
 description: >
-  Lecture notes and videos for Missing Semester, MIT IAP 2019.
+  Missing Semester 课程讲义和录像，MIT IAP 2019。
 permalink: /2019/
 phony: true
 ---
@@ -23,9 +23,9 @@ phony: true
   </ul>
 {% endfor %}
 
-# Beyond MIT
+# 其他平台的分享
 
-We've also shared this class beyond MIT in the hopes that others may benefit from these resources. You can find posts and discussion on
+我们也在 MIT 之外分享了这门课程，希望更多人能够从中受益。你可以在以下平台找到相关的帖子和讨论：
 
 - [Hacker News](https://news.ycombinator.com/item?id=19078281)
 - [Lobsters](https://lobste.rs/s/h6157x/mit_hacker_tools_lecture_series_on)
@@ -34,6 +34,6 @@ We've also shared this class beyond MIT in the hopes that others may benefit fro
 - [Twitter](https://twitter.com/Jonhoo/status/1091896192332693504)
 - [YouTube](https://www.youtube.com/playlist?list=PLyzOVJj3bHQuiujH1lpn8cA9dsyulbYRv)
 
-# Acknowledgments
+# 致谢
 
-This class was taught as part of [SIPB IAP 2019](https://sipb.mit.edu/iap/2019/) and co-sponsored by [SIPB](https://sipb.mit.edu/) and [MIT EECS](https://www.eecs.mit.edu/).
+本课程作为 [SIPB IAP 2019](https://sipb.mit.edu/iap/2019/) 的一部分讲授，并得到了 [SIPB](https://sipb.mit.edu/) 和 [MIT EECS](https://www.eecs.mit.edu/) 的共同赞助。

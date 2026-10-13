@@ -1,8 +1,8 @@
 ---
 layout: lecture
-title: "Packaging and Shipping Code"
+title: "代码打包与发布"
 description: >
-  Learn about project packaging, environments, versioning, and deploying libraries, applications, and services.
+  学习项目打包、虚拟环境、版本管理和部署库/应用/服务的方法。
 thumbnail: /static/assets/thumbnails/2026/lec6.png
 date: 2026-01-20
 ready: true
@@ -11,32 +11,26 @@ video:
   id: KBMiB-8P4Ns
 ---
 
-Getting code to work as intended is hard; getting that same code to run on a machine different from your own is often harder.
+让代码按预期工作已经很难；让同一份代码在你的机器之外的另一台机器上运行，往往更难。
 
-Shipping code means taking the code you wrote and converting it into a usable form that someone else can run without your computer's exact setup.
-Shipping code takes many forms and depends on the choices of programming language, system libraries, and operating system, among many other factors.
-It also depends on what you are building: a software library, a command line tool, and a web service all have different requirements and deployment steps.
-Regardless, there is a common pattern between all these scenarios: we need to define what the deliverable is --- a.k.a. the _artifact_ --- and what assumptions it makes about the environment around it.
+"发布代码"（shipping code）指的是：把你写的代码转换成一种可用的形式，让其他人无需依赖你的计算机的精确配置就能运行它。发布代码有多种形式，具体取决于编程语言的选择、系统库、操作系统等许多因素。它也取决于你在构建什么：一个软件库、一个命令行工具和一个 Web 服务各自有不同的需求和部署步骤。但不管哪种情况，都有一个共同的模式：我们需要定义交付物是什么——也就是所谓的**工件**（artifact）——以及它对运行环境做出哪些假设。
 
-In this lecture, we'll cover:
+在本讲中，我们将覆盖以下内容：
 
-- [Dependencies & Environments](#dependencies--environments)
-- [Artifacts & Packaging](#artifacts--packaging)
-- [Releases & Versioning](#releases--versioning)
-- [Reproducibility](#reproducibility)
-- [VMs & Containers](#vms--containers)
-- [Configuration](#configuration)
-- [Services & Orchestration](#services--orchestration)
-- [Publishing](#publishing)
+- [依赖与环境](#dependencies--environments)
+- [工件与打包](#artifacts--packaging)
+- [发布与版本控制](#releases--versioning)
+- [可复现性](#reproducibility)
+- [虚拟机与容器](#vms--containers)
+- [配置](#configuration)
+- [服务与编排](#services--orchestration)
+- [发布](#publishing)
 
-We'll explain these concepts through examples from the Python ecosystem, as concrete examples are helpful for understanding. While the tools are different for other programming language ecosystems, the concepts will largely be the same.
+我们将借助 Python 生态中的具体示例来解释这些概念——具体示例对于理解很有帮助。虽然其他编程语言的生态所使用的工具不同，但这些概念在很大程度上是共通的。
 
-# Dependencies & Environments
+# 依赖与环境
 
-In modern software development, layers of abstraction are ubiquitous.
-Programs naturally offload logic to other libraries or services.
-However, this introduces a _dependency_ relationship between your program and the libraries it requires to function.
-For instance, in Python, to fetch the content of a website we often do:
+在现代软件开发中，抽象的层次无处不在。程序自然会将逻辑委托给其他库或服务。然而，这也会在你的程序和其所需的库之间引入**依赖**（dependency）关系。例如，在 Python 中，如果要获取某个网页的内容，我们经常这样写：
 
 ```python
 import requests
@@ -44,7 +38,7 @@ import requests
 response = requests.get("https://missing.csail.mit.edu")
 ```
 
-Yet the `requests` library does not come bundled with the Python runtime, so if we try to run this code without having `requests` installed, Python will raise an error:
+但 `requests` 库并不随 Python 运行时一起打包。如果我们在没有安装 `requests` 的情况下尝试运行这段代码，Python 会抛出一个错误：
 
 ```console
 $ python fetch.py
@@ -54,14 +48,12 @@ Traceback (most recent call last):
 ModuleNotFoundError: No module named 'requests'
 ```
 
-To make this library available we need to first run `pip install requests` to install it.
-`pip` is the command line tool that the Python programming language provides for installing packages.
-Executing `pip install requests` produces the following sequence of actions:
+为了让这个库可用，我们需要先运行 `pip install requests` 来安装它。`pip` 是 Python 语言提供的用于安装包的命令行工具。执行 `pip install requests` 会产生以下一系列动作：
 
-1. Search for requests in the Python Package Index ([PyPI](https://pypi.org/))
-1. Search for the appropriate artifact for the platform we are running under
-1. Resolve dependencies --- the `requests` library itself depends on other packages, so the installer must find compatible versions of all transitive dependencies and install them beforehand
-1. Download the artifacts, then unpack and copy the files into the right places in our filesystem
+1. 在 Python 包索引（[PyPI](https://pypi.org/)）中搜索 requests
+1. 查找与我们当前运行平台匹配的合适的工件
+1. 解析依赖关系 —— `requests` 库本身也依赖其他包，因此安装器必须先找到所有传递依赖（transitive dependencies）的兼容版本并先行安装
+1. 下载工件，然后解压并将文件复制到文件系统中的正确位置
 
 ```console
 $ pip install requests
@@ -79,8 +71,7 @@ Installing collected packages: urllib3, idna, charset-normalizer, certifi, reque
 Successfully installed certifi-2024.8.30 charset-normalizer-3.4.0 idna-3.10 requests-2.32.3 urllib3-2.2.3
 ```
 
-Here we can see that `requests` has its own dependencies such as `certifi` or `charset-normalizer` and that they have to be installed before `requests` can be installed.
-Once installed, the Python runtime can find this library when importing it.
+在这里我们可以看到 `requests` 拥有自己的依赖，如 `certifi` 和 `charset-normalizer`，这些依赖必须在 `requests` 安装之前安装。一旦安装完成，Python 运行时在导入该库时就能找到它。
 
 ```console
 $ python -c 'import requests; print(requests.__path__)'
@@ -90,19 +81,11 @@ $ pip list | grep requests
 requests        2.32.3
 ```
 
-Programming languages have different tools, conventions and practices for installing and publishing libraries.
-In some languages like Rust, the toolchain is unified --- `cargo` handles building, testing, dependency management, and publishing.
-In others like Python, the unification happens at a specification level --- rather than a single tool, there are standardized specifications that define how packaging works, allowing multiple competing tools for each task (`pip` vs [`uv`](https://docs.astral.sh/uv/), `setuptools` vs [`hatch`](https://hatch.pypa.io/) vs [`poetry`](https://python-poetry.org/)).
-And in some ecosystems like LaTeX, distributions like TeX Live or MacTeX come bundled with thousands of packages pre-installed.
+不同编程语言有各自用于安装和发布库的工具、约定与实践。在 Rust 等语言中，工具链是统一的——`cargo` 负责构建、测试、依赖管理和发布。而在另一些语言如 Python 中，统一发生在规范层面——不是单一工具，而是有一套标准化的规范定义打包的工作方式，允许每个任务有相互竞争的工具（`pip` 与 [`uv`](https://docs.astral.sh/uv/)、`setuptools` 与 [`hatch`](https://hatch.pypa.io/) 与 [`poetry`](https://python-poetry.org/)）。在某些生态如 LaTeX 中，TeX Live 或 MacTeX 等发行版则捆绑了数千个预装包。
 
-Introducing dependencies also introduces dependency conflicts.
-Conflicts happen when programs require incompatible versions of the same dependency.
-For example, if `tensorflow==2.3.0` requires `numpy>=1.16.0,<1.19.0` and `pandas==1.2.0`  requires `numpy>=1.16.5`, then any version satisfying `numpy>=1.16.5,<1.19.0` will be valid.
-But if another package in your project requires `numpy>=1.19`, you have a conflict with no valid version that satisfies all constraints.
+引入依赖也必然引入依赖冲突。当程序需要同一个依赖的不兼容版本时，就会发生冲突。例如，如果 `tensorflow==2.3.0` 要求 `numpy>=1.16.0,<1.19.0`，而 `pandas==1.2.0` 要求 `numpy>=1.16.5`，那么任何满足 `numpy>=1.16.5,<1.19.0` 的版本都有效。但如果你的项目中另一个包要求 `numpy>=1.19`，你就遇到了一个所有约束都无法满足的冲突。
 
-This situation --- where multiple packages require mutually incompatible versions of shared dependencies --- is commonly referred to as _dependency hell_.
-One way to deal with conflicts is to isolate the dependencies of each program into their own _environment_.
-In Python we create a virtual environment by running:
+这种多个包需要同一个共享依赖的互不兼容版本的情况，通常被称为**依赖地狱**（dependency hell）。一种应对冲突的方式是把每个程序的依赖隔离到各自的**虚拟环境**（environment）中。在 Python 中，我们运行以下命令来创建一个虚拟环境：
 
 ```console
 $ which python
@@ -124,17 +107,13 @@ Package Version
 pip     24.0
 ```
 
-You can think of an environment as an entire standalone version of the language runtime with its own set of installed packages.
-This virtual environment or venv isolates the installed dependencies from the global Python installation.
-It is a good practice to have a virtual environment for each project, containing the dependencies it requires.
+你可以把虚拟环境看作是整个独立的语言运行时副本，它拥有自己的一组已安装包。这个虚拟环境将已安装的依赖从全局 Python 安装中隔离开来。为每个项目分别维护一个包含其所需依赖的虚拟环境，是一个好的做法。
 
-> While many modern operating systems ship with installations of programming language runtimes like Python, it is unwise to modify these installations since the OS might rely on them for its own functionality. Prefer using separate environments instead.
+> 虽然许多现代操作系统自带 Python 等编程语言的运行时安装，但修改这些安装是不明智的，因为操作系统本身可能依赖它们来提供功能。更推荐使用独立的虚拟环境。
 
-In some languages, the installation protocol is not defined by a tool but as a specification.
-In Python [PEP 517](https://peps.python.org/pep-0517/) defines the build system interface and [PEP 621](https://peps.python.org/pep-0621/) specifies how project metadata is stored in `pyproject.toml`.
-This has enabled developers to improve upon `pip` and produce more optimized tools like `uv`. To install `uv` it suffices to do `pip install uv`.
+在有些语言中，安装流程不是由工具定义，而是作为规范定义的。在 Python 中，[PEP 517](https://peps.python.org/pep-0517/) 定义了构建系统接口，[PEP 621](https://peps.python.org/pep-0621/) 规定了项目元数据存储在 `pyproject.toml` 中的方式。这让开发者得以改进 `pip`，产出更加优化的工具如 `uv`。安装 `uv` 只需执行 `pip install uv` 即可。
 
-Using `uv` instead of `pip` follows the same interface but is significantly faster:
+使用 `uv` 替代 `pip` 遵循相同的接口，但速度快得多：
 
 ```console
 $ uv pip install requests
@@ -148,9 +127,9 @@ Installed 5 packages in 8ms
  + urllib3==2.2.3
 ```
 
-> We strongly recommend using `uv pip` instead of `pip` whenever possible as it dramatically reduces the installation time.
+> 我们强烈建议尽可能使用 `uv pip` 替代 `pip`，它能大幅缩短安装时间。
 
-Beyond dependency isolation, environments also allow you to have different versions of your programming language runtime.
+除了隔离依赖，虚拟环境还允许你拥有不同版本的编程语言运行时。
 
 ```console
 $ uv venv --python 3.12 venv312
@@ -168,15 +147,15 @@ $ source venv311/bin/activate && python --version
 Python 3.11.10
 ```
 
-This helps when you need to test your code across multiple Python versions or when a project requires a specific version.
+当你需要跨多个 Python 版本测试代码，或者某个项目需要特定版本时，这就非常有用。
 
-> In some programming languages, each project automatically gets its own environment for its dependencies rather than you creating it manually, but the principle is the same. Most languages these days also have a mechanism for managing multiple versions of the language on a single system, and then specifying which version to use for individual projects.
+> 在一些编程语言中，每个项目会自动获得自己的依赖环境，无需手动创建，但原理是相同的。如今大多数语言也都有在同一系统上管理多个语言版本的机制，并能指定每个项目使用哪个版本。
 
-# Artifacts & Packaging
+# 工件与打包
 
-In software development we differentiate between source code and artifacts. Developers write and read source code, while artifacts are the packaged, distributable outputs produced from that source code --- ready to be installed or deployed.
-An artifact can be as simple as a file of code that we run, and as complex as an entire Virtual Machine that contains all the necessary bits and bobs of an application.
-Consider this example where we have a Python file `greet.py` in our current directory:
+在软件开发中，我们区分**源代码**和**工件**（artifacts）。开发者编写和阅读源代码，而工件是从源代码打包而成的、可分发的输出——即准备好被安装或部署的东西。一个工件可以简单到仅是一个我们直接运行的代码文件，也可以复杂到包含应用程序所有必要组件的完整虚拟机。
+
+考虑下面这个例子，我们当前目录下有一个 Python 文件 `greet.py`：
 
 ```console
 $ cat greet.py
@@ -191,15 +170,13 @@ $ python -c "from greet import greet; greet('World')"
 ModuleNotFoundError: No module named 'greet'
 ```
 
-The import fails once we move to a different directory because Python only searches for modules in specific locations (the current directory, installed packages, and paths in `PYTHONPATH`). Packaging solves this by installing the code into a known location.
+一旦我们切换到另一个目录，导入就会失败，因为 Python 只在特定位置搜索模块（当前目录、已安装的包，以及 `PYTHONPATH` 中的路径）。打包通过在已知位置安装代码解决了这个问题。
 
-In Python, packaging a library involves producing an artifact that package installers like `pip` or `uv` can use to install the relevant files.
-Python artifacts are called _wheels_ and contain all the necessary information to install a package: the code files, metadata about the package (name, version, dependencies), and instructions for where to place files in the environment.
-Building an artifact requires that we write a project file (also often known as manifest) detailing the specifics of the project, the required dependencies, the version of the package, and other information. In Python, we use `pyproject.toml` for this purpose.
+在 Python 中，为一个库打包就是产生一个包安装器（如 `pip` 或 `uv`）可以用来安装相关文件工件。Python 的工件被称为**轮子**（wheel），包含安装一个包所需的所有信息：代码文件、关于包的元数据（名称、版本、依赖），以及在环境中放置文件的说明。构建工件要求我们编写一个项目文件（也常称为清单），详细说明项目的具体信息、所需的依赖、包的版本以及其他信息。在 Python 中，我们为此使用 `pyproject.toml`。
 
-> `pyproject.toml` is the modern and recommended way. While earlier packaging methods like `requirements.txt` or `setup.py` are still supported, you should prefer `pyproject.toml` whenever possible.
+> `pyproject.toml` 是现代且推荐的方式。虽然 `requirements.txt` 或 `setup.py` 等早期打包方法仍然支持，但你应该优先使用 `pyproject.toml`。
 
-Here's a minimal `pyproject.toml` for a library that also provides a command-line tool:
+以下是一个同时提供命令行工具的库的最小 `pyproject.toml`：
 
 ```toml
 [project]
@@ -216,9 +193,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 ```
 
-The `typer` library is a popular Python package for creating command-line interfaces with minimal boilerplate.
+`typer` 库是一个流行的 Python 包，用于以最小的样板代码创建命令行界面。
 
-And the corresponding `greeting.py`:
+对应的 `greeting.py` 如下：
 
 ```python
 import typer
@@ -236,7 +213,7 @@ if __name__ == "__main__":
     cli()
 ```
 
-With this file, we can now build the wheel:
+有了这个文件，我们现在就可以构建轮子了：
 
 ```console
 $ uv build
@@ -250,9 +227,9 @@ greeting-0.1.0-py3-none-any.whl
 greeting-0.1.0.tar.gz
 ```
 
-The `.whl` file is the wheel (a zip archive with a specific structure), and the `.tar.gz` is a source distribution for systems that need to build from source.
+`.whl` 文件是轮子（一种具有特定结构的 zip 归档），`.tar.gz` 则是面向需要从源码构建的系统提供的源码分发。
 
-You can inspect the contents of a wheel to see what gets packaged:
+你可以检查轮子的内容来看看打包了哪些东西：
 
 ```console
 $ unzip -l dist/greeting-0.1.0-py3-none-any.whl
@@ -268,7 +245,7 @@ Archive:  dist/greeting-0.1.0-py3-none-any.whl
       998                     5 files
 ```
 
-Now if we were to give this wheel to someone else, they could install it by running:
+现在，如果我们把这个轮子给另一个人，他们可以运行以下命令来安装它：
 
 ```console
 $ uv pip install ./greeting-0.1.0-py3-none-any.whl
@@ -276,72 +253,57 @@ $ greet Alice
 Hello, Alice!
 ```
 
-This would install the library we built earlier into their environment, including the `greet` cli tool.
+这会将我们之前构建的库安装到他们的环境中，包括 `greet` 命令行工具。
 
-There are limitations to this approach. In particular if our library depends on platform-specific libraries, e.g. CUDA for GPU acceleration, then our artifact only works on systems with those specific libraries installed, and we may need to build separate wheels for different platforms (Linux, macOS, Windows) and architectures (x86, ARM).
+这种方法也有局限性。特别是，如果我们的库依赖平台特定的库，例如用于 GPU 加速的 CUDA，那么我们的工件只能在安装了这些特定库的系统中运行，我们可能需要为不同的平台（Linux、macOS、Windows）和架构（x86、ARM）分别构建轮子。
 
+安装软件时，有一个重要的区分：从源码安装与安装预编译二进制。从源码安装意味着下载原始代码并在你的机器上编译它——这需要已安装编译器和构建工具，对大型项目来说可能花费大量时间。
 
-When installing software, there's an important distinction between installing from source and installing a prebuilt binary. Installing from source means downloading the original code and compiling it on your machine --- this requires having a compiler and build tools installed, and can take significant time for large projects.
+安装预编译二进制意味着下载别人已经编译好的工件——更快更简单，但二进制必须匹配你的平台和架构。例如，[ripgrep 的发布页面](https://github.com/BurntSushi/ripgrep/releases) 显示了面向 Linux（x86_64、ARM）、macOS（Intel、Apple Silicon）和 Windows 的预编译二进制。
 
-Installing a prebuilt binary means downloading an artifact that was already compiled by someone else --- faster and simpler, but the binary must match your platform and architecture.
-For example, [ripgrep's releases page](https://github.com/BurntSushi/ripgrep/releases) shows prebuilt binaries for Linux (x86_64, ARM), macOS (Intel, Apple Silicon), and Windows.
+# 发布与版本控制
 
+代码的构建是一个连续的过程，但发布是离散的。在软件开发中，开发环境与生产环境之间有一条清晰的界限。代码需要在开发环境中被证明可用之后，才能被**发布**（shipping）到生产环境。发布过程涉及许多步骤，包括测试、依赖管理、版本控制、配置、部署和发布。
 
-# Releases & Versioning
+软件库不是静态的，而是随着修复和新功能的引入不断演进。我们通过离散的**版本标识符**来追踪这种演进，这些标识符对应库在某个时间点的状态。库行为的变化可能范围从修复非核心功能的补丁、扩展功能的新特性，到破坏向后兼容性的变更。**变更日志**（changelog）记录了某个版本引入了哪些变更——这些是软件开发者用来沟通新版本相关变更的文档。
 
-Code is built in a continuous process but is released on a discrete basis.
-In software development there is a clear distinction between development and production environments.
-Code needs to be proven to work in a dev environment before getting _shipped_ to prod.
-The release process involves many steps, including testing, dependency management, versioning, configuration, deployment and publishing.
+然而，追踪每个依赖的持续变更是不切实际的，尤其是还要考虑传递依赖——即我们的依赖的依赖。
 
+> 你可以使用 `uv tree` 可视化整个项目依赖树，它以树的形式展示所有包及其传递依赖。
 
-Software libraries are not static and evolve over time getting fixes and new features.
-We track this evolution by discrete version identifiers that correspond to the state of the library at a certain point in time.
-Changes in the behavior of a library can range from patches that fix noncritical functionality, new features that extend its functionality, to changes breaking backwards compatibility.
-Changelogs document what changes a version introduces --- these are documents that software developers use to communicate the changes associated with a new release.
+为简化这个问题，存在关于如何对软件进行版本控制的约定，其中最普遍的之一是 [语义化版本](https://semver.org/)（Semantic Versioning，简称 SemVer）。在语义化版本中，版本采用 MAJOR.MINOR.PATCH 形式的标识符，每个值取一个整数。简言之：
 
-However, keeping track of the ongoing changes in each and every dependency is impractical, even more so when we consider the transitive dependencies --- i.e. the dependencies of our dependencies.
+- PATCH（例如，1.2.3 → 1.2.4）应当仅包含 Bug 修复，且完全向后兼容
+- MINOR（例如，1.2.3 → 1.3.0）以向后兼容的方式添加新功能
+- MAJOR（例如，1.2.3 → 2.0.0）表示可能需要代码修改的破坏性变更
 
-> You can visualize the entire dependency tree of your project with `uv tree`, which shows all packages and their transitive dependencies in a tree format.
+> 这是一种简化，我们鼓励阅读完整的 SemVer 规范来理解，例如为什么从 0.1.3 到 0.2.0 可能导致破坏性变更，或者 1.0.0-rc.1 的含义是什么。
 
-To simplify this problem there are conventions on how to version software, and one of the most prevalent is [Semantic Versioning](https://semver.org/) or SemVer.
-Under Semantic Versioning a version has an identifier of the form MAJOR.MINOR.PATCH where each one of the values takes an integer value. The short version is that upgrading:
+Python 打包支持由 [PEP 440](https://peps.python.org/pep-0440/) 定义的标准版本指定符。因此，当指定依赖的版本时，我们可以使用各种约束：
 
-- PATCH (e.g., 1.2.3 → 1.2.4) should only contain bug fixes and be fully backwards compatible
-- MINOR (e.g., 1.2.3 → 1.3.0) adds new functionality in a backwards-compatible way
-- MAJOR (e.g., 1.2.3 → 2.0.0) indicates breaking changes that may require code modifications
-
-> This is a simplification and we encourage reading the full SemVer specification to understand for instance why going from 0.1.3 to 0.2.0 might cause breaking changes or what 1.0.0-rc.1 means.
-Python packaging supports standardized version specifiers defined by [PEP 440](https://peps.python.org/pep-0440/), so when we specify the versions of our dependencies we can use various constraints:
-
-In the `pyproject.toml` we have different ways of constraining the ranges of compatible versions of our dependencies:
+在 `pyproject.toml` 中，我们有不同的方式来约束依赖兼容版本的范围：
 
 ```toml
 [project]
 dependencies = [
-    "requests==2.32.3",  # Exact version - only this specific version
-    "click>=8.0",        # Minimum version - 8.0 or newer
-    "numpy>=1.24,<2.0",  # Range - at least 1.24 but less than 2.0
-    "pandas~=2.1.0",     # Compatible release - >=2.1.0 and <2.2.0
+    "requests==2.32.3",  # 精确版本 - 仅此特定版本
+    "click>=8.0",        # 最低版本 - 8.0 或更高
+    "numpy>=1.24,<2.0",  # 范围 - 至少 1.24 但低于 2.0
+    "pandas~=2.1.0",     # 兼容发布 - >=2.1.0 且 <2.2.0
 ]
 ```
 
-Version specifiers exist across many package managers (npm, cargo, etc.) with varying exact semantics. The `~=` operator is Python's "compatible release" operator --- `~=2.1.0` means "any version that is compatible with 2.1.0", which translates to `>=2.1.0` and `<2.2.0`. This is roughly equivalent to the caret (`^`) operator in npm and cargo, which follows SemVer's notion of compatibility.
+版本指定符存在于许多包管理器中（npm、cargo 等），具体语义各不相同。`~=` 操作符是 Python 的"兼容发布"操作符——`~=2.1.0` 意为"与 2.1.0 兼容的任何版本"，即 `>=2.1.0` 和 `<2.2.0`。这大致等价于 npm 和 cargo 中的脱字符（`^`）操作符，其遵循 SemVer 的兼容性概念。
 
-Not all software uses semantic versioning. A common alternative is Calendar Versioning (CalVer), where versions are based on release dates rather than semantic meaning. For example, Ubuntu uses versions like `24.04` (April 2024) and `24.10` (October 2024). CalVer makes it easy to see how old a release is, though it doesn't communicate anything about compatibility.  Lastly, semantic versioning is not infallible, and sometimes maintainers inadvertently introduce breaking changes in minor or patch releases.
+并非所有软件都使用语义化版本。另一种常见的替代方案是日历版本（Calendar Versioning，CalVer），其中版本基于发布日期而非语义含义。例如，Ubuntu 使用 `24.04`（2024 年 4 月）和 `24.10`（2024 年 10 月）这样的版本。CalVer 让你很容易看出一个版本有多旧，但它无法传达任何关于兼容性的信息。最后，语义化版本并非完美无缺，有时维护者可能无意中在次要或补丁版本中引入了破坏性变更。
 
+# 可复现性
 
-# Reproducibility
+在现代软件开发中，你编写的代码建立在大量的抽象层之上。这包括如编程语言运行时、第三方库、操作系统，甚至是硬件本身等因素。这任何一层之间的差异都可能改变你代码的行为，甚至使其无法按预期工作。此外，即使是底层硬件的差异也会影响你发布软件的能力。
 
-In modern software development the code you write sits atop a significant number of layers of abstraction.
-This includes things like your programming language runtime, third party libraries, the operating system, or even the hardware itself.
-Any difference across any of these layers might change the behavior of your code or even prevent it from working as intended.
-Furthermore, even differences in the underlying hardware impact your ability to ship software.
+**固定**（pinning）一个库指的是指定精确版本而非范围，例如 `requests==2.32.3` 而非 `requests>=2.0`。
 
-Pinning a library refers to specifying an exact version rather than a range, e.g. `requests==2.32.3` instead of `requests>=2.0`.
-
-Part of the job of a package manager is to consider all the constraints provided by the dependencies --- and transitive dependencies --- and then produce a valid list of versions that will satisfy all the constraints.
-The specific list of versions can then be saved to a file for reproducibility purposes; these files are referred to as _lock files_.
+包管理器的一项工作就是考虑依赖（及传递依赖）提供的所有约束，然后生成一个满足所有约束的有效版本列表。这个具体的版本列表可以保存到文件中以用于可复现性目的；这些文件被称为**锁文件**（lock files）。
 
 ```console
 $ uv lock
@@ -362,37 +324,27 @@ wheels = [
 ...
 ```
 
-One critical distinction when dealing with dependency versioning and reproducibility is the difference between libraries and applications/services.
-A library is intended to be imported and used by other code which might have its own dependencies, so specifying overly strict version constraints can cause conflicts with the user's other dependencies.
-In contrast, applications or services are final consumers of the software and typically expose their functionality through a user interface or an API, not through a programming interface.
-For libraries, it is good practice to specify version ranges to maximize compatibility with the wider package ecosystem. For applications, pinning exact versions ensures reproducibility --- everyone running the application uses the exact same dependencies.
+在处理依赖版本控制和可复现性时，一个关键区分是库与应用程序/服务之间的区别。库的目的是被其他代码导入和使用，而这些代码可能拥有自己的依赖，因此指定过于严格的版本约束可能会与用户的其他依赖产生冲突。相比之下，应用程序或服务是软件的最终消费者，通常通过用户界面或 API 暴露其功能，而非通过编程接口。对于库，指定版本范围以最大化与更广泛包生态的兼容性是一个好的做法。对于应用程序，固定精确版本确保可复现性——每个人运行应用程序时都使用完全相同的依赖。
 
+> 译者补充：锁文件（lock file）的作用是记录在某一时刻所有依赖及其传递依赖的确切版本。当其他人（或 CI 系统）使用同一个锁文件安装时，会得到一模一样的依赖树，从而保证"在我机器上能跑"也等于"在你机器上能跑"。
 
-For projects requiring maximum reproducibility, tools like [Nix](https://nixos.org/) and [Bazel](https://bazel.build/) provide _hermetic_ builds --- where every input including compilers, system libraries, and even the build environment itself is pinned and content-addressed. This guarantees bit-for-bit identical outputs regardless of when or where the build runs.
+对于需要最大可复现性的项目，像 [Nix](https://nixos.org/) 和 [Bazel](https://bazel.build/) 这样的工具提供**确定性构建**（hermetic builds）——其中每一个输入，包括编译器、系统库，甚至构建环境本身都被固定并通过内容寻址。这保证了无论构建何时何地进行，输出都逐位相同。
 
-> You can even use NixOS to manage your entire computer install so that you can trivially spin up new copies of your computer setup and manage their complete configuration through version-controlled configuration files.
+> 你甚至可以使用 NixOS 管理你的整个计算机系统，使得你可以轻松拉起计算机配置的多个副本，并通过版本控制的配置文件管理其完整配置。
 
-A neverending tension in software development is that new software versions introduce breakage either intentionally or unintentionally, while on the other hand, old software versions become compromised with security vulnerabilities over time.
-We can address this by using continuous integration pipelines (we'll see more in the [Code Quality and CI](/2026/code-quality/) lecture) that test our application against new software versions and having automation in place for detecting when new versions of our dependencies are released, such as [Dependabot](https://github.com/dependabot).
+软件开发中有一个永无止境的张力：新软件版本要么有意、要么无意地引入破坏；另一方面，旧软件版本会随着时间的推移而出现安全漏洞。我们可以通过持续集成流水线（我们稍后在 [代码质量与 CI](/2026/code-quality/) 讲座中会看到更多）来解决这个问题——用它来测试应用程序对新软件版本的兼容性，同时建立自动化来检测我们的依赖是否有新版本发布，例如 [Dependabot](https://github.com/dependabot)。
 
-Even with CI testing in place, issues still occur when upgrading software versions, often because of the inevitable mismatch between dev and prod environments.
-In those circumstances the best course of action is to have a _rollback_ plan, where the version upgrade is reverted and a known good version is redeployed instead.
+即使有了 CI 测试，在升级软件版本时仍然会发生问题，常常是因为开发环境与生产环境之间不可避免的不匹配。在这些情况下，最好的做法是有一个**回滚**（rollback）计划，即回退版本升级并重部署一个已知良好的版本。
 
-# VMs & Containers
+# 虚拟机与容器
 
-As you start relying on more complex dependencies, it is likely that the dependencies of your code will span beyond the boundaries of what the package manager can handle.
-One common reason is having to interface with specific system libraries or hardware drivers.
-For example, in scientific computing and AI, programs often need specialized libraries and drivers to utilize GPU hardware.
-Many system-level dependencies (GPU drivers, specific compiler versions, shared libraries like OpenSSL) still require system-wide installation.
+随着你越来越依赖复杂的依赖，你的代码的依赖很可能超出包管理器所能处理的范围。一个常见的原因是必须与特定的系统库或硬件驱动程序进行交互。例如，在科学计算和 AI 中，程序经常需要专门的库和驱动来利用 GPU 硬件。许多系统级依赖（GPU 驱动、特定编译器版本、共享库如 OpenSSL）仍然需要系统级安装。
 
-Traditionally this wider dependency problem was solved with Virtual Machines (VMs).
-VMs abstract the entire computer and provide a completely isolated environment with its own dedicated operating system.
-A more modern approach is containers, which package an application along with its dependencies, libraries, and filesystem, but share the host's operating system kernel rather than virtualizing an entire computer.
-Containers are lighter weight than VMs because they share the kernel, making them faster to start and more efficient to run.
+传统上，这个更广泛的依赖问题通过虚拟机（VMs）来解决。虚拟机抽象整个计算机，并提供一个完全隔离的环境，拥有自己专用的操作系统。一种更现代的方法是使用容器，它将应用程序连同其依赖、库和文件系统一起打包，但共享宿主机的操作系统内核，而不是虚拟化整个计算机。容器比虚拟机更轻量，因为它们共享内核，启动更快且运行更高效。
 
-The most popular container platform is [Docker](https://www.docker.com/). Docker introduced a standardized way to build, distribute, and run containers. Under the hood, Docker uses containerd as its container runtime --- an industry standard that other tools like Kubernetes also use.
+最流行的容器平台是 [Docker](https://www.docker.com/)。Docker 引入了一种标准化方式来构建、分发和运行容器。在底层，Docker 使用 containerd 作为其容器运行时——这也是 Kubernetes 等其他工具使用的行业标准。
 
-Running a container is straightforward. For example, to run a Python interpreter inside a container we use `docker run` (The `-it` flags make the container interactive with a terminal. When you exit, the container stops.).
+运行容器很简单。例如，要在容器中运行 Python 解释器，我们使用 `docker run`（`-it` 标志使容器以交互式终端运行。退出后，容器停止。）：
 
 ```console
 $ docker run -it python:3.12 python
@@ -401,9 +353,7 @@ Python 3.12.7 (main, Nov  5 2024, 02:53:25) [GCC 12.2.0] on linux
 Hello from inside a container!
 ```
 
-In practice your program might depend on the entire filesystem.
-To overcome this, we can use container images that ship the entire filesystem of the application as the artifact.
-The container images are created programmatically. With docker we specify exactly the dependencies, system libraries, and configuration of the image using a Dockerfile syntax:
+在实际使用中，你的程序可能依赖于整个文件系统。为解决这个问题，我们可以使用包含应用程序完整文件系统的容器镜像作为工件。容器镜像通过编程方式创建。使用 Docker，我们通过 Dockerfile 语法精确指定镜像的依赖、系统库和配置：
 
 ```dockerfile
 FROM python:3.12
@@ -417,11 +367,11 @@ WORKDIR /app
 RUN pip install .
 ```
 
-An important distinction: a Docker **image** is the packaged artifact (like a template), while a **container** is a running instance of that image. You can run multiple containers from the same image. Images are built in layers, where each instruction (`FROM`, `RUN`, `COPY`, etc) in a Dockerfile creates a new layer. Docker caches these layers, so if you change a line in your Dockerfile, only that layer and subsequent layers need to be rebuilt.
+一个重要区分：Docker **镜像**（image）是打包好的工件（类似模板），而**容器**（container）是该镜像的一个运行实例。你可以从同一个镜像运行多个容器。镜像以层（layer）方式构建，Dockerfile 中的每条指令（`FROM`、`RUN`、`COPY` 等）创建一个新的层。Docker 会缓存这些层，因此如果你更改 Dockerfile 中的某一行，只需要重建该行及其后续层。
 
-The previous Dockerfile has several issues: it uses the full Python image instead of a slim variant, runs separate `RUN` commands creating unnecessary layers, versions are not pinned, and it doesn't clean up package manager caches, shipping unnecessary files. Other frequent mistakes include insecurely running containers as root and accidentally embedding secrets in layers.
+上面的 Dockerfile 有几个问题：它使用了完整的 Python 镜像而非精简变体，分别运行单独的 `RUN` 命令创建不必要的层，版本未固定，且没有清理包管理器缓存、携带不必要的文件。其他常见错误包括以 root 不安全地运行容器，以及无意中在层中嵌入密钥。
 
-Here's an improved version
+下面是一个改进版本：
 
 ```dockerfile
 FROM python:3.12-slim
@@ -437,29 +387,27 @@ COPY . .
 RUN uv sync --locked --no-dev
 ```
 
-In the previous example we see that instead of installing `uv` from source, we are copying the prebuilt binary from the `ghcr.io/astral-sh/uv:latest` image. This is known as the _builder_ pattern. With this pattern we do not need to ship all the tools needed to compile our code, just the final binary that is needed to run the application (`uv` in this case).
+在前面的示例中我们看到，我们没有从源码安装 `uv`，而是从 `ghcr.io/astral-sh/uv:latest` 镜像复制预编译二进制。这被称为**构建器模式**（builder pattern）。使用这种模式，我们不需要携带编译代码所需的所有工具，只需携带运行应用程序所需的最终二进制文件（在本例中为 `uv`）。
 
-Docker has important limitations to be aware of. First, container images are often platform-specific --- an image built for `linux/amd64` won't run natively on `linux/arm64` (Apple Silicon Macs) without emulation, which is slow. Second, Docker containers require a Linux kernel, so on macOS and Windows, Docker actually runs a lightweight Linux VM under the hood, adding overhead. Third, Docker's isolation is weaker than VMs --- containers share the host kernel, which is a security concern in multi-tenant environments.
+Docker 有重要的局限性需要注意。首先，容器镜像通常是平台特定的——为 `linux/amd64` 构建的镜像在没有模拟的情况下无法在 `linux/arm64`（Apple Silicon Mac）上原生运行，而模拟速度很慢。其次，Docker 容器需要 Linux 内核，因此在 macOS 和 Windows 上，Docker 实际上在底层运行一个轻量级 Linux VM，增加了开销。第三，Docker 的隔离性弱于 VM——容器共享宿主内核，在多方环境中存在安全问题。
 
-> These days, more projects are also making use of nix to manage even "system-wide" libraries and applications per project through [nix flakes](https://serokell.io/blog/practical-nix-flakes).
+> 如今，越来越多的项目也开始利用 [nix flakes](https://serokell.io/blog/practical-nix-flakes) 来为每个项目管理系统级库和应用。
 
-# Configuration
+# 配置
 
-Software is inherently configurable. In the [command line environment](/2026/command-line-environment/) lecture we saw programs receiving options via flags, environment variables or even configuration files a.k.a. dotfiles. This holds true even for more complex applications, and there are established patterns for managing configuration at scale.
-Software configuration should not be embedded in the code but be provided at runtime.
-A couple of common ones being environment variables and config files.
+软件本质上都是可配置的。在 [命令行环境](/2026/command-line-environment/) 讲座中，我们看到了程序通过标志、环境变量或甚至配置文件（又名 dotfiles）接收选项。这种情况对于更复杂的应用程序同样适用，并且有成熟的模式用于大规模管理配置。软件配置不应嵌入代码中，而应在运行时提供。常见的两种方式是环境变量和配置文件。
 
-Here's an example of an application that is configured via environment variables:
+以下是一个通过环境变量配置的应用程序的示例：
 
 ```python
 import os
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///local.db")
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
-API_KEY = os.environ["API_KEY"]  # Required - will raise if not set
+API_KEY = os.environ["API_KEY"]  # 必需 —— 如果未设置则抛出异常
 ```
 
-An application could also be configured via a configuration file (e.g., a Python program that loads a config via `yaml.load`), `config.yaml`:
+应用程序也可以通过配置文件来配置（例如，一个通过 `yaml.load` 加载配置的 Python 程序），`config.yaml`：
 
 ```yaml
 database:
@@ -471,22 +419,17 @@ server:
   debug: false
 ```
 
-A good right-hand rule for thinking about configuration is that the same codebase should be deployable to different environments (development, staging, production) with only configuration changes, never code changes.
+思考配置的一个好用的右倾原则是：同一代码库应仅通过配置变更（而非代码变更）就能部署到不同的环境（开发、预发布、生产）。
 
-Among the many configuration options there is often sensitive data such as API keys.
-Secrets need to be handled with care to avoid exposing them accidentally, and must not be included in version control.
+在众多配置选项中，往往包含敏感数据，如 API 密钥。密钥需要小心处理以避免意外泄露，且不应纳入版本控制。
 
+# 服务与编排
 
-# Services & Orchestration
+现代应用程序很少孤立存在。一个典型的 Web 应用可能需要一个数据库用于持久存储、一个缓存用于性能、一个消息队列用于后台任务，以及多种其他辅助服务。现代架构通常不会将一切打包成一个单体应用，而是将功能分解为可以独立开发、部署和扩展的独立服务。
 
-Modern applications rarely exist in isolation. A typical web application might need a database for persistent storage, a cache for performance, a message queue for background tasks, and various other supporting services. Rather than bundling everything into a single monolithic application, modern architectures often decompose functionality into separate services that can be developed, deployed, and scaled independently.
+举例来说，如果我们确定应用程序从使用缓存中受益，我们可以利用已有的经实战检验的方案（如 [Redis](https://redis.io/) 或 [Memcached](https://memcached.org/)），而不是自己从零构建。我们可以在构建容器时将 Redis 嵌入我们的应用程序依赖中，但这意味着需要协调 Redis 和我们的应用程序之间的所有依赖，这可能颇具挑战甚至不可行。相反，我们可以做的是将每个应用程序独立部署到自己的容器中。这通常被称为**微服务架构**（microservice architecture），其中每个组件作为独立服务运行，并通过网络通信，通常通过 HTTP API。
 
-As an example, if we determine our application might benefit from using a cache, instead of rolling our own we can leverage existing battle tested solutions like [Redis](https://redis.io/) or [Memcached](https://memcached.org/).
-We could embed Redis in our application dependencies by building it as part of the container, but that means harmonizing all the dependencies between Redis and our application which could be challenging or even unfeasible.
-Instead what we can do is deploy each application separately in its own container.
-This is commonly referred to as a microservice architecture where each component runs as an independent service that communicates over the network, typically via HTTP APIs.
-
-[Docker Compose](https://docs.docker.com/compose/) is a tool for defining and running multi-container applications. Rather than managing containers individually, you declare all services in a single YAML file and orchestrate them together. Now our full application encompasses more than one container:
+[Docker Compose](https://docs.docker.com/compose/) 是一个用于定义和运行多容器应用程序的工具。你不必单独管理容器，而是在单个 YAML 文件中声明所有服务，然后一起编排它们。现在我们的完整应用程序包含不止一个容器：
 
 ```yaml
 # docker-compose.yml
@@ -509,10 +452,9 @@ volumes:
   redis_data:
 ```
 
-With `docker compose up`, both services start together, and the web application can connect to Redis using the hostname `cache` (Docker's internal DNS resolves service names automatically).
-Docker Compose lets us declare how we want to deploy one or more services, and handles the orchestration of starting them together, setting up networking between them, and managing shared volumes for data persistence.
+通过 `docker compose up`，两个服务一起启动，Web 应用可以通过主机名 `cache` 连接 Redis（Docker 的内部 DNS 会自动解析服务名）。Docker Compose 让我们声明如何部署一个或多个服务，并处理启动编排、在它们之间设置网络，以及为数据持久性管理共享卷。
 
-For production deployments, you often want your docker compose services to start automatically on boot and restart on failure. A common approach is to use systemd to manage the docker compose deployment:
+对于生产部署，你通常希望 Docker Compose 服务在系统启动时自动启动，并在失败时重启。一种常见的方法是使用 systemd 来管理 Docker Compose 的部署：
 
 ```ini
 # /etc/systemd/system/myapp.service
@@ -532,11 +474,11 @@ ExecStop=/usr/bin/docker compose down
 WantedBy=multi-user.target
 ```
 
-This systemd unit file ensures your application starts when the system boots (after Docker is ready), and provides standard controls like `systemctl start myapp`, `systemctl stop myapp`, and `systemctl status myapp`.
+这个 systemd 单元文件确保你的应用在系统启动时（Docker 就绪之后）启动，并提供 `systemctl start myapp`、`systemctl stop myapp` 和 `systemctl status myapp` 等标准控制命令。
 
-As deployment requirements grow more complex --- needing scalability across multiple machines, fault tolerance when services crash, and high availability guarantees --- organizations turn to sophisticated container orchestration platforms like Kubernetes (k8s), which can manage thousands of containers across clusters of machines. That said, Kubernetes has a steep learning curve and significant operational overhead, so it's often overkill for smaller projects.
+随着部署要求变得越来越复杂——需要在多台机器上扩展、服务崩溃时的容错以及高可用性保证——组织会转向更复杂的容器编排平台，如 Kubernetes（k8s），它可以在机器集群上管理数千个容器。不过，Kubernetes 学习曲线陡峭且运维开销巨大，因此对于较小的项目来说往往是大材小用。
 
-This multi-container setup is partly feasible because modern services communicate with each other via standardized APIs, with HTTP REST APIs. For example, whenever a program interacts with an LLM provider like OpenAI or Anthropic, under the hood it is sending an HTTP request to their servers and parsing the response:
+这种多容器设置之所以部分可行，是因为现代服务通过标准化的 API（尤其是 HTTP REST API）相互通信。例如，每当一个程序与 OpenAI 或 Anthropic 等 LLM 提供商交互时，底层它发送的是一个 HTTP 请求到他们的服务器并解析响应：
 
 ```console
 $ curl https://api.anthropic.com/v1/messages \
@@ -547,33 +489,28 @@ $ curl https://api.anthropic.com/v1/messages \
          "messages": [{"role": "user", "content": "Explain containers vs VMs in one sentence."}]}'
 ```
 
-# Publishing
+# 发布
 
-Once you have shown your code to work, you might be interested in distributing it for others to download and install.
-Distribution takes many forms and is intrinsically tied to the programming language and environments that you operate with.
+当你的代码已经能工作时，你可能有兴趣将其分发，供他人下载和安装。分发有多种形式，并且与你所操作的编程语言和环境密切相关。
 
-The simplest form of distribution is uploading artifacts for people to download and install locally.
-This is still common and you can find it in places like [Ubuntu's package archive](http://archive.ubuntu.com/ubuntu/pool/main/), which is essentially an HTTP directory listing of `.deb` files.
+最简单的分发形式是上传工件，供他人下载和安装到本地。这仍然很常见，你可以在 [Ubuntu 的软件包归档](http://archive.ubuntu.com/ubuntu/pool/main/) 中找到它，它本质上是一个 `.deb` 文件的 HTTP 目录列表。
 
-These days, GitHub has become the de facto platform for publishing source code and artifacts.
-While the source code is often publicly available, GitHub Releases allow maintainers to attach prebuilt binaries and other artifacts to tagged versions.
+如今，GitHub 已成为发布源代码和工件的事实上的平台。虽然源代码通常公开可用，GitHub Releases 允许维护者为标记的版本附加预编译的二进制和其他工件。
 
-
-Package managers sometimes support installing directly from GitHub, either from source or from a pre-built wheel:
+一些包管理器还支持直接从 GitHub 安装，可以从源码或预编译的轮子安装：
 
 ```console
-# Install from source (will clone and build)
+# 从源码安装（将克隆并构建）
 $ pip install git+https://github.com/psf/requests.git
 
-# Install from a specific tag/branch
+# 从特定标签/分支安装
 $ pip install git+https://github.com/psf/requests.git@v2.32.3
 
-# Install a wheel directly from a GitHub release
+# 直接从 GitHub release 安装轮子
 $ pip install https://github.com/user/repo/releases/download/v1.0/package-1.0-py3-none-any.whl
 ```
 
-In fact, some languages like Go use a decentralized distribution model --- rather than a central package repository, Go modules are distributed directly from their source code repositories.
-Module paths like `github.com/gorilla/mux` indicate where the code lives, and `go get` fetches directly from there. However, most package managers like `pip`, `cargo`, or `brew` have central indexes of pre-packaged projects for ease of distribution and installation. If we run
+实际上，有些语言如 Go 使用去中心化的分发模式——没有中央包仓库，Go 模块直接从它们的源代码仓库分发。模块路径如 `github.com/gorilla/mux` 指示代码所在位置，`go get` 直接从那里获取。但是，大多数包管理器如 `pip`、`cargo` 或 `brew` 都有预打包项目的中央索引，以便于分发和安装。如果我们运行
 
 ```console
 $ uv pip install requests --verbose --no-cache 2>&1 | grep -F '.whl'
@@ -582,18 +519,16 @@ DEBUG No cache entry for: https://files.pythonhosted.org/packages/1e/db/4254e3ea
 DEBUG No cache entry for: https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl
 ```
 
-we see where we are fetching the `requests` wheel from. Notice the `py3-none-any` in the filename --- this means the wheel works with any Python 3 version, on any OS, on any architecture. For packages with compiled code, the wheel is platform-specific:
+我们可以看到 `requests` 的轮子是从哪里获取的。注意文件名中的 `py3-none-any`——这意味着该轮子在任何操作系统、任何架构的任意 Python 3 版本上都能工作。对于有编译代码的包，轮子是平台特定的：
 
 ```console
 $ uv pip install numpy --verbose --no-cache 2>&1 | grep -F '.whl'
 DEBUG Selecting: numpy==2.2.1 [compatible] (numpy-2.2.1-cp312-cp312-macosx_14_0_arm64.whl)
 ```
 
-Here `cp312-cp312-macosx_14_0_arm64` indicates this wheel is specifically for CPython 3.12 on macOS 14+ for ARM64 (Apple Silicon). If you're on a different platform, `pip` will download a different wheel or build from source.
+这里的 `cp312-cp312-macosx_14_0_arm64` 表示该轮子专门用于 ARM64（Apple Silicon）上 macOS 14+ 的 CPython 3.12。如果你在不同的平台上，`pip` 将下载不同的轮子或从源码构建。
 
-Conversely, for people to be able to find a package we've created, we need to publish it to one of these registries.
-In Python, the main registry is the [Python Package Index (PyPI)](https://pypi.org).
-Like with installing, there are multiple ways of publishing packages. The `uv publish` command provides a modern interface for uploading packages to PyPI:
+相反，为了让别人能够找到我们创建的包，我们需要将其发布到这些注册表之一。在 Python 中，主要的注册表是 [Python 包索引（PyPI）](https://pypi.org)。与安装类似，发布包有多种方式。`uv publish` 命令为上传包到 PyPI 提供了现代界面：
 
 ```console
 $ uv publish --publish-url https://test.pypi.org/legacy/
@@ -601,33 +536,31 @@ Publishing greeting-0.1.0.tar.gz
 Publishing greeting-0.1.0-py3-none-any.whl
 ```
 
-Here we are using [TestPyPI](https://test.pypi.org) --- a separate package registry intended for testing your publishing workflow without polluting the real PyPI. Once uploaded, you can install from TestPyPI:
+这里我们使用的是 [TestPyPI](https://test.pypi.org)——一个独立的包注册表，用于测试你的发布流程，而不会污染正式的 PyPI。上传后，你可以从 TestPyPI 安装：
 
 ```console
 $ uv pip install --index-url https://test.pypi.org/simple/ greeting
 ```
 
-A key consideration when publishing software is trust. How do users verify that the package they download actually comes from you and hasn't been tampered with? Package registries use checksums to verify integrity, and some ecosystems support package signing to provide cryptographic proof of authorship.
+发布软件时的一个关键考虑是信任。用户如何验证他们下载的包确实来自你且未被篡改？包注册表使用校验和来验证完整性，一些生态还支持包的签名以提供作者身份的密码学证明。
 
-Different languages have their own package registries: [crates.io](https://crates.io) for Rust, [npm](https://www.npmjs.com) for JavaScript, [RubyGems](https://rubygems.org) for Ruby, and [Docker Hub](https://hub.docker.com) for container images. Meanwhile, for private or internal packages, organizations often deploy their own package repositories (such as a private PyPI server or a private Docker registry) or use managed solutions from cloud providers.
+不同语言有自己的包注册表：[crates.io](https://crates.io) 用于 Rust，[npm](https://www.npmjs.com) 用于 JavaScript，[RubyGems](https://rubygems.org) 用于 Ruby，[Docker Hub](https://hub.docker.com) 用于容器镜像。同时，对于私有或内部包，组织通常部署自己的包存储库（如私有 PyPI 服务器或私有 Docker 注册表），或使用云提供商提供托管解决方案。
 
-Deploying a web service to the internet involves additional infrastructure: domain name registration, DNS configuration to point your domain to your server, and often a reverse proxy like nginx to handle HTTPS and route traffic. For simpler use cases like documentation or static sites, [GitHub Pages](https://pages.github.com/) provides free hosting directly from a repository.
+将 Web 服务部署到互联网涉及额外的基础设施：域名注册、将域名指向服务器的 DNS 配置，以及通常使用 nginx 等反向代理来处理 HTTPS 和路由流量。对于更简单的用例（如文档或静态站点），[GitHub Pages](https://pages.github.com/) 直接从仓库提供免费托管。
 
 <!--
-## Documentation
+## 文档
 
-So far we have emphasized the deliverable _artifact_ as the main output of packaging and shipping code.
-In addition to the artifact, we need to document for users the code's functionality, installation instructions, and usage examples.
+到目前为止，我们一直强调交付物**工件**作为打包和发布代码的主要输出。除工件外，我们还需要为用户记录代码的功能、安装说明和使用示例。
 
-Tools like [Sphinx](https://www.sphinx-doc.org/) (Python) and [MkDocs](https://www.mkdocs.org/) can automatically generate browsable documentation from docstrings and markdown files, often hosted on services like [Read the Docs](https://readthedocs.org/).
-For HTTP-based APIs, the [OpenAPI specification](https://www.openapis.org/) (formerly Swagger) provides a standard format for describing API endpoints, which tools can use to generate interactive documentation and client libraries automatically. -->
+[Sphinx](https://www.sphinx-doc.org/)（Python）和 [MkDocs](https://www.mkdocs.org/) 等工具可以自动从 docstrings 和 markdown 文件生成交互式文档，通常托管在 [Read the Docs](https://readthedocs.org/) 等服务上。对于基于 HTTP 的 API，[OpenAPI 规范](https://www.openapis.org/)（前身为 Swagger）提供了描述 API 端点的标准格式，工具可以利用它自动生成交互式文档和客户端库。 -->
 
 
-# Exercises
+# 练习
 
-1. Save your environment with `printenv` to a file, create a venv, activate it, `printenv` to another file and `diff before.txt after.txt`. What changed in the environment? Why does the shell prefer the venv? (Hint: look at `$PATH` before and after activation.) Run `which deactivate` and reason about what the deactivate bash function is doing.
-1. Create a Python package with a `pyproject.toml` and install it in a virtual environment. Create a lockfile and inspect it.
-1. Install Docker and use it to build the Missing Semester class website locally using docker compose.
-1. Write a Dockerfile for a simple Python application. Then write a `docker-compose.yml` that runs your application alongside a Redis cache.
-1. Publish a Python package to TestPyPI (don't publish to the real PyPI unless it's worth sharing!). Then build a Docker image with said package and push it to `ghcr.io`.
-1. Make a website using [GitHub Pages](https://docs.github.com/en/pages/quickstart). Extra (non-)credit: configure it with a custom domain.
+1. 将你的环境通过 `printenv` 保存到文件，创建一个虚拟环境并激活它，再将 `printenv` 输出到另一个文件中，然后 `diff before.txt after.txt`。环境中哪些内容发生了变化？为什么 shell 优先选择虚拟环境？（提示：查看激活前后的 `$PATH`。）运行 `which deactivate` 并推理 `deactivate` 这个 bash 函数在做什么。
+1. 创建一个带有 `pyproject.toml` 的 Python 包，并在虚拟环境中安装它。创建一个锁文件并检查它的内容。
+1. 安装 Docker，并使用 docker compose 在本地构建 Missing Semester 课程网站。
+1. 为一个简单的 Python 应用编写一个 Dockerfile。然后编写一个 `docker-compose.yml`，将你的应用与一个 Redis 缓存一起运行。
+1. 将一个 Python 包发布到 TestPyPI（除非值得分享，否则不要发布到正式的 PyPI）。然后构建一个包含该包的 Docker 镜像，并将其推送到 `ghcr.io`。
+1. 使用 [GitHub Pages](https://docs.github.com/en/pages/quickstart) 创建一个网站。额外（不加分）挑战：配置自定义域名。

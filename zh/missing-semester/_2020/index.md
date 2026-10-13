@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "2020 Lectures"
+title: "2020 课程"
 description: >
-  Lecture notes and videos for Missing Semester, MIT IAP 2020.
+  Missing Semester（2020 年 MIT 冬季课程学期）的课程讲义与视频。
 permalink: /2020/
 phony: true
 ---
@@ -16,9 +16,9 @@ phony: true
         {% if lecture.ready %}
           <a href="{{ lecture.url }}">{{ lecture.title }}</a>
         {% elsif lecture.noclass %}
-          {{ lecture.title }} [no class]
+          {{ lecture.title }} [无授课]
         {% else %}
-          {{ lecture.title }} [coming soon]
+          {{ lecture.title }} [即将更新]
         {% endif %}
         {% if lecture.details %}
           <br>
@@ -29,11 +29,11 @@ phony: true
   {% endfor %}
 </ul>
 
-Video recordings of the lectures are available [on YouTube](https://www.youtube.com/playlist?list=PLyzOVJj3bHQuloKGG59rS43e29ro7I57J).
+课程录像可在 [YouTube](https://www.youtube.com/playlist?list=PLyzOVJj3bHQuloKGG59rS43e29ro7I57J) 上观看。
 
-# Beyond MIT
+# 超越 MIT
 
-We've also shared this class beyond MIT in the hopes that others may benefit from these resources. You can find posts and discussion on
+我们还在这门课程面向 MIT 之外传播，希望其他人也能从中受益。你可以在以下平台找到相关的帖文和讨论：
 
  - [Hacker News](https://news.ycombinator.com/item?id=22226380)
  - [Lobsters](https://lobste.rs/s/ti1k98/missing_semester_your_cs_education_mit)
@@ -55,6 +55,6 @@ Some more URLs:
 - https://twitter.com/MIT_CSAIL/status/1581313961093484545
 {% endcomment %}
 
-# Acknowledgments
+# 致谢
 
-We thank Elaine Mello, Jim Cain, and [MIT Open Learning](https://openlearning.mit.edu/) for making it possible for us to record lecture videos; Anthony Zolnik and [MIT AeroAstro](https://aeroastro.mit.edu/) for A/V equipment; and Brandi Adams and [MIT EECS](https://www.eecs.mit.edu/) for supporting this class.
+感谢 Elaine Mello、Jim Cain 以及 [MIT Open Learning](https://openlearning.mit.edu/) 使我们得以录制课程视频；感谢 Anthony Zolnik 与 [MIT AeroAstro](https://aeroastro.mit.edu/) 提供音视频设备；感谢 Brandi Adams 与 [MIT EECS](https://www.eecs.mit.edu/) 对本课程的支持。

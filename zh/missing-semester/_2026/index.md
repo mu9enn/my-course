@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "2026 Lectures"
+title: "2026 课程"
 description: >
-  Lecture notes and videos for Missing Semester, MIT IAP 2026.
+  Missing Semester，MIT 2026 一月期课程讲义与视频。
 permalink: /2026/
 phony: true
 ---
@@ -16,9 +16,9 @@ phony: true
         {% if lecture.ready %}
           <a href="{{ lecture.url }}">{{ lecture.title }}</a>
         {% elsif lecture.noclass %}
-          {{ lecture.title }} [no class]
+          {{ lecture.title }} [无课堂]
         {% else %}
-          {{ lecture.title }} [coming soon]
+          {{ lecture.title }} [即将发布]
         {% endif %}
         {% if lecture.details %}
           <br>
@@ -29,11 +29,11 @@ phony: true
   {% endfor %}
 </ul>
 
-Video recordings of the lectures are available [on YouTube](https://www.youtube.com/playlist?list=PLyzOVJj3bHQunmnnTXrNbZnBaCA-ieK4L).
+课程的视频录制已上传至 [YouTube 播放列表](https://www.youtube.com/playlist?list=PLyzOVJj3bHQunmnnTXrNbZnBaCA-ieK4L)。
 
-# Beyond MIT
+# 走出 MIT
 
-We've also shared this class beyond MIT in the hopes that others may benefit from these resources. You can find posts and discussion on
+我们也在这门课程发布到了 MIT 之外，希望其他人能从这些资源中受益。你可以在以下平台找到相关帖子和讨论：
 
 - [Hacker News](https://news.ycombinator.com/item?id=47124171)
 - [Lobsters](https://lobste.rs/s/q4ykw7/missing_semester_your_cs_education_2026)
@@ -44,6 +44,10 @@ We've also shared this class beyond MIT in the hopes that others may benefit fro
 - [LinkedIn](https://www.linkedin.com/posts/anishathalye_i-returned-to-mit-during-iap-january-term-activity-7430285026933522433-Ehr9)
 - [YouTube](https://www.youtube.com/playlist?list=PLyzOVJj3bHQunmnnTXrNbZnBaCA-ieK4L)
 
-# Acknowledgments
+# 致谢
 
-We thank Elaine Mello and [MIT Open Learning](https://openlearning.mit.edu/) for making it possible for us to record lecture videos. We thank Luis Turino / [SIPB](https://sipb.mit.edu/) for supporting this class as part of [SIPB IAP 2026](https://sipb.mit.edu/iap/).
+感谢 Elaine Mello 和 [MIT Open Learning](https://openlearning.mit.edu/)，使得我们得以录制课程视频。感谢 Luis Turino 与 [SIPB](https://sipb.mit.edu/) 作为 [SIPB IAP 2026](https://sipb.mit.edu/iap/) 的一部分支持了本课程。
+
+<!--
+译者注：本文档为独立中文改编版本，非官方中文译本。原文版权归 Missing Semester 原作者所有，此处翻译仅供学习参考。
+-->

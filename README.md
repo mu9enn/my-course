@@ -9,7 +9,7 @@
 | 课程 | 中文入口 | 本轮范围 |
 | --- | --- | --- |
 | RLHF Book · Nathan Lambert | [书稿说明](zh/rlhf-book/README.md) · [第 1 章](zh/rlhf-book/book/chapters/01-introduction.md) · [代码说明](zh/rlhf-book/code/README.md) · [配套课程](zh/rlhf-book/teach/README.md) | 17 章、4 篇附录，以及代码、讲义与构建说明，共 57 篇 Markdown |
-| Missing Semester · MIT | [课程首页](zh/missing-semester/index.md) · [汉化进度](zh/missing-semester/TRANSLATION.md) | 保留上游各年份结构，已生成 1/44 篇；以逐篇状态为准 |
+| Missing Semester · MIT | [课程首页](zh/missing-semester/index.md) · [汉化进度](zh/missing-semester/TRANSLATION.md) | 保留上游各年份结构，已生成 40/44 篇；以逐篇状态为准 |
 
 RLHF 本轮已结束，已生成 57/57 篇；逐篇状态见 [汉化进度](zh/rlhf-book/TRANSLATION.md)。图片和图内英文、代码注释、参考文献、网站模板及部分维护说明沿用原文，不属于整站界面汉化。
 

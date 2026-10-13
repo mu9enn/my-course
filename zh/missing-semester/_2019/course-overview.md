@@ -1,6 +1,6 @@
 ---
 layout: lecture
-title: "Course Overview"
+title: "课程概览"
 presenter: Anish
 date: 2019-01-15
 order: 1
@@ -9,30 +9,18 @@ video:
   id: qw2c6ffSVOM
 ---
 
-# Motivation
+# 课程动机
 
-This class is about [hacker](https://en.wikipedia.org/wiki/Hacker_culture)
-tools, not [hacker](https://en.wikipedia.org/wiki/Security_hacker) tools.
+本课程讲的是 [黑客](https://en.wikipedia.org/wiki/Hacker_culture)（hacker，指热衷于探索技术、善用工具的技术极客）的工具，而不是 [黑客](https://en.wikipedia.org/wiki/Security_hacker)（指从事网络安全攻击或漏洞利用的安全研究员）的工具。
 
-MIT classes do not cover any of this content in detail. It's hugely beneficial
-to be proficient with your tools: it'll save you a lot of time (and the payoff
-time is very short).
+MIT 的课程体系中并没有在细节上涵盖这些内容。熟练掌握工具对你的帮助非常大：它能节省大量时间，而且回报来得很快。
 
-We want to teach you about new tools, how to make the most of your tools, how
-to customize your tools, and how to extend your tools.
+我们希望教你认识新的工具、如何充分利用已有工具、如何定制工具以及如何扩展工具的功能。
 
-# Class structure
+# 课程结构
 
-We have 6 lectures covering a [variety of topics](/2019/). We have lecture
-notes online, but there will be a lot of content covered in class (e.g. in the
-form of demos) that may not be in the notes. We will be recording lectures.
+本课程共有 6 场讲座，覆盖 [一系列主题](/2019/)。我们在网上提供了讲义，但课堂上会包含大量不一定出现在讲义中的内容（例如演示环节）。所有讲座都会被录制。
 
-Each class is split into two 50-minute lectures with a 10-minute break in
-between. Lectures are mostly live demonstrations followed by hands-on
-exercises. We might have a short amount of time at the end of each class to get
-started on the exercises in an office-hours-style setting.
+每场课分为两个 50 分钟的时段，中间休息 10 分钟。讲座以现场演示为主，随后是动手练习。每场课结束时我们可能会留出少量时间，在类似办公时间的氛围里帮你开始动手练习。
 
-To make the most of the class, you should go through all the exercises on your
-own. We'll inspire you to learn more about your tools, and we'll show you
-what's possible and cover some of the basics in detail, but we can't teach you
-everything in the time we have.
+要想从课程中获得最大收获，你应该独立完成所有的练习。我们会激发你进一步了解工具的兴趣，向你展示有哪些可能，并详细讲解一些基础知识，但我们不可能在短时间内教你所有内容。

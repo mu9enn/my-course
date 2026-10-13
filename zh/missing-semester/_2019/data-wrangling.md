@@ -1,6 +1,6 @@
 ---
 layout: lecture
-title: "Data Wrangling"
+title: "数据整理"
 presenter: Jon
 date: 2019-01-17
 order: 2
@@ -9,49 +9,46 @@ video:
   id: VW2jn9Okjhw
 ---
 
-Have you ever had a bunch of text and wanted to do something with it?
-Good. That's what data wrangling is all about!
-Specifically, adapting data from one format to another, until you end up
-with exactly what you wanted.
+你有没有遇到过一堆文本、想对它做点什么的情况？
+很好。这就是**数据整理**（Data Wrangling）的核心所在！
+具体来说，就是把数据从一种格式适配成另一种格式，直到最终得到
+你真正想要的东西。
 
-We've already seen basic data wrangling: `journalctl | grep -i intel`.
- - find all system log entries that mention Intel (case insensitive)
- - really, most of data wrangling is about knowing what tools you have,
-   and how to combine them.
+我们其实已经见过基本的数据整理：`journalctl | grep -i intel`。
+ - 找出所有提到 Intel 的系统日志条目（不区分大小写）
+ - 实际上，大多数数据整理工作就是在了解你有哪些工具，
+   以及如何把它们组合使用。
 
-Let's start from the beginning: we need a data source, and something to
-do with it. Logs often make for a good use-case, because you often want
-to investigate things about them, and reading the whole thing isn't
-feasible. Let's figure out who's trying to log into my server by looking
-at my server's log:
+让我们从头开始：我们需要一个数据源，以及一个对它的操作目标。
+日志通常是很好的用例，因为你经常需要调查其中的一些内容，
+而通读整份日志又不切实际。让我们通过查看服务器的日志来
+看看谁在尝试登录我的服务器：
 
 ```bash
 ssh myserver journalctl
 ```
 
-That's far too much stuff. Let's limit it to ssh stuff:
+这个结果太多了。我们把它缩小到 ssh 相关的内容：
 
 ```bash
 ssh myserver journalctl | grep sshd
 ```
 
-Notice that we're using a pipe to stream a _remote_ file through `grep`
-on our local computer! `ssh` is magical. This is still way more stuff
-than we wanted though. And pretty hard to read. Let's do better:
+注意到我们正在用**管道**（pipe）把一个**远程**文件通过本地计算机上的
+`grep` 来过滤！`ssh` 很神奇。不过这仍然比我们想要的多得多，
+而且很难阅读。让我们改进一下：
 
 ```bash
 ssh myserver journalctl | grep sshd | grep "Disconnected from"
 ```
 
-There's still a lot of noise here. There are _a lot_ of ways to get rid
-of that, but let's look at one of the most powerful tools in your
-toolkit: `sed`.
+这里仍然有很多噪音。有很多方法可以去掉这些噪音，
+但让我们来看看你工具箱里最强大的工具之一：`sed`。
 
-`sed` is a "stream editor" that builds on top of the old `ed` editor. In
-it, you basically give short commands for how to modify the file, rather
-than manipulate its contents directly (although you can do that too).
-There are tons of commands, but one of the most common ones is `s`:
-substitution. For example, we can write:
+`sed` 是一个"流编辑器"，构建在旧的 `ed` 编辑器之上。
+在 `sed` 中，你基本上是通过给出一组简短的命令来描述如何修改文件，
+而不是直接操作其内容（虽然你也可以这样做）。它有很多命令，
+但其中一个最常用的就是 `s`：替换（substitution）。比如，我们可以这样写：
 
 ```bash
 ssh myserver journalctl
@@ -60,119 +57,102 @@ ssh myserver journalctl
  | sed 's/.*Disconnected from //'
 ```
 
-What we just wrote was a simple _regular expression_; a powerful
-construct that lets you match text against patterns. The `s` command is
-written on the form: `s/REGEX/SUBSTITUTION/`, where `REGEX` is the
-regular expression you want to search for, and `SUBSTITUTION` is the
-text you want to substitute matching text with.
+我们刚才写的是一条简单的**正则表达式**（regular expression）——
+一种强大的构造，让你可以用模式来匹配文本。`s` 命令的格式是：
+`s/REGEX/SUBSTITUTION/`，其中 `REGEX` 是你要搜索的正则表达式，
+`SUBSTITUTION` 是用来替换匹配文本的字符串。
 
-## Regular expressions
+## 正则表达式
 
-Regular expressions are common and useful enough that it's worthwhile to
-take some time to understand how they work. Let's start by looking at
-the one we used above: `/.*Disconnected from /`. Regular expressions are
-usually (though not always) surrounded by `/`. Most ASCII characters
-just carry their normal meaning, but some characters have "special"
-matching behavior. Exactly which characters do what vary somewhat
-between different implementations of regular expressions, which is a
-source of great frustration. Very common patterns are:
+正则表达式既常见又实用，因此值得花点时间理解它们是如何工作的。
+让我们从上面使用过的那条正则表达式开始看：`/.*Disconnected from /`。
+正则表达式通常（虽然并非总是）被 `/` 包围。大部分 ASCII 字符
+只是保持它们的字面含义，但有些字符具有"特殊"的匹配行为。
+不同字符具体对应什么功能，在不同的正则表达式实现中略有差异，
+这确实让人感到头疼。非常常见的模式包括：
 
- - `.` means "any single character" except newline
- - `*` zero or more of the preceding match
- - `+` one or more of the preceding match
- - `[abc]` any one character of `a`, `b`, and `c`
- - `(RX1|RX2)` either something that matches `RX1` or `RX2`
- - `^` the start of the line
- - `$` the end of the line
+ - `.` 表示"除换行符外的任意单个字符"
+ - `*` 前一项零次或多次
+ - `+` 前一项一次或多次
+ - `[abc]` `a`、`b`、`c` 中的任意一个字符
+ - `(RX1|RX2)` 匹配 `RX1` 或 `RX2` 之一
+ - `^` 行的开头
+ - `$` 行的结尾
 
-`sed`'s regular expressions are somewhat weird, and will require you to
-put a `\` before most of these to give them their special meaning. Or
-you can pass `-E`.
+`sed` 的正则表达式有些古怪，在大多数这些符号前面都需要加上 `\`
+才能让它们发挥特殊含义。或者你也可以用 `-E` 参数。
 
-So, looking back at `/.*Disconnected from /`, we see that it matches
-any text that starts with any number of characters, followed by the
-literal string "Disconnected from ". Which is what we wanted. But
-beware, regular expressions are tricky. What if someone tried to log in
-with the username "Disconnected from"? We'd have:
+所以，再看 `/.*Disconnected from /`，我们看到它匹配的是
+任意以若干字符开头、后跟字面字符串 "Disconnected from " 的文本。
+这正是我们想要的。但要小心，正则表达式是有陷阱的。
+如果有人尝试用用户名 "Disconnected from" 登录呢？我们会看到：
 
 ```
 Jan 17 03:13:00 thesquareplanet.com sshd[2631]: Disconnected from invalid user Disconnected from 46.97.239.16 port 55920 [preauth]
 ```
 
-What would we end up with? Well, `*` and `+` are, by default, "greedy".
-They will match as much text as they can. So, in the above, we'd end up
-with just
+那我们会得到什么结果呢？好吧，`*` 和 `+` 默认情况下是"贪婪"的。
+它们会尽可能多地匹配文本。所以上面那行我们最终只会得到：
 
 ```
 46.97.239.16 port 55920 [preauth]
 ```
 
-Which may not be what we wanted. In some regular expression
-implementations, you can just suffix `*` or `+` with a `?` to make them
-non-greedy, but sadly `sed` doesn't support that. We _could_ switch to
-perl's command-line mode though, which _does_ support that construct:
+这可能不是你想要的。在一些正则表达式实现中，你可以在 `*` 或 `+`
+后面加上 `?` 让它们变成非贪婪的，但遗憾的是 `sed` 不支持这个。
+不过我们可以切换到 Perl 的命令行模式，它 _确实_ 支持这个构造：
 
 ```bash
 perl -pe 's/.*?Disconnected from //'
 ```
 
-We'll stick to `sed` for the rest of this though, because it's by far
-the more common tool for these kinds of jobs. `sed` can also do other
-handy things like print lines following a given match, do multiple
-substitutions per invocation, search for things, etc. But we won't cover
-that too much here. `sed` is basically an entire topic in and of itself,
-but there are often better tools.
+接下来的部分我们还是用 `sed`，因为在这种类型的任务中
+`sed` 远比 Perl 更常用。`sed` 还可以做其他一些方便的事情，
+比如打印指定匹配之后的行、单次执行多次替换、搜索特定内容等等。
+不过我们不会在这里覆盖太多内容。`sed` 本身几乎就是一个独立的话题，
+而且通常还有更好的工具可用。
 
-Okay, so we also have a suffix we'd like to get rid of. How might we do
-that? It's a little tricky to match just the text that follows the
-username, especially if the username can have spaces and such! What we
-need to do is match the _whole_ line:
+好了，我们还想去掉一个后缀。我们该怎么做呢？
+要只匹配用户名之后的文本有些棘手，尤其是用户名可能包含空格之类的东西！
+我们需要匹配的是**整行**：
 
 ```bash
  | sed -E 's/.*Disconnected from (invalid |authenticating )?user .* [^ ]+ port [0-9]+( \[preauth\])?$//'
 ```
 
-Let's look at what's going on with a [regex
-debugger](https://regex101.com/r/qqbZqh/2). Okay, so the start is still
-as before. Then, we're matching any of the "user" variants (there are
-two prefixes in the logs). Then we're matching on any string of
-characters where the username is. Then we're matching on any single word
-(`[^ ]+`; any non-empty sequence of non-space characters). Then the word
-"port" followed by a sequence of digits. Then possibly the suffix
-` [preauth]`, and then the end of the line.
+让我们用一个 [正则表达式调试工具](https://regex101.com/r/qqbZqh/2)
+来看看这里发生了什么。好，开头和之前一样。然后，我们匹配的是
+"user"各种变体（日志中有两个前缀）。接着，我们匹配的是用户名所在的位置，
+即任意字符序列。然后是匹配任意单个单词（`[^ ]+`，即任意非空非空格序列）。
+然后是单词 "port" 后跟数字序列。再后面是可选的后缀
+` [preauth]`，以及行尾。
 
-Notice that with this technique, as username of "Disconnected from"
-won't confuse us any more. Can you see why?
+请注意，使用这种技术，用户名是 "Disconnected from"
+不会再让我们困惑了。你能看出为什么吗？
 
-There is one problem with this though, and that is that the entire log
-becomes empty. We want to _keep_ the username after all. For this, we
-can use "capture groups". Any text matched by a regex surrounded by
-parentheses is stored in a numbered capture group. These are available
-in the substitution (and in some engines, even in the pattern itself!)
-as `\1`, `\2`, `\3`, etc. So:
+不过这里有一个问题，整个日志会变成空行。
+毕竟我们是想要**保留**用户名的。为此，我们可以使用"捕获组"（capture groups）。
+任何被括号包围的正则表达式匹配到的文本都会被存储在一个编号的捕获组中。
+这些捕获组可以在替换中（在某些引擎中甚至可以在模式本身中！）使用
+`\1`、`\2`、`\3` 等来引用。所以：
 
 ```bash
  | sed -E 's/.*Disconnected from (invalid |authenticating )?user (.*) [^ ]+ port [0-9]+( \[preauth\])?$/\2/'
 ```
 
-As you can probably imagine, you can come up with _really_ complicated
-regular expressions. For example, here's an article on how you might
-match an [e-mail
-address](https://www.regular-expressions.info/email.html). It's [not
-easy](https://web.archive.org/web/20221223174323/http://emailregex.com/). And there's [lots of
-discussion](https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression/1917982).
-And people have [written
-tests](https://fightingforalostcause.net/content/misc/2006/compare-email-regex.php).
-And [test matrices](https://mathiasbynens.be/demo/url-regex). You can
-even write a regex for determining if a given number [is a prime
-number](https://www.noulakaz.net/2007/03/18/a-regular-expression-to-check-for-prime-numbers/).
+你可能已经想到，你可以构造出**非常**复杂的正则表达式。
+比如，这是一篇关于如何匹配[电子邮件地址](https://www.regular-expressions.info/email.html)的文章。
+[并不简单](https://web.archive.org/web/20221223174323/http://emailregex.com/)。
+而且[有大量讨论](https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression/1917982)。
+还有人写了[测试](https://fightingforalostcause.net/content/misc/2006/compare-email-regex.php)。
+还有[测试矩阵](https://mathiasbynens.be/demo/url-regex)。
+你甚至可以用正则表达式来判断一个给定数字[是否为素数](https://www.noulakaz.net/2007/03/18/a-regular-expression-to-check-for-prime-numbers/)。
 
-Regular expressions are notoriously hard to get right, but they are also
-very handy to have in your toolbox!
+正则表达式出了名的难以正确使用，但它们在工具箱里也非常好用！
 
-## Back to data wrangling
+## 回到数据整理
 
-Okay, so we now have
+好了，现在我们有：
 
 ```bash
 ssh myserver journalctl
@@ -181,7 +161,8 @@ ssh myserver journalctl
  | sed -E 's/.*Disconnected from (invalid |authenticating )?user (.*) [^ ]+ port [0-9]+( \[preauth\])?$/\2/'
 ```
 
-We could do it just with `sed`, but why would we? For fun is why.
+我们其实也可以只用 `sed` 来完成，但为什么要那么做呢？
+为了乐趣。
 
 ```bash
 ssh myserver journalctl
@@ -190,13 +171,12 @@ ssh myserver journalctl
    -e 's/.*Disconnected from (invalid |authenticating )?user (.*) [^ ]+ port [0-9]+( \[preauth\])?$/\2/'
 ```
 
-This shows off some of `sed`'s capabilities. `sed` can also inject text
-(with the `i` command), explicitly print lines (with the `p` command),
-select lines by index, and lots of other things. Check `man sed`!
+这里展示了 `sed` 的一些能力。`sed` 还可以注入文本（使用 `i` 命令）、
+显式打印行（使用 `p` 命令）、按索引选择行，以及很多其他东西。
+查阅 `man sed`！
 
-Anyway. What we have now gives us a list of all the usernames that have
-attempted to log in. But this is pretty unhelpful. Let's look for common
-ones:
+总之，我们现在得到的是所有尝试过登录的用户名列表。
+但这基本没什么帮助。让我们找找最常见的几个：
 
 ```bash
 ssh myserver journalctl
@@ -206,10 +186,9 @@ ssh myserver journalctl
  | sort | uniq -c
 ```
 
-`sort` will, well, sort its input. `uniq -c` will collapse consecutive
-lines that are the same into a single line, prefixed with a count of the
-number of occurrences. We probably want to sort that too and only keep
-the most common logins:
+`sort` 会对其输入进行**排序**。`uniq -c` 会将连续的相同行折叠为一行，
+前面带有出现次数的计数。我们可能还想对这个结果排序，只保留
+最常见的登录：
 
 ```bash
 ssh myserver journalctl
@@ -220,17 +199,16 @@ ssh myserver journalctl
  | sort -nk1,1 | tail -n10
 ```
 
-`sort -n` will sort in numeric (instead of lexicographic) order. `-k1,1`
-means "sort by only the first whitespace-separated column". The `,n`
-part says "sort until the `n`th field, where the default is the end of
-the line. In this _particular_ example, sorting by the whole line
-wouldn't matter, but we're here to learn!
+`sort -n` 将以**数值**（而非字典）顺序排序。`-k1,1` 表示
+"只按第一个以空白分隔的列排序"。`,n` 部分表示"排序到第 `n` 个字段为止"，
+默认是到行尾。在_这个特定示例_中，按整行排序不会有问题，
+但我们是来学习的！
 
-If we wanted the _least_ common ones, we could use `head` instead of
-`tail`. There's also `sort -r`, which sorts in reverse order.
+如果我们想要_最不_常见的，我们可以用 `head` 代替 `tail`。
+还有 `sort -r`，它以相反的顺序排序。
 
-Okay, so that's pretty cool, but we'd sort of like to only give the
-usernames, and maybe not one per line?
+好了，这已经很不错了，但我们只想得到用户名，
+也许不一定每行一个？
 
 ```bash
 ssh myserver journalctl
@@ -242,40 +220,37 @@ ssh myserver journalctl
  | awk '{print $2}' | paste -sd,
 ```
 
-Let's start with `paste`: it lets you combine lines (`-s`) by a given
-single-character delimiter (`-d`). But what's this `awk` business?
+我们先从 `paste` 开始看：它让你用给定的单字符分隔符（`-d`）
+按行合并（`-s`）。但 `awk` 又是什么？
 
-## awk -- another editor
+## awk —— 另一种编辑器
 
-`awk` is a programming language that just happens to be really good at
-processing text streams. There is _a lot_ to say about `awk` if you were
-to learn it properly, but as with many other things here, we'll just go
-through the basics.
+`awk` 是一种编程语言，只不过它碰巧非常擅长处理文本流。
+如果你要认真学习 `awk`，那就**有太多**东西可以说了，
+但就像这里提到的其他许多东西一样，我们只过一下基础知识。
 
-First, what does `{print $2}` do? Well, `awk` programs take the form of
-an optional pattern plus a block saying what to do if the pattern
-matches a given line. The default pattern (which we used above) matches
-all lines. Inside the block, `$0` is set to the entire line's contents,
-and `$1` through `$n` are set to the `n`th _field_ of that line, when
-separated by the `awk` field separator (whitespace by default, change
-with `-F`). In this case, we're saying that, for every line, print the
-contents of the second field, which happens to be the username!
+首先，`{print $2}` 做了什么？`awk` 程序的格式是由一个可选的
+模式（pattern）加一个"当模式匹配某行时该如何处理"的块组成。
+默认模式（我们在上面使用的那个）匹配所有行。在块内部，
+`$0` 被设为整行的内容，`$1` 到 `$n` 被设为该行按 `awk`
+字段分隔符（默认是空白，可通过 `-F` 修改）分隔的第 `n` 个
+**字段**。在这种情况下，我们是说：对每一行，打印第二个字段的内容，
+正好就是用户名！
 
-Let's see if we can do something fancier. Let's compute the number of
-single-use usernames that start with `c` and end with `e`:
+让我们看看能不能做一些更花哨的事。让我们计算一下只出现一次、
+以 `c` 开头、以 `e` 结尾的用户名数量：
 
 ```bash
  | awk '$1 == 1 && $2 ~ /^c[^ ]*e$/ { print $2 }' | wc -l
 ```
 
-There's a lot to unpack here. First, notice that we now have a pattern
-(the stuff that goes before `{...}`). The pattern says that the first
-field of the line should be equal to 1 (that's the count from `uniq
--c`), and that the second field should match the given regular
-expression. And the block just says to print the username. We then count
-the number of lines in the output with `wc -l`.
+这里有很多内容值得展开。首先，注意我们现在有了一个
+模式（即 `{...}` 之前的那部分）。模式表示这一行的第一个字段
+应该等于 1（即 `uniq -c` 的输出计数），而且第二个字段
+应该匹配给定的正则表达式。块仅仅是打印用户名。
+然后我们用 `wc -l` 统计输出的行数。
 
-However, `awk` is a programming language, remember?
+不过，`awk` 是一种编程语言，记住了吗？
 
 ```awk
 BEGIN { rows = 0 }
@@ -283,17 +258,16 @@ $1 == 1 && $2 ~ /^c[^ ]*e$/ { rows += $1 }
 END { print rows }
 ```
 
-`BEGIN` is a pattern that matches the start of the input (and `END`
-matches the end). Now, the per-line block just adds the count from the
-first field (although it'll always be 1 in this case), and then we print
-it out at the end. In fact, we _could_ get rid of `grep` and `sed`
-entirely, because `awk` [can do it
-all](https://web.archive.org/web/20251210045942/https://backreference.org/2010/02/10/idiomatic-awk/), but we'll
-leave that as an exercise to the reader.
+`BEGIN` 是一个匹配输入开头的模式（`END` 匹配结尾）。
+现在，逐行处理的块只是把第一个字段的计数加到变量里
+（虽然在这个例子中它总是 1），然后我们在最后把它打印出来。
+事实上，我们_完全可以_完全去掉 `grep` 和 `sed`，因为
+`awk` [能搞定一切](https://web.archive.org/web/20251210045942/https://backreference.org/2010/02/10/idiomatic-awk/)，
+不过我们就留作读者练习了。
 
-## Analyzing data
+## 数据分析
 
-You can do math!
+你可以做数学运算！
 
 ```bash
  | paste -sd+ | bc -l
@@ -303,9 +277,8 @@ You can do math!
 echo "2*($(data | paste -sd+))" | bc -l
 ```
 
-You can get stats in a variety of ways.
-[`st`](https://github.com/nferraz/st) is pretty neat, but if you already
-have R:
+你可以通过多种方式获取统计信息。
+[`st`](https://github.com/nferraz/st) 相当不错，但如果你已经有 R：
 
 ```bash
 ssh myserver journalctl
@@ -316,13 +289,12 @@ ssh myserver journalctl
  | awk '{print $1}' | R --slave -e 'x <- scan(file="stdin", quiet=TRUE); summary(x)'
 ```
 
-R is another (weird) programming language that's great at data analysis
-and [plotting](https://ggplot2.tidyverse.org/). We won't go into too
-much detail, but suffice to say that `summary` prints summary statistics
-about a matrix, and we computed a matrix from the input stream of
-numbers, so R gives us the statistics we wanted!
+R 是另一种（有些古怪的）编程语言，非常适合数据分析和
+[绘图](https://ggplot2.tidyverse.org/)。我们不会深入太多细节，
+简而言之，`summary` 会打印一个矩阵的摘要统计信息，
+而我们从输入流构建了一个数字矩阵，所以 R 给了我们想要的统计信息！
 
-If you just want some simple plotting, `gnuplot` is your friend:
+如果你只是想要一些简单的绘图，`gnuplot` 是你的好帮手：
 
 ```bash
 ssh myserver journalctl
@@ -334,55 +306,69 @@ ssh myserver journalctl
  | gnuplot -p -e 'set boxwidth 0.5; plot "-" using 1:xtic(2) with boxes'
 ```
 
-## Data wrangling to make arguments
+## 用数据整理来生成参数
 
-Sometimes you want to do data wrangling to find things to install or
-remove based on some longer list. The data wrangling we've talked about
-so far + `xargs` can be a powerful combo:
+有时你想要通过数据整理来从较长列表中找出要安装或卸载的东西。
+我们前面讨论过的数据整理方法加上 `xargs` 可以成为一个强大的组合：
 
 ```bash
 rustup toolchain list | grep nightly | grep -vE "nightly-x86|01-17" | sed 's/-x86.*//' | xargs rustup toolchain uninstall
 ```
 
-# Exercises
+# 练习
 
-1. If you are not familiar with Regular Expressions
-   [here](https://regexone.com/) is a short interactive tutorial that
-   covers most of the basics
-1. How is `sed s/REGEX/SUBSTITUTION/g` different from the regular sed?
-   What about `/I` or `/m`?
-1. To do in-place substitution it is quite tempting to do something like
-   `sed s/REGEX/SUBSTITUTION/ input.txt > input.txt`. However this is a
-   bad idea, why? Is this particular to `sed`?
-1. Implement a simple grep equivalent tool in a language you are familiar with using regex. If you want the output to be color highlighted like grep is, search for ANSI color escape sequences.
-1. Sometimes some operations like renaming files can be tricky with raw commands like `mv` . `rename` is a nifty tool to achieve this and has a sed-like syntax. Try creating a bunch of files with spaces in their names and use `rename` to replace them with underscores.
-1. Look for boot messages that are _not_ shared between your past three
-   reboots (see `journalctl`'s `-b` flag). You may want to just mash all
-   the boot logs together in a single file, as that may make things
-   easier.
-1. Produce some statistics of your system boot time over the last ten
-   boots using the log timestamp of the messages
+1. 如果你不熟悉正则表达式，
+   [这里](https://regexone.com/) 有一个简短的交互式教程，
+   涵盖了大部分基础知识。
+
+1. `sed s/REGEX/SUBSTITUTION/g` 和普通 `sed` 有什么不同？
+   `/I` 或 `/m` 又分别有什么作用？
+
+1. 进行原地替换时，很自然会想执行类似
+   `sed s/REGEX/SUBSTITUTION/ input.txt > input.txt` 的操作。
+   但这是一个糟糕的做法——为什么？这和 `sed` 本身有关吗？
+
+1. 用你熟悉的语言（使用正则表达式）实现一个简易的 `grep`。
+   如果希望输出像 `grep` 那样有高亮颜色，请搜索 ANSI 颜色
+   转义序列。
+
+1. 有时，使用原始 `mv` 命令来重命名文件可能会很棘手。
+   `rename` 是一个巧妙的工具，可以达到这个目的，而且
+   具有类似 `sed` 的语法。试着创建一堆文件名中包含空格的文件，
+   然后用 `rename` 把它们替换为下划线。
+
+1. 找出你过去三次重启中_没有_共享的启动消息
+   （参见 `journalctl` 的 `-b` 参数）。你可能想把所有
+   启动日志合并到一个文件中，这样可能会更容易处理。
+
+1. 使用日志时间戳，统计过去十次启动中系统启动时间的若干
+   统计数据。可以关注以下消息：
    ```
    Logs begin at ...
    ```
-   and
+   以及
    ```
    systemd[577]: Startup finished in ...
    ```
-1. Find the number of words (in `/usr/share/dict/words`) that contain at
-   least three `a`s and don't have a `'s` ending. What are the three
-   most common last two letters of those words? `sed`'s `y` command, or
-   the `tr` program, may help you with case insensitivity. How many
-   of those two-letter combinations are there? And for a challenge:
-   which combinations do not occur?
-1. Find an online data set like [this
-   one](https://commons.wikimedia.org/wiki/Data:Wikipedia_statistics/data.tab) or [this
-   one](https://ucr.fbi.gov/crime-in-the-u.s/2016/crime-in-the-u.s.-2016/topic-pages/tables/table-1).
-   Maybe another one [from
-   here](https://www.springboard.com/blog/data-science/free-public-data-sets-data-science-project/).
-   Fetch it using `curl` and extract out just two columns of numerical
-   data. If you're fetching HTML data,
-   [`pup`](https://github.com/EricChiang/pup) might be helpful. For JSON
-   data, try [`jq`](https://stedolan.github.io/jq/). Find the min and
-   max of one column in a single command, and the sum of the difference
-   between the two columns in another.
+
+1. 在 `/usr/share/dict/words` 中找出包含至少三个 `a`
+   且不以 `'s` 结尾的单词数量。这些单词最常见的最后两个
+   字母是什么？`sed` 的 `y` 命令，或者 `tr` 程序，
+   可以帮助你处理大小写不敏感的问题。这样的双字母组合有多少？
+   还有一个进阶问题：哪些组合_从未_出现过？
+
+1. 找一个在线数据集合，比如
+   [这个](https://commons.wikimedia.org/wiki/Data:Wikipedia_statistics/data.tab)
+   或 [这个](https://ucr.fbi.gov/crime-in-the-u.s/2016/crime-in-the-u.s.-2016/topic-pages/tables/table-1)。
+   也可以从 [这个站点](https://www.springboard.com/blog/data-science/free-public-data-sets-data-science-project/) 找。
+   使用 `curl` 获取它，并提取出两个数值列。
+   如果是 HTML 数据，[`pup`](https://github.com/EricChiang/pup) 可能很有用。
+   如果是 JSON 数据，试试 [`jq`](https://stedolan.github.io/jq/)。
+   在一个命令中找到某一列的最小值和最大值，
+   在另一个命令中计算两列之间差异的总和。
+
+---
+
+> 译者注：本文件基于 [The Missing Semester](https://missing.csail.mit.edu/) 的英文原版
+> 进行独立中文改编，未经原作者授权或审阅。原文版权归其作者所有。
+> 如有翻译错误或不准确之处，以英文原文为准。

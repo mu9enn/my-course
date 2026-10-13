@@ -1,6 +1,6 @@
 ---
 layout: lecture
-title: "Machine Introspection"
+title: "机器内省"
 presenter: Jon
 date: 2019-01-24
 order: 4
@@ -10,112 +10,47 @@ video:
 special: true
 ---
 
-Sometimes, computers misbehave. And very often, you want to know why.
-Let's look at some tools that help you do that!
+有时候，计算机会出问题。而你常常需要搞清楚到底是哪里出了问题。接下来我们看一些能帮你排查问题的工具。
 
-But first, let's make sure you're able to do introspection. Often,
-system introspection requires that you have certain privileges, like
-being the member of a group (like `power` for shutdown). The `root` user
-has the ultimate privilege; they can do pretty much anything. You can run
-a command as `root` (but be careful!) using `sudo`.
+但首先，请确保你具备进行"内省"（introspection，即查看系统内部运行状态）的权限。通常，系统内省需要你拥有某些特权——比如加入特定的用户组（例如 `power` 组才能执行关机操作）。`root` 用户拥有最高权限，几乎可以做任何事情。你可以用 `sudo` 以 `root` 身份运行命令（但要小心操作）。
 
-## What happened?
+## 发生了什么事？
 
-If something goes wrong, the first place to start is to look at what
-happened around the time when things went wrong. For this, we need to
-look at logs.
+如果出了问题，第一步是查看问题发生前后都记录了些什么。这就需要查看日志（logs）。
 
-Traditionally, logs were all stored in `/var/log`, and many still are.
-Usually there's a file or folder per program. Use `grep` or `less` to
-find your way through them.
+传统上，所有日志都存放在 `/var/log` 目录下，现在许多系统仍然如此。每个程序通常有自己对应的文件或文件夹。你可以用 `grep` 或 `less` 来在其中查找关键信息。
 
-There's also a kernel log that you can see using the `dmesg` command.
-This used to be available as a plain-text file, but nowadays you often
-have to go through `dmesg` to get at it.
+此外，还有一份内核日志（kernel log），你可以通过 `dmesg` 命令来查看。这份日志过去是一个纯文本文件，但现在通常只能通过 `dmesg` 命令来读取。
 
-Finally, there is the "system log", which is increasingly where all of
-your log messages go. On _most_, though not all, Linux systems, that log
-is managed by `systemd`, the "system daemon", which controls all the
-services that run in the background (and much much more at this point).
-That log is accessible through the somewhat inconvenient `journalctl`
-tool if you are root, or part of the `admin` or `wheel` groups.
+最后，还有一个"系统日志"——越来越多的日志消息都会汇入其中。在大多数 Linux 系统（尽管并非全部）上，系统日志由 `systemd` 这个"系统守护进程"（system daemon）管理，它控制所有在后台运行的服务（以及更多功能）。如果你具有 root 权限，或者属于 `admin` 或 `wheel` 用户组，就可以通过 `journalctl` 工具来查看系统日志。
 
-For `journalctl`, you should be aware of these flags in particular:
+关于 `journalctl`，以下这些参数选项尤其值得了解：
 
- - `-u UNIT`: show only messages related to the given systemd service
- - `--full`: don't truncate long lines (the stupidest feature)
- - `-b`: only show messages from the latest boot (see also `-b -2`)
- - `-n100`: only show last 100 entries
+ - `-u UNIT`: 只显示与指定 systemd 服务相关的日志消息
+ - `--full`: 不要截断过长的行（这个参数的存在本身就很反人类）
+ - `-b`: 只显示最近一次启动以来的消息（也可以配合 `-b -2` 查看前两次启动的日志）
+ - `-n100`: 只显示最近 100 条记录
 
-## What is happening?
+## 正在发生什么事？
 
-If something _is_ wrong, or you just want to get a feel for what's going
-on in your system, you have a number of tools at your disposal for
-inspecting the currently running system:
+如果系统确实出了故障，或者你只是想感受一下系统当前在忙什么，你手头上还有几个工具可以用来检查正在运行的系统：
 
-First, there's `top`, and the improved version `htop`, which show you
-various statistics for the currently running processes on the system.
-CPU use, memory use, process trees, etc. There are lots of shortcuts,
-but `t` is particularly useful for enabling the tree view. You can also
-see the process tree with `pstree` (+ `-p` to include PIDs). If you want
-to know what those programs are doing, you'll often want to tail their
-log files. `journalctl -f`, `dmesg -w`, and `tail -f` are you friends
-here.
+首先是 `top`，以及改进版 `htop`，它们会展示当前系统上各个运行中进程的各种统计信息——CPU 使用率、内存使用率、进程树等等。这些工具有很多快捷键，其中 `t` 特别有用，可以开启树形视图。你也可以用 `pstree` 命令查看进程树（配合 `-p` 可以显示进程 ID）。如果你想知道这些程序在做什么，通常可以查看它们的日志文件。这里 `journalctl -f`、`dmesg -w` 和 `tail -f` 是你的好帮手。
 
-Sometimes, you want to know more about the resources being used overall
-on your system. [`dool`](https://github.com/scottchiefbaker/dool) is
-excellent for that. It gives you real-time resource metrics for lots of
-different subsystems like I/O, networking, CPU utilization, context
-switches, and the like. `man dool` is the place to start.
+有时，你想了解整个系统资源的使用概况。[`dool`](https://github.com/scottchiefbaker/dool) 在这方面表现出色——它为你提供多个子系统的实时资源指标，比如 I/O、网络、CPU 利用率、上下文切换等。可以参考 `man dool` 了解更多用法。
 
-If you're running out of disk space, there are two primary utilities
-you'll want to know about: `df` and `du`. The former shows you the
-status of all the partitions on your system (try it with `-h`), whereas
-the latter measures the size of all the folders you give it, including
-their contents (see also `-h` and `-s`).
+如果磁盘空间告急，你需要了解两个主要工具：`df` 和 `du`。前者会展示系统中所有分区的状态（配合 `-h` 参数会更易读），后者则会测量你指定的所有文件夹的大小，包括其包含的内容（同样支持 `-h` 和 `-s`）。
 
-To figure out what network connections you have open, `ss` is the way to
-go. `ss -t` will show all open TCP connections. `ss -tl` will show all
-listening (i.e., server) ports on your system. `-p` will also include
-which process is using that connection, and `-n` will give you the raw
-port numbers.
+要查看当前打开了哪些网络连接，用 `ss` 即可。`ss -t` 会显示所有已打开的 TCP 连接。`ss -tl` 会显示系统中所有正在监听（即服务器端）的端口。加上 `-p` 还会显示是哪个进程在使用该连接；加上 `-n` 则会显示原始端口号。
 
+## 系统配置
 
-## System configuration
+配置系统的方式有很多，但我们来看两个非常常见的方面：网络和服务。系统上的大多数应用程序都会在其手册页（manpage）中告诉你如何配置它们，而配置方式通常涉及编辑 `/etc` 目录下的文件——也就是系统配置目录。
 
-There are _many_ ways to configure your system, but we'll go through
-two very common ones: networking and services. Most applications on your
-system tell you how to configure them in their manpage, and usually it
-will involve editing files in `/etc`; the system configuration
-directory.
+如果你想配置网络，可以用 `ip` 命令。它的参数形式看起来有点怪，但 `ip help command` 会帮你了解各个子命令的用法。`ip addr` 会展示你的网络接口信息以及它们的配置情况（IP 地址等）；`ip route` 则会展示网络流量如何路由到不同的网络主机。很多网络问题可以纯粹通过 `ip` 工具来解决。另外，对于管理无线网络接口，还有 `iw` 工具可用。`ping` 是一个方便的工具，可以用来检查问题出在哪个层面。试着 ping 一个域名（如 google.com）、一个外部 IP 地址（如 1.1.1.1）和一个内部 IP 地址（如 192.168.1.1 或默认网关地址）。你可能还需要查看或修改 `/etc/resolv.conf` 来检查你的 DNS 设置（即域名如何被解析为 IP 地址）。
 
-If you want to configure your network, the `ip` command lets you do
-that. Its arguments take on a slightly weird form, but `ip help command`
-will get you pretty far. `ip addr` shows you information about your
-network interfaces and how they're configured (IP addresses and such),
-and `ip route` shows you how network traffic is routed to different
-network hosts. Network problems can often be resolved purely through the
-`ip` tool. There's also `iw` for managing wireless network interfaces.
-`ping` is a handy tool for checking how deeply things are broken. Try
-pinging a hostname (google.com), an external IP address (1.1.1.1), and
-an internal IP address (192.168.1.1 or default gw). You may also want to
-fiddle with `/etc/resolv.conf` to check your DNS settings (how hostnames
-are resolved to IP addresses).
+译者注：DNS（Domain Name System，域名系统）是互联网的一项服务，它作为将域名和 IP 地址相互映射的一个分布式数据库。当你访问一个网址时，你的设备会通过 DNS 将域名（如 `google.com`）解析为对应的 IP 地址。
 
-To configure services, you pretty much have to interact with `systemd`
-these days, for better or for worse. Most services on your system will
-have a systemd service file that defines a systemd _unit_. These files
-define what command to run when that services is started, how to stop
-it, where to log things, etc. They're usually not too bad to read, and
-you can find most of them in `/usr/lib/systemd/system/`. You can also
-define your own in `/etc/systemd/system` .
+若要管理服务，你基本上不得不与 `systemd` 交互——无论你喜欢与否。系统上的大多数服务都有一个 systemd 服务文件，该文件定义了一个 systemd _单元_（unit）。这些文件规定了启动该服务时要运行什么命令、如何停止它、日志写在哪里等。这些文件通常不难阅读，你可以在 `/usr/lib/systemd/system/` 中找到大多数服务文件。你也可以在 `/etc/systemd/system` 中创建自己的服务文件。
 
-Once you have a systemd service in mind, you use the `systemctl` command
-to interact with it. `systemctl enable UNIT` will set the service to
-start on boot (`disable` removes it again), and `start`, `stop`, and
-`restart` will do what you expect. If something goes wrong, systemd will
-let you know, and you can use `journalctl -u UNIT` to see the
-application's log. You can also use `systemctl status` to see how all
-your system services are doing. If your boot feels slow, it's probably
-due to a couple of slow services, and you can use `systemd-analyze` (try
-it with `blame`) to figure out which ones.
+一旦你选中了某个 systemd 服务，就可以用 `systemctl` 命令来与之交互。`systemctl enable UNIT` 会设置该服务在开机时自动启动（`disable` 可以撤销此设置），而 `start`、`stop` 和 `restart` 则会做你所期望的操作。如果出了问题，systemd 会通知你，你可以用 `journalctl -u UNIT` 查看该应用程序的日志。你也可以用 `systemctl status` 查看所有系统服务的运行状况。如果你的开机过程感觉特别慢，很可能是某些服务拖慢了速度，这时可以用 `systemd-analyze`（配合 `blame` 参数）来找出哪些服务拖了后腿。

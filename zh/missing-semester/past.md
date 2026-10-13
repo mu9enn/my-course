@@ -1,8 +1,8 @@
 ---
 layout: page
-title: Past Offerings
+title: 往期课程
 description: >
-  Find all past offerings of Missing Semester.
+  查找 Missing Semester 所有往期课程。
 ---
 
 {% comment %} pop to remove default "posts" collection {% endcomment %}
@@ -13,4 +13,4 @@ description: >
 {% endfor %}
 </ul>
 
-Each year's lectures are fully self-contained. We recommend starting with the most recent version of the material. There is variation in the topics covered year to year, so we continue to host notes and videos for earlier versions of this course.
+每年开设的课程都是完全自包含（self-contained）的，不依赖之前的内容。我们建议从最新的版本开始学习。每年的课程主题可能有所不同，因此我们继续保留并托管早期版本的课程笔记和录像。

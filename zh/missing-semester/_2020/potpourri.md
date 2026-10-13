@@ -1,8 +1,8 @@
 ---
 layout: lecture
-title: "Potpourri"
+title: "万花筒"
 description: >
-  Learn about a variety of useful topics including keyboard remapping, daemons, backups, APIs, and more.
+  了解多种有用主题，包括键盘重映射、守护进程、备份、API 等。
 thumbnail: /static/assets/thumbnails/2020/lec10.png
 date: 2020-01-29
 ready: true
@@ -12,63 +12,55 @@ video:
 special: true
 ---
 
-## Table of Contents
+## 目录
 
-- [Keyboard remapping](#keyboard-remapping)
-- [Daemons](#daemons)
+- [键盘重映射](#keyboard-remapping)
+- [守护进程](#daemons)
 - [FUSE](#fuse)
-- [Backups](#backups)
-- [APIs](#apis)
-- [Common command-line flags/patterns](#common-command-line-flagspatterns)
-- [Window managers](#window-managers)
-- [VPNs](#vpns)
+- [备份](#backups)
+- [API](#apis)
+- [常用命令行标志/模式](#common-command-line-flagspatterns)
+- [窗口管理器](#window-managers)
+- [虚拟专用网络](#vpns)
 - [Markdown](#markdown)
-- [Hammerspoon (desktop automation on macOS)](#hammerspoon-desktop-automation-on-macos)
-- [Booting + Live USBs](#booting--live-usbs)
-- [Docker, Vagrant, VMs, Cloud, OpenStack](#docker-vagrant-vms-cloud-openstack)
-- [Notebook programming](#notebook-programming)
+- [Hammerspoon（macOS 桌面自动化）](#hammerspoon-desktop-automation-on-macos)
+- [开机 +  Live USB](#booting--live-usbs)
+- [Docker、Vagrant、虚拟机、云、OpenStack](#docker-vagrant-vms-cloud-openstack)
+- [笔记本编程](#notebook-programming)
 - [GitHub](#github)
 
-## Keyboard remapping
+## 键盘重映射
 
-As a programmer, your keyboard is your main input method. As with pretty much anything in your computer, it is configurable (and worth configuring).
+作为程序员，键盘是你的主要输入设备。就像电脑里的大多数东西一样，它是可配置的（而且确实值得配置）。
 
-The most basic change is to remap keys.
-This usually involves some software that is listening and, whenever a certain key is pressed, it intercepts that event and replaces it with another event corresponding to a different key. Some examples:
-- Remap Caps Lock to Ctrl or Escape. We (the instructors) highly encourage this setting since Caps Lock has a very convenient location but is rarely used.
-- Remapping PrtSc to Play/Pause music. Most OSes have a play/pause key.
-- Swapping Ctrl and the Meta (Windows or Command) key.
+最基本的改动是重新映射按键。这通常涉及一些监听软件：每当按下某个键时，它会拦截该事件，并用对应另一个键的事件来替换。举几个例子：
+- 将 Caps Lock（大写锁定）映射为 Ctrl 或 Escape。我们（讲师）非常推荐这个设置，因为 Caps Lock 的位置很便利但很少被用到。
+- 将 PrtSc（打印屏幕）映射为播放/暂停音乐。大多数操作系统都自带播放/暂停键。
+- 交换 Ctrl 键和 Meta（Windows 或 Command）键。
 
-You can also map keys to arbitrary commands of your choosing. This is useful for common tasks that you perform. Here, some software listens for a specific key combination and executes some script whenever that event is detected.
-- Open a new terminal or browser window.
-- Inserting some specific text, e.g. your long email address or your MIT ID number.
-- Sleeping the computer or the displays.
+你也可以将按键映射到你选择的任意命令。这对频繁执行的任务特别有用。在这种设置下，软件会监听特定的组合键，并在检测到该组合键时执行某个脚本。
+- 打开新的终端或浏览器窗口。
+- 输入一段特定的文本，比如你的长邮件地址或 MIT 学号。
+- 让电脑或显示器进入睡眠状态。
 
-There are even more complex modifications you can configure:
-- Remapping sequences of keys, e.g. pressing shift five times toggles Caps Lock.
-- Remapping on tap vs on hold, e.g. Caps Lock key is remapped to Esc if you quickly tap it, but is remapped to Ctrl if you hold it and use it as a modifier.
-- Having remaps being keyboard or software specific.
+还有一些更复杂的自定义方式：
+- 映射按键序列，例如连续按 Shift 五次来切换 Caps Lock。
+- 区分轻触和按住，例如快速按下 Caps Lock 键映射为 Esc，按住并用作修饰键时映射为 Ctrl。
+- 让重映射仅对特定键盘或特定软件生效。
 
-Some software resources to get started on the topic:
-- macOS - [karabiner-elements](https://karabiner-elements.pqrs.org/), [skhd](https://github.com/koekeishiya/skhd) or [BetterTouchTool](https://folivora.ai/)
-- Linux - [xmodmap](https://wiki.archlinux.org/index.php/Xmodmap) or [Autokey](https://github.com/autokey/autokey)
-- Windows - Builtin in Control Panel, [AutoHotkey](https://www.autohotkey.com/) or [SharpKeys](https://www.randyrants.com/category/sharpkeys/)
-- QMK - If your keyboard supports custom firmware you can use [QMK](https://docs.qmk.fm/) to configure the hardware device itself so the remaps works for any machine you use the keyboard with.
+以下是该领域的一些入门工具：
+- macOS — [karabiner-elements](https://karabiner-elements.pqrs.org/)、[skhd](https://github.com/koekeishiya/skhd) 或 [BetterTouchTool](https://folivora.ai/)
+- Linux — [xmodmap](https://wiki.archlinux.org/index.php/Xmodmap) 或 [Autokey](https://github.com/autokey/autokey)
+- Windows — 控制面板自带功能、[AutoHotkey](https://www.autohotkey.com/) 或 [SharpKeys](https://www.randyrants.com/category/sharpkeys/)
+- QMK — 如果你的键盘支持自定义固件，可以使用 [QMK](https://docs.qmk.fm/) 配置硬件本身，这样重映射在你使用的任何机器上都会生效。
 
-## Daemons
+## 守护进程
 
-You are probably already familiar with the notion of daemons, even if the word seems new.
-Most computers have a series of processes that are always running in the background rather than waiting for a user to launch them and interact with them.
-These processes are called daemons and the programs that run as daemons often end with a `d` to indicate so.
-For example `sshd`, the SSH daemon, is the program responsible for listening to incoming SSH requests and checking that the remote user has the necessary credentials to log in.
+你可能已经熟悉守护进程（daemons）的概念，即使这个词听起来比较陌生。大多数电脑都有一些始终在后台运行的进程，而不是等待用户启动并与其交互。这些进程被称为守护进程，作为守护进程运行的程序通常以字母 `d` 结尾以作标识。例如 `sshd`（SSH 守护进程）就是负责监听传入 SSH 请求并验证远程用户是否具有登录所需凭据的程序。
 
-In Linux, `systemd` (the system daemon) is the most common solution for running and setting up daemon processes.
-You can run `systemctl status` to list the current running daemons. Most of them might sound unfamiliar but are responsible for core parts of the system such as managing the network, solving DNS queries or displaying the graphical interface for the system.
-Systemd can be interacted with the `systemctl` command in order to `enable`, `disable`, `start`, `stop`, `restart` or check the `status` of services (those are the `systemctl` commands).
+在 Linux 中，`systemd`（系统守护进程）是运行和配置守护进程最常见的方案。你可以运行 `systemctl status` 来列出当前正在运行的守护进程。大多数名称你可能没听说过，但它们负责系统的核心部分，比如管理网络、解析 DNS 查询或显示图形界面。你可以通过 `systemctl` 命令来 `enable`（启用）、`disable`（禁用）、`start`（启动）、`stop`（停止）、`restart`（重启）或检查服务的 `status`（状态）（这些就是 `systemctl` 的子命令）。
 
-More interestingly, `systemd` has a fairly accessible interface for configuring and enabling new daemons (or services).
-Below is an example of a daemon for running a simple Python app.
-We won't go in the details but as you can see most of the fields are pretty self explanatory.
+更有趣的是，`systemd` 提供了一个比较友好的接口来配置和启用新的守护进程（或服务）。下面是一个运行简单 Python 应用的守护进程配置示例。我们不会深入细节，但可以看到大部分字段都非常直观易懂。
 
 ```ini
 # /etc/systemd/system/myapp.service
@@ -87,330 +79,143 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-Also, if you just want to run some program with a given frequency there is no need to build a custom daemon, you can use [`cron`](https://www.man7.org/linux/man-pages/man8/cron.8.html), a daemon your system already runs to perform scheduled tasks.
+另外，如果你只是想以某个固定频率运行某个程序，无需构建自定义守护进程，你可以使用 [`cron`](https://www.man7.org/linux/man-pages/man8/cron.8.html)——一个系统已经运行的守护进程，用于执行定时任务。
 
 ## FUSE
 
-Modern software systems are usually composed of smaller building blocks that are composed together.
-Your operating system supports using different filesystem backends because there is a common language of what operations a filesystem supports.
-For instance, when you run `touch` to create a file, `touch` performs a system call to the kernel to create the file and the kernel performs the appropriate filesystem call to create the given file.
-A caveat is that UNIX filesystems are traditionally implemented as kernel modules and only the kernel is allowed to perform filesystem calls.
+现代软件系统通常由更小的构建模块组合而成。你的操作系统之所以支持使用不同的文件系统后端，是因为存在一套关于"文件系统支持哪些操作"的共同约定。例如，当你运行 `touch` 来创建文件时，`touch` 会向内核发起一次系统调用以创建文件，内核再执行相应的文件系统操作来创建指定文件。不过有一个需要注意的地方：UNIX 文件系统传统上作为内核模块实现，只有内核才被允许执行文件系统调用。
 
-[FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace) (Filesystem in User Space) allows filesystems to be implemented by a user program. FUSE lets users run user space code for filesystem calls and then bridges the necessary calls to the kernel interfaces.
-In practice, this means that users can implement arbitrary functionality for filesystem calls.
+[FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)（文件系统用户空间）允许文件系统由用户态程序来实现。FUSE 让用户空间的代码能够处理文件系统调用，并将必要的调用桥接到内核接口。这意味着用户可以为文件系统调用实现任意功能。
 
-For example, FUSE can be used so whenever you perform an operation in a virtual filesystem, that operation is forwarded through SSH to a remote machine, performed there, and the output is returned back to you.
-This way, local programs can see the file as if it was in your computer while in reality it's in a remote server.
-This is effectively what `sshfs` does.
+例如，FUSE 可以用于这样一种场景：当你对一个虚拟文件系统执行某个操作时，该操作通过 SSH 转发到远程机器执行，然后将结果返回给你。这样，本地程序就能将该文件看作存在于你的电脑上，而实际上它存储在远程服务器中。`sshfs` 正是这么做的。
 
-Some interesting examples of FUSE filesystems are:
-- [sshfs](https://github.com/libfuse/sshfs) - Open locally remote files/folder through an SSH connection.
-- [rclone](https://rclone.org/commands/rclone_mount/) - Mount cloud storage services like Dropbox, GDrive, Amazon S3 or Google Cloud Storage and open data locally.
-- [gocryptfs](https://nuetzlich.net/gocryptfs/) - Encrypted overlay system. Files are stored encrypted but once the FS is mounted they appear as plaintext in the mountpoint.
-- [kbfs](https://keybase.io/docs/kbfs) - Distributed filesystem with end-to-end encryption. You can have private, shared and public folders.
-- [borgbackup](https://borgbackup.readthedocs.io/en/stable/usage/mount.html) - Mount your deduplicated, compressed and encrypted backups for ease of browsing.
+以下是一些有趣的 FUSE 文件系统示例：
+- [sshfs](https://github.com/libfuse/sshfs) — 通过 SSH 连接在本地打开远程文件或文件夹。
+- [rclone](https://rclone.org/commands/rclone_mount/) — 挂载 Dropbox、GDrive、Amazon S3 或 Google Cloud Storage 等云存储，在本地打开数据。
+- [gocryptfs](https://nuetzlich.net/gocryptfs/) — 加密覆盖系统。文件以加密形式存储，但挂载后在挂载点中以明文形式呈现。
+- [kbfs](https://keybase.io/docs/kbfs) — 端到端加密的分布式文件系统。你可以创建私有、共享和公共文件夹。
+- [borgbackup](https://borgbackup.readthedocs.io/en/stable/usage/mount.html) — 挂载去重、压缩和加密的备份，方便浏览。
 
-## Backups
+> 译者注：FUSE 的核心价值在于它打破了"只有内核才能实现文件系统"的限制。传统 UNIX 文件系统中，文件系统代码必须作为内核模块编译加载，升级文件系统格式或调试都非常困难。FUSE 之后，你可以完全用 Python 或 Go 写一个挂载在某个路径上的文件系统——比如把加密的 S3 桶挂载成本地目录，而应用程序根本不需要修改。
 
-Any data that you haven’t backed up is data that could be gone at any moment, forever.
-It's easy to copy data around, it's hard to reliably backup data.
-Here are some good backup basics and the pitfalls of some approaches.
+## 备份
 
-First, a copy of the data in the same disk is not a backup, because the disk is the single point of failure for all the data. Similarly, an external drive in your home is also a weak backup solution since it could be lost in a fire/robbery/&c. Instead, having an off-site backup is a recommended practice.
+任何你没有备份的数据，都可能随时永远消失。把数据复制来复制去很容易，可靠地备份数据却很难。以下是一些基本的备份原则，以及某些方法的陷阱。
 
-Synchronization solutions are not backups. For instance, Dropbox/GDrive are convenient solutions, but when data is erased or corrupted they propagate the change. For the same reason, disk mirroring solutions like RAID are not backups. They don't help if data gets deleted, corrupted or encrypted by ransomware.
+首先，同一块磁盘上的数据副本不是备份，因为这块磁盘是所有数据的单点故障。同样地，存放在家里的外置硬盘也是一种较弱的备份方案——它可能在火灾、被盗等情况下与主数据一起丢失。因此，建议采用异地备份（off-site backup）。
 
-Some core features of good backups solutions are versioning, deduplication and security.
-Versioning backups ensure that you can access your history of changes and efficiently recover files.
-Efficient backup solutions use data deduplication to only store incremental changes and reduce the storage overhead.
-Regarding security, you should ask yourself what someone would need to know/have in order to read your data and, more importantly, to delete all your data and associated backups.
-Lastly, blindly trusting backups is a terrible idea and you should verify regularly that you can use them to recover data.
+同步解决方案不是备份。例如，Dropbox / Google Drive 确实是便捷的方案，但它们会在数据被删除或损坏时同步这些变更。同样的原因，RAID 等磁盘镜像方案也不是备份。如果数据被删除、损坏或被勒索软件加密，镜像并不能帮你恢复。
 
-Backups go beyond local files in your computer.
-Given the significant growth of web applications, large amounts of your data are only stored in the cloud.
-For instance, your webmail, social media photos, music playlists in streaming services or online docs are gone if you lose access to the corresponding accounts.
-Having an offline copy of this information is the way to go, and you can find online tools that people have built to fetch the data and save it.
+好的备份解决方案有几个核心特性：**版本管理**、**去重**和**安全性**。版本管理确保你可以访问变更历史并高效恢复文件。高效的备份方案使用数据去重来只存储增量变更，从而降低存储开销。至于安全性，你应该思考：什么人需要知道什么信息才能读取你的数据，更重要的是，什么人需要知道什么信息才能删除你的数据和所有关联备份。最后，盲目信任备份是一个非常糟糕的想法，你应该定期验证自己能否使用备份恢复数据。
 
-For a more detailed explanation, see 2019's lecture notes on [Backups](/2019/backups).
+备份的范围不限于你电脑上的本地文件。随着 Web 应用的显著增长，你大量数据仅存储在云端。例如，如果你失去对相关账户的访问权限，你的网络邮件、社交媒体照片、流媒体服务的音乐歌单或在线文档都会随之消失。为这些信息保留一个离线副本才是正道，而网上已经有不少人为此构建了数据抓取和保存工具。
 
+如需更详细的说明，请参阅 2019 年的课程笔记 [Backups](/2019/backups)。
 
-## APIs
+## API
 
-We've talked a lot in this class about using your computer more
-efficiently to accomplish _local_ tasks, but you will find that many of
-these lessons also extend to the wider internet. Most services online
-will have "APIs" that let you programmatically access their data. For
-example, the US government has an API that lets you get weather
-forecasts, which you could use to easily get a weather forecast in your
-shell.
+我们在本课程中讨论了很多关于更高效地使用电脑来完成**本地**任务的内容，但你会发现，其中许多经验也适用于更广阔的网络世界。大多数在线服务都会提供"API"（应用程序接口），让你可以编程式地访问它们的数据。例如，美国政府有一个 API，让你可以获取天气预报，这样你就能直接在 shell 中获取某个地区的天气预报。
 
-Most of these APIs have a similar format. They are structured URLs,
-often rooted at `api.service.com`, where the path and query parameters
-indicate what data you want to read or what action you want to perform.
-For the US weather data for example, to get the forecast for a
-particular location, you issue GET request (with `curl` for example) to
-https://api.weather.gov/points/42.3604,-71.094. The response itself
-contains a bunch of other URLs that let you get specific forecasts for
-that region. Usually, the responses are formatted as JSON, which you can
-then pipe through a tool like [`jq`](https://stedolan.github.io/jq/) to
-massage into what you care about.
+大多数 API 的格式相似。它们是结构化的 URL，通常以 `api.service.com` 为根，路径和查询参数指示你要读取的数据或要执行的操作。以美国天气数据为例，要获取某个特定位置的预报，你可以发出一个 GET 请求（例如使用 `curl`）到 `https://api.weather.gov/points/42.3604,-71.094`。响应本身包含一组其他 URL，让你可以获取该区域的详细预报。通常，响应以 JSON 格式呈现，之后你可以使用 [`jq`](https://stedolan.github.io/jq/) 等工具将其处理为你需要的格式。
 
-Some APIs require authentication, and this usually takes the form of
-some sort of secret _token_ that you need to include with the request.
-You should read the documentation for the API to see what the particular
-service you are looking for uses, but "[OAuth](https://www.oauth.com/)"
-is a protocol you will often see used. At its heart, OAuth is a way to
-give you tokens that can "act as you" on a given service, and can only
-be used for particular purposes. Keep in mind that these tokens are
-_secret_, and anyone who gains access to your token can do whatever the
-token allows under _your_ account!
+有些 API 需要认证，这通常表现为一个需要随请求附带的**token**（令牌）。你应该阅读 API 文档来了解具体服务使用何种认证方式，但你会经常见到 **[OAuth](https://www.oauth.com/)** 协议。从本质上说，OAuth 是一种让你获得 token 的方式，这些 token 可以"代表你"在某个服务上操作，并且仅限于特定用途。请记住，这些 token 是**秘密**的，任何获得你 token 的人都可以以你的账户执行该 token 允许的一切操作！
 
-[IFTTT](https://ifttt.com/) is a website and service centered around the
-idea of APIs — it provides integrations with tons of services, and lets
-you chain events from them in nearly arbitrary ways. Give it a look!
+[IFTTT](https://ifttt.com/) 是一个围绕 API 理念构建的网站和服务——它与众多服务提供集成，并允许你将来自这些服务的事件以近乎任意的顺序串联起来。值得去探索一番。
 
-## Common command-line flags/patterns
+## 常用命令行标志/模式
 
-Command-line tools vary a lot, and you will often want to check out
-their `man` pages before using them. They often share some common
-features though that can be good to be aware of:
+命令行工具千差万别，在使用它们之前，你经常需要查看其 `man` 页面。不过它们经常共享一些共同特性，了解这些可能对你有帮助：
 
- - Most tools support some kind of `--help` flag to display brief usage
-   instructions for the tool.
- - Many tools that can cause irrevocable change support the notion of a
-   "dry run" in which they only print what they _would have done_, but
-   do not actually perform the change. Similarly, they often have an
-   "interactive" flag that will prompt you for each destructive action.
- - You can usually use `--version` or `-V` to have the program print its
-   own version (handy for reporting bugs!).
- - Almost all tools have a `--verbose` or `-v` flag to produce more
-   verbose output. You can usually include the flag multiple times
-   (`-vvv`) to get _more_ verbose output, which can be handy for
-   debugging. Similarly, many tools have a `--quiet` flag for making it
-   only print something on error.
- - In many tools, `-` in place of a file name means "standard input" or
-   "standard output", depending on the argument.
- - Possibly destructive tools are generally not recursive by default,
-   but support a "recursive" flag (often `-r`) to make them recurse.
- - Sometimes, you want to pass something that _looks_ like a flag as a
-   normal argument. For example, imagine you wanted to remove a file
-   called `-r`. Or you want to run one program "through" another, like
-   `ssh machine foo`, and you want to pass a flag to the "inner" program
-   (`foo`). The special argument `--` makes a program _stop_ processing
-   flags and options (things starting with `-`) in what follows, letting
-   you pass things that look like flags without them being interpreted
-   as such: `rm -- -r` or `ssh machine --for-ssh -- foo --for-foo`.
+- 大多数工具支持某种 `--help` 标志，用来显示该工具的简要使用说明。
+- 许多可能产生不可逆变更的工具支持"干跑"（dry run）概念，即只打印它们**本会做什么**，而不实际执行变更。类似的，它们通常还有一个"交互式"标志，在执行每个破坏性操作前都会向你确认。
+- 你通常可以使用 `--version` 或 `-V` 来让程序打印其自身版本（报告 bug 时非常有用）。
+- 几乎所有工具都有 `--verbose` 或 `-v` 标志来产生更详细的输出。你通常可以多次使用该标志（`-vvv`）来得到**更多**详细输出，这在调试时很有用。类似的，许多工具还有 `--quiet` 标志，只允许在出错时打印内容。
+- 在许多工具中，文件名位置用 `-` 表示"标准输入"或"标准输出"，具体取决于参数的上下文。
+- 可能产生破坏性影响的工具通常默认不是递归的，但会支持一个"递归"标志（通常是 `-r`）来启用递归。
+- 有时，你想把一个**看起来像标志**的东西当作普通参数传递。例如，想象你想删除一个名为 `-r` 的文件。或者你想"通过"另一个程序运行一个程序，如 `ssh machine foo`，而你想给"内部"程序（`foo`）传递一个标志。特殊的参数 `--` 会让程序**停止**处理后面出现的所有标志和选项（以 `-` 开头的内容），这样你就能传递看起来像标志的东西而不会被当作标志处理：`rm -- -r` 或 `ssh machine --for-ssh -- foo --for-foo`。
 
-## Window managers
+## 窗口管理器
 
-Most of you are used to using a "drag and drop" window manager, like
-what comes with Windows, macOS, and Ubuntu by default. There are windows
-that just sort of hang there on screen, and you can drag them around,
-resize them, and have them overlap one another. But these are only one
-_type_ of window manager, often referred to as a "floating" window
-manager. There are many others, especially on Linux. A particularly
-common alternative is a "tiling" window manager. In a tiling window
-manager, windows never overlap, and are instead arranged as tiles on
-your screen, sort of like panes in tmux. With a tiling window manager,
-the screen is always filled by whatever windows are open, arranged
-according to some _layout_. If you have just one window, it takes up the
-full screen. If you then open another, the original window shrinks to
-make room for it (often something like 2/3 and 1/3). If you open a
-third, the other windows will again shrink to accommodate the new
-window. Just like with tmux panes, you can navigate around these tiled
-windows with your keyboard, and you can resize them and move them
-around, all without touching the mouse. They are worth looking into!
+大多数人都习惯了使用"拖放式"窗口管理器，就像 Windows、macOS 和 Ubuntu 默认自带的那样。窗口在屏幕上随意悬挂，你可以拖拽它们、调整大小，让它们互相重叠。但这只是**一种**窗口管理器，通常被称为"浮动式"窗口管理器。还有多种其他类型，在 Linux 上尤其常见。一个特别常见的替代方案是"平铺式"（tiling）窗口管理器。在平铺窗口管理器中，窗口从不重叠，而是像 tmux 中的面板一样以平铺方式排列在屏幕上。使用平铺窗口管理器时，屏幕总是被打开的窗口填满，按照某种**布局**排列。如果你只有一个窗口，它占满整个屏幕。如果你再打开一个，原来的窗口会缩小以腾出空间（通常是 2/3 和 1/3）。再打开第三个，其他窗口会再次缩小以适应新窗口。就像 tmux 面板一样，你可以用键盘在这些平铺窗口之间导航，也可以调整大小和移动它们，完全不需要碰鼠标。值得研究一下！
 
+## 虚拟专用网络
 
-## VPNs
+VPNs 最近很火，但显然这不是因为 [任何好的理由](https://web.archive.org/web/20230710155258/https://gist.github.com/joepie91/5a9909939e6ce7d09e29)。你应该了解 VPN 能做什么、不能做什么。在最理想的情况下，VPN 本质上只是让你在互联网提供商的视角中改变了你的互联网服务提供商。你的所有流量看起来都来自 VPN 提供商，而不是你"真实"的位置，而你连接的网络只能看到加密的流量。
 
-VPNs are all the rage these days, but it's not clear that's for [any
-good reason](https://web.archive.org/web/20230710155258/https://gist.github.com/joepie91/5a9909939e6ce7d09e29). You
-should be aware of what a VPN does and does not get you. A VPN, in the
-best case, is _really_ just a way for you to change your internet
-service provider as far as the internet is concerned. All your traffic
-will look like it's coming from the VPN provider instead of your "real"
-location, and the network you are connected to will only see encrypted
-traffic.
+虽然这听起来很有吸引力，但请记住，使用 VPN 时，你实际上只是在将信任从当前的 ISP 转移到 VPN 托管公司。你的 ISP 能**看到**的东西，现在 VPN 提供商**取而代之**看到了。如果你比信任你的 ISP 更信任他们，那当然有利可图，否则就不一定了。如果你在机场的一个不安全的未加密公共 Wi-Fi 上，也许你确实不太信任这条连接，但在家里，这种权衡就不那么清晰了。
 
-While that may seem attractive, keep in mind that when you use a VPN,
-all you are really doing is shifting your trust from you current ISP to
-the VPN hosting company. Whatever your ISP _could_ see, the VPN provider
-now sees _instead_. If you trust them _more_ than your ISP, that is a
-win, but otherwise, it is not clear that you have gained much. If you
-are sitting on some dodgy unencrypted public Wi-Fi at an airport, then
-maybe you don't trust the connection much, but at home, the trade-off is
-not quite as clear.
+你还需要知道，如今你的很多流量——至少是敏感流量——已经通过 HTTPS 或更通用的 TLS**加密**。在这种情况下，无论你是否在"不安全"网络上通常差别不大——网络运营商只能知道你和哪些服务器通信，而不会知道交换的具体数据内容。
 
-You should also know that these days, much of your traffic, at least of
-a sensitive nature, is _already_ encrypted through HTTPS or TLS more
-generally. In that case, it usually matters little whether you are on
-a "bad" network or not -- the network operator will only learn what
-servers you talk to, but not anything about the data that is exchanged.
+注意我上面说的是"在最理想的情况下"。VPN 提供商意外配置错误导致加密变弱甚至完全关闭的情况并不罕见。有些 VPN 提供商是恶意的（或者至少是机会主义者），它们会记录你的所有流量，并可能将有关信息出售给第三方。选择一个糟糕的 VPN 提供商，通常比根本不用一个更糟糕。
 
-Notice that I said "in the best case" above. It is not unheard of for
-VPN providers to accidentally misconfigure their software such that the
-encryption is either weak or entirely disabled. Some VPN providers are
-malicious (or at the very least opportunist), and will log all your
-traffic, and possibly sell information about it to third parties.
-Choosing a bad VPN provider is often worse than not using one in the
-first place.
-
-In a pinch, MIT [runs a VPN](https://ist.mit.edu/vpn) for its students,
-so that may be worth taking a look at. Also, if you're going to roll
-your own, give [WireGuard](https://www.wireguard.com/) a look.
+退一步说，MIT [运行了一个 VPN](https://ist.mit.edu/vpn) 供学生使用，所以值得一看。另外，如果你打算自己搭建，可以看看 [WireGuard](https://www.wireguard.com/)。
 
 ## Markdown
 
-There is a high chance that you will write some text over the course of
-your career. And often, you will want to mark up that text in simple
-ways. You want some text to be bold or italic, or you want to add
-headers, links, and code fragments. Instead of pulling out a heavy tool
-like Word or LaTeX, you may want to consider using the lightweight
-markup language [Markdown](https://commonmark.org/help/).
+你在职业生涯中很可能会写一些文本，而且你通常希望对这些文本进行简单的标记。你可能想让某些文字加粗或斜体，或者添加标题、链接和代码片段。与其使用 Word 或 LaTeX 这样的重型工具，你可能更倾向于使用轻量级标记语言 [Markdown](https://commonmark.org/help/)。
 
-You have probably seen Markdown already, or at least some variant of it.
-Subsets of it are used and supported almost everywhere, even if it's not
-under the name Markdown. At its core, Markdown is an attempt to codify
-the way that people already often mark up text when they are writing
-plain text documents. Emphasis (*italics*) is added by surrounding a
-word with `*`. Strong emphasis (**bold**) is added using `**`. Lines
-starting with `#` are headings (and the number of `#`s is the subheading
-level). Any line starting with `-` is a bullet list item, and any line
-starting with a number + `.` is a numbered list item. Backtick is used
-to show words in `code font`, and a code block can be entered by
-indenting a line with four spaces or surrounding it with
-triple-backticks:
+你可能已经见过 Markdown，或者至少见过它的某种变体。它的子集被广泛使用和支持，即使不叫 Markdown 这个名字。从核心来看，Markdown 是对人们已经习惯于在纯文本文档中标记文本的方式的一种编码。强调（*斜体*）通过在单词两侧加上 `*` 来实现。强烈强调（**粗体**）使用 `**`。以 `#` 开头的行是标题（`#` 的数量表示子标题级别）。以 `-` 开头的行是项目符号列表项，以数字 + `.` 开头的行是编号列表项。反引号用于显示 `等宽代码`，代码块可以通过在行前缩进四个空格或将其包裹在三个反引号中来插入：
 
     ```
     code goes here
     ```
 
-To add a link, place the _text_ for the link in square brackets,
-and the URL immediately following that in parentheses: `[name](url)`.
-Markdown is easy to get started with, and you can use it nearly
-everywhere. In fact, the lecture notes for this lecture, and all the
-others, are written in Markdown, and you can see the raw Markdown
-[here](https://raw.githubusercontent.com/missing-semester/missing-semester/master/_2020/potpourri.md).
+要添加链接，将链接的**文字**放在方括号中，URL 紧跟在括号后面：`[name](url)`。Markdown 上手很简单，你几乎可以在任何地方使用它。事实上，本课程所有讲义（包括这一篇）都是用 Markdown 编写的，你可以[在这里](https://raw.githubusercontent.com/missing-semester/missing-semester/master/_2020/potpourri.md)看到原始 Markdown 文件。
 
+## Hammerspoon（macOS 桌面自动化）
 
+[Hammerspoon](https://www.hammerspoon.org/) 是 macOS 的桌面自动化框架。它允许你编写 Lua 脚本，挂钩操作系统功能，从而与键盘/鼠标、窗口、显示器、文件系统等交互，甚至更多。
 
-## Hammerspoon (desktop automation on macOS)
+以下是你可以使用 Hammerspoon 做的事情的一些示例：
 
-[Hammerspoon](https://www.hammerspoon.org/) is a desktop automation framework
-for macOS. It lets you write Lua scripts that hook into operating system
-functionality, allowing you to interact with the keyboard/mouse, windows,
-displays, filesystem, and much more.
+- 绑定热键将窗口移动到特定位置
+- 创建一个菜单栏按钮，自动将窗口布局为特定排列
+- 当你到达实验室时自动静音你的扬声器（通过检测 Wi-Fi 网络）
+- 如果你不小心拿了朋友的电源适配器，给你一个警告
 
-Some examples of things you can do with Hammerspoon:
+从高层次来看，Hammerspoon 允许你运行任意 Lua 代码，绑定到菜单栏按钮、按键或事件上，而 Hammerspoon 提供了广泛的系统交互库，所以基本上你用它做什么都行。很多人公开了自己的 Hammerspoon 配置，所以你通常可以通过搜索互联网找到所需的内容，但你也完全可以从零开始编写自己的代码。
 
-- Bind hotkeys to move windows to specific locations
-- Create a menu bar button that automatically lays out windows in a specific layout
-- Mute your speaker when you arrive in lab (by detecting the Wi-Fi network)
-- Show you a warning if you've accidentally taken your friend's power supply
+### 资源
 
-At a high level, Hammerspoon lets you run arbitrary Lua code, bound to menu
-buttons, key presses, or events, and Hammerspoon provides an extensive library
-for interacting with the system, so there's basically no limit to what you can
-do with it. Many people have made their Hammerspoon configurations public, so
-you can generally find what you need by searching the internet, but you can
-always write your own code from scratch.
+- [Hammerspoon 入门](https://www.hammerspoon.org/go/)
+- [示例配置](https://github.com/Hammerspoon/hammerspoon/wiki/Sample-Configurations)
+- [Anish 的 Hammerspoon 配置](https://github.com/anishathalye/dotfiles-local/tree/mac/hammerspoon)
 
-### Resources
+## 开机 + Live USB
 
-- [Getting Started with Hammerspoon](https://www.hammerspoon.org/go/)
-- [Sample configurations](https://github.com/Hammerspoon/hammerspoon/wiki/Sample-Configurations)
-- [Anish's Hammerspoon config](https://github.com/anishathalye/dotfiles-local/tree/mac/hammerspoon)
+当你的机器启动时，在操作系统加载之前，[BIOS](https://en.wikipedia.org/wiki/BIOS)/[UEFI](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface) 会初始化系统。在这个过程中，你可以按下特定的键组合来配置这层软件。例如，在启动过程中，你的电脑可能会显示"按 F9 配置 BIOS。按 F12 进入启动菜单"之类的信息。你可以在 BIOS 菜单中配置各种与硬件相关的设置。你也可以进入启动菜单从其他设备（而非你的硬盘）启动。
 
-## Booting + Live USBs
+[Live USB](https://en.wikipedia.org/wiki/Live_USB) 是包含操作系统的 U 盘。你可以通过下载一个操作系统（例如某个 Linux 发行版）并将其烧录到 U 盘上来创建这样一个 Live USB。这个过程比简单地把 `.iso` 文件复制到磁盘要稍微复杂一些。有一些工具如 [UNetbootin](https://unetbootin.github.io/) 可以帮你创建 Live USB。
 
-When your machine boots up, before the operating system is loaded, the
-[BIOS](https://en.wikipedia.org/wiki/BIOS)/[UEFI](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface)
-initializes the system. During this process, you can press a specific key
-combination to configure this layer of software. For example, your computer may
-say something like "Press F9 to configure BIOS. Press F12 to enter boot menu."
-during the boot process. You can configure all sorts of hardware-related
-settings in the BIOS menu. You can also enter the boot menu to boot from an
-alternate device instead of your hard drive.
+Live USB 有多种用途。其中一件有用的事情是：如果你的现有操作系统安装损坏到无法启动，你可以使用 Live USB 来恢复数据或修复操作系统。
 
-[Live USBs](https://en.wikipedia.org/wiki/Live_USB) are USB flash drives
-containing an operating system. You can create one of these by downloading an
-operating system (e.g. a Linux distribution) and burning it to the flash drive.
-This process is a little bit more complicated than simply copying a `.iso` file
-to the disk. There are tools like [UNetbootin](https://unetbootin.github.io/)
-to help you create live USBs.
+## Docker、Vagrant、虚拟机、云、OpenStack
 
-Live USBs are useful for all sorts of purposes. Among other things, if you
-break your existing operating system installation so that it no longer boots,
-you can use a live USB to recover data or fix the operating system.
+[虚拟机](https://en.wikipedia.org/wiki/Virtual_machine)和类似的工具（如容器）让你可以模拟整个计算机系统，包括操作系统。这在创建用于测试、开发或探索的隔离环境时非常有用（例如运行可能有问题的代码）。
 
-## Docker, Vagrant, VMs, Cloud, OpenStack
+[Vagrant](https://www.vagrantup.com/) 是一个工具，可以让你以代码描述机器配置（操作系统、服务、软件包等），然后通过一个简单的 `vagrant up` 实例化虚拟机。[Docker](https://www.docker.com/) 在概念上类似，但它使用容器而非虚拟机。
 
-[Virtual machines](https://en.wikipedia.org/wiki/Virtual_machine) and similar
-tools like containers let you emulate a whole computer system, including the
-operating system. This can be useful for creating an isolated environment for
-testing, development, or exploration (e.g. running potentially malicious code).
+你也可以在云端租用虚拟机，这种方式可以让你快速获得：
 
-[Vagrant](https://www.vagrantup.com/) is a tool that lets you describe machine
-configurations (operating system, services, packages, etc.) in code, and then
-instantiate VMs with a simple `vagrant up`. [Docker](https://www.docker.com/)
-is conceptually similar but it uses containers instead.
+- 一台廉价的常在线机器，具有公网 IP 地址，用于托管服务
+- 一台拥有大量 CPU、磁盘、RAM 和/或 GPU 的机器
+- 远超你物理访问能力的更多机器（计费通常按秒计算，因此如果你需要大量计算资源但只需很短时间，租用 1000 台电脑几分钟是完全可行的）
 
-You can also rent virtual machines on the cloud, and it's a nice way to get instant
-access to:
+热门的服务包括 [Amazon AWS](https://aws.amazon.com/)、[Google Cloud](https://cloud.google.com/)、[Microsoft Azure](https://azure.microsoft.com/)、[DigitalOcean](https://www.digitalocean.com/)。
 
-- A cheap always-on machine that has a public IP address, used to host services
-- A machine with a lot of CPU, disk, RAM, and/or GPU
-- Many more machines than you physically have access to (billing is often by
-the second, so if you want a lot of computing for a short amount of time, it's
-feasible to rent 1000 computers for a couple of minutes)
+如果你是 MIT CSAIL 的成员，你可以通过 [CSAIL OpenStack 实例](https://tig.csail.mit.edu/shared-computing/open-stack/) 为研究目的免费获取虚拟机。
 
-Popular services include [Amazon AWS](https://aws.amazon.com/), [Google
-Cloud](https://cloud.google.com/),[ Microsoft Azure](https://azure.microsoft.com/),
-[DigitalOcean](https://www.digitalocean.com/).
+## 笔记本编程
 
-If you're a member of MIT CSAIL, you can get free VMs for research purposes
-through the [CSAIL OpenStack
-instance](https://tig.csail.mit.edu/shared-computing/open-stack/).
-
-## Notebook programming
-
-[Notebook programming
-environments](https://en.wikipedia.org/wiki/Notebook_interface) can be really
-handy for doing certain types of interactive or exploratory development.
-Perhaps the most popular notebook programming environment today is
-[Jupyter](https://jupyter.org/), for Python (and several other languages).
-[Wolfram Mathematica](https://www.wolfram.com/mathematica/) is another notebook
-programming environment that's great for doing math-oriented programming.
+[笔记本编程环境](https://en.wikipedia.org/wiki/Notebook_interface)在进行某些类型的交互式或探索式开发时可能非常有用。如今最受欢迎的笔记本编程环境可能是用于 Python（以及多种其他语言）的 [Jupyter](https://jupyter.org/)。[Wolfram Mathematica](https://www.wolfram.com/mathematica/) 是另一种优秀的笔记本编程环境，非常适合数学相关的编程。
 
 ## GitHub
 
-[GitHub](https://github.com/) is one of the most popular platforms for
-open-source software development. Many of the tools we've talked about in this
-class, from [vim](https://github.com/vim/vim) to
-[Hammerspoon](https://github.com/Hammerspoon/hammerspoon), are hosted on
-GitHub. It's easy to get started contributing to open-source to help improve
-the tools that you use every day.
+[GitHub](https://github.com/) 是最流行的开源软件开发平台之一。我们在本课程中讨论的许多工具，从 [vim](https://github.com/vim/vim) 到 [Hammerspoon](https://github.com/Hammerspoon/hammerspoon)，都在 GitHub 上托管。开始为开源项目做贡献以改进你每天使用的工具，这并不困难。
 
-There are two primary ways in which people contribute to projects on GitHub:
+人们为 GitHub 上的项目贡献主要有两种途径：
 
-- Creating an
-[issue](https://help.github.com/en/github/managing-your-work-on-github/creating-an-issue).
-This can be used to report bugs or request a new feature. Neither of these
-involves reading or writing code, so it can be pretty lightweight to do.
-High-quality bug reports can be extremely valuable to developers. Commenting on
-existing discussions can be helpful too.
-- Contribute code through a [pull
-request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
-This is generally more involved than creating an issue. You can
-[fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
-a repository on GitHub, clone your fork, create a new branch, make some changes
-(e.g. fix a bug or implement a feature), push the branch, and then [create a
-pull
-request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
-After this, there will generally be some back-and-forth with the project
-maintainers, who will give you feedback on your patch. Finally, if all goes
-well, your patch will be merged into the upstream repository. Often times,
-larger projects will have a contributing guide, tag beginner-friendly issues,
-and some even have mentorship programs to help first-time contributors become
-familiar with the project.
+- 创建 [issue](https://help.github.com/en/github/managing-your-work-on-github/creating-an-issue)。这可以用来报告 bug 或请求新功能。这两种方式都不涉及阅读或编写代码，因此你可以非常轻量地参与。高质量的 bug 报告对开发者非常有价值。在已有讨论中发表评论也会有所帮助。
+- 通过 [pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests) 贡献代码。这通常比创建 issue 更复杂一些。你可以 [fork](https://help.github.com/en/github/getting-started-with-technology/fork-a-repo) GitHub 上的一个仓库，clone 你的 fork，创建一个新分支，做一些修改（例如修复 bug 或实现新功能），推送该分支，然后[创建一个 pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request)。之后，项目维护者通常会和你来回沟通，对你的 patch 给出反馈。最后，如果一切顺利，你的 patch 会被合并到上游仓库。很多时候，较大的项目会有贡献指南、标记适合新手的 issue，甚至有些还有导师项目来帮助初次贡献者熟悉项目。
+
+> 译者注：GitHub 的 fork-branch-pull request 工作流是开源协作的标准模式。初次参与时，建议先在 README 或 `CONTRIBUTING.md` 文件中寻找该项目对贡献流程的具体要求（比如代码风格、测试覆盖或 commit message 格式），这能大幅减少来回修改的次数。

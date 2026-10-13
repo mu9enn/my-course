@@ -1,10 +1,10 @@
 ---
 layout: lecture
-title: "Metaprogramming"
+title: "元编程"
 description: >
-  Learn about build systems, dependency management, testing, and continuous integration.
+  了解构建系统、依赖管理、测试和持续集成。
 thumbnail: /static/assets/thumbnails/2020/lec8.png
-details: build systems, dependency management, testing, CI
+details: 构建系统、依赖管理、测试、持续集成
 date: 2020-01-27
 ready: true
 video:
@@ -12,53 +12,17 @@ video:
   id: _Ms1Z4xfqv4
 ---
 
-What do we mean by "metaprogramming"? Well, it was the best collective
-term we could come up with for the set of things that are more about
-_process_ than they are about writing code or working more efficiently.
-In this lecture, we will look at systems for building and testing your
-code, and for managing dependencies. These may seem like they are of
-limited importance in your day-to-day as a student, but the moment you
-interact with a larger code base through an internship or once you enter
-the "real world", you will see this everywhere. We should note that
-"metaprogramming" can also mean "[programs that operate on
-programs](https://en.wikipedia.org/wiki/Metaprogramming)", whereas that
-is not quite the definition we are using for the purposes of this
-lecture.
+所谓"元编程"（Metaprogramming），其实是我们能想到的最合适的统称——它涵盖的那些事情，更多是关于 _过程_（_process_），而非关于写代码或提高编程效率本身。在本讲中，我们将研究用于构建和测试代码的系统，以及用于管理依赖的工具。你可能觉得这些东西对学生日常学习来说重要性有限，但只要你通过实习或步入"现实世界"与更大的代码库产生交集，你就会无处不在地遇到它们。需要说明的是，"元编程"也可以指 [操作程序的程序](https://en.wikipedia.org/wiki/Metaprogramming)，但本讲使用的定义并不完全等同于那个含义。
 
-# Build systems
+# 构建系统
 
-If you write a paper in LaTeX, what are the commands you need to run to
-produce your paper? What about the ones used to run your benchmarks,
-plot them, and then insert that plot into your paper? Or to compile the
-code provided in the class you're taking and then running the tests?
+如果你用 LaTeX 写论文，你需要运行哪些命令来生成最终文档？那些用来运行基准测试、绘制图表并把图表插入论文的命令又是什么呢？或者，编译你正在修的课程的示例代码并运行其中的测试呢？
 
-For most projects, whether they contain code or not, there is a "build
-process". Some sequence of operations you need to do to go from your
-inputs to your outputs. Often, that process might have many steps, and
-many branches. Run this to generate this plot, that to generate those
-results, and something else to produce the final paper. As with so many
-of the things we have seen in this class, you are not the first to
-encounter this annoyance, and luckily there exist many tools to help
-you!
+对于大多数项目（无论是否包含代码），都存在一个"构建过程"（_build process_）——你从输入产出输出所需的一系列操作。这个过程往往包含许多步骤，也有许多分支。运行这个来生成某个图表，运行那个来生成结果，再运行其他东西来产出最终论文。就像我们在这门课中反复见到的那样，你不是第一个被这种繁琐过程困扰的人，而且幸运的是，已经有许多工具可以帮助你！
 
-These are usually called "build systems", and there are _many_ of them.
-Which one you use depends on the task at hand, your language of
-preference, and the size of the project. At their core, they are all
-very similar though. You define a number of _dependencies_, a number of
-_targets_, and _rules_ for going from one to the other. You tell the
-build system that you want a particular target, and its job is to find
-all the transitive dependencies of that target, and then apply the rules
-to produce intermediate targets all the way until the final target has
-been produced. Ideally, the build system does this without unnecessarily
-executing rules for targets whose dependencies haven't changed and where
-the result is available from a previous build.
+这些工具通常被称为"构建系统"（_build systems_），而且种类繁多。用哪一种取决于手头的任务、你偏好的编程语言以及项目规模。不过它们的核心理念都非常相似：你定义若干 _依赖_（_dependencies_）、若干 _目标_（_targets_），以及从一个到另一个的 _规则_（_rules_）。你告诉构建系统你想要哪个目标，它的职责就是找到该目标的所有传递依赖，然后依次应用规则生成中间目标，直至最终产出目标。理想情况下，构建系统会在依赖未发生变化且结果可从上次构建中获取时，避免不必要地重新执行规则。
 
-`make` is one of the most common build systems out there, and you will
-usually find it installed on pretty much any UNIX-based computer. It has
-its warts, but works quite well for simple-to-moderate projects. When
-you run `make`, it consults a file called `Makefile` in the current
-directory. All the targets, their dependencies, and the rules are
-defined in that file. Let's take a look at one:
+`make` 是最常见的构建系统之一，你几乎能在任何基于 UNIX 的机器上找到它。它也有自己的瑕疵，但对于简单到中等规模的项目已经足够好用。当你运行 `make` 时，它会在当前目录查找一个名为 `Makefile` 的文件。所有目标、依赖和规则都在该文件中定义。下面来看一个示例：
 
 ```make
 paper.pdf: paper.tex plot-data.png
@@ -68,29 +32,16 @@ plot-%.png: %.dat plot.py
 	./plot.py -i $*.dat -o $@
 ```
 
-Each directive in this file is a rule for how to produce the left-hand
-side using the right-hand side. Or, phrased differently, the things
-named on the right-hand side are dependencies, and the left-hand side is
-the target. The indented block is a sequence of programs to produce the
-target from those dependencies. In `make`, the first directive also
-defines the default goal. If you run `make` with no arguments, this is
-the target it will build. Alternatively, you can run something like
-`make plot-data.png`, and it will build that target instead.
+该文件中的每条指令都是一个规则，说明如何使用右侧的依赖生成左侧的目标。换个说法，右侧列出的事物是依赖，左侧是目标。缩进块是一系列用于从这些依赖生成目标的程序。在 `make` 中，第一条指令还定义了默认目标。如果你不带参数运行 `make`，它构建的就是这个目标。另外，你也可以运行类似 `make plot-data.png` 的命令，此时它会改为构建 `plot-data.png` 这个目标。
 
-The `%` in a rule is a "pattern", and will match the same string on the
-left and on the right. For example, if the target `plot-foo.png` is
-requested, `make` will look for the dependencies `foo.dat` and
-`plot.py`. Now let's look at what happens if we run `make` with an empty
-source directory.
+规则中的 `%` 是一个"模式"（_pattern_），会在左右两侧匹配同一个字符串。例如，如果请求的目标是 `plot-foo.png`，`make` 就会查找依赖 `foo.dat` 和 `plot.py`。现在我们来看看，如果在一个空的源文件目录中运行 `make`，会发生什么。
 
 ```console
 $ make
 make: *** No rule to make target 'paper.tex', needed by 'paper.pdf'.  Stop.
 ```
 
-`make` is helpfully telling us that in order to build `paper.pdf`, it
-needs `paper.tex`, and it has no rule telling it how to make that file.
-Let's try making it!
+`make` 在友好地告诉我们：为了构建 `paper.pdf`，它需要 `paper.tex`，但它没有关于如何生成这个文件的规则。那我们试着来创建它！
 
 ```console
 $ touch paper.tex
@@ -98,10 +49,7 @@ $ make
 make: *** No rule to make target 'plot-data.png', needed by 'paper.pdf'.  Stop.
 ```
 
-Hmm, interesting, there _is_ a rule to make `plot-data.png`, but it is a
-pattern rule. Since the source files do not exist (`data.dat`), `make`
-simply states that it cannot make that file. Let's try creating all the
-files:
+有点意思了——确实存在生成 `plot-data.png` 的规则，但那是模式规则。由于源文件不存在（`data.dat`），`make` 只是说它无法生成这个文件。那我们试着创建所有文件：
 
 ```console
 $ cat paper.tex
@@ -133,7 +81,7 @@ $ cat data.dat
 5 8
 ```
 
-Now what happens if we run `make`?
+现在如果运行 `make` 会怎样？
 
 ```console
 $ make
@@ -142,18 +90,14 @@ pdflatex paper.tex
 ... lots of output ...
 ```
 
-And look, it made a PDF for us!
-What if we run `make` again?
+看，它生成了 PDF！如果再次运行 `make` 呢？
 
 ```console
 $ make
 make: 'paper.pdf' is up to date.
 ```
 
-It didn't do anything! Why not? Well, because it didn't need to. It
-checked that all of the previously-built targets were still up to date
-with respect to their listed dependencies. We can test this by modifying
-`paper.tex` and then re-running `make`:
+它什么也没做！为什么？因为它没必要做。它检查了所有已构建的目标相对于其列出的依赖仍然是最新的。我们可以通过修改 `paper.tex` 然后重新运行 `make` 来验证这一点：
 
 ```console
 $ vim paper.tex
@@ -162,168 +106,53 @@ pdflatex paper.tex
 ...
 ```
 
-Notice that `make` did _not_ re-run `plot.py` because that was not
-necessary; none of `plot-data.png`'s dependencies changed!
+注意 `make` _没有_ 重新运行 `plot.py`，因为没有这个必要——`plot-data.png` 的任何依赖都没有改变！
 
-# Dependency management
+> 译者补充：在 Makefile 中，`$@` 表示规则左侧的目标名称，`$*` 表示模式 `%` 匹配到的字符串。所以上面示例中，当目标为 `plot-foo.png` 时，`$@` = `plot-foo.png`，`$*` = `foo`，整条规则展开为 `./plot.py -i foo.dat -o plot-foo.png`。
 
-At a more macro level, your software projects are likely to have
-dependencies that are themselves projects. You might depend on installed
-programs (like `python`), system packages (like `openssl`), or libraries
-within your programming language (like `matplotlib`). These days, most
-dependencies will be available through a _repository_ that hosts a
-large number of such dependencies in a single place, and provides a
-convenient mechanism for installing them. Some examples include the
-Ubuntu package repositories for Ubuntu system packages, which you access
-through the `apt` tool, RubyGems for Ruby libraries, PyPI for Python
-libraries, or the Arch User Repository for Arch Linux user-contributed
-packages.
+# 依赖管理
 
-Since the exact mechanisms for interacting with these repositories vary
-a lot from repository to repository and from tool to tool, we won't go
-too much into the details of any specific one in this lecture. What we
-_will_ cover is some of the common terminology they all use. The first
-among these is _versioning_. Most projects that other projects depend on
-issue a _version number_ with every release. Usually something like
-8.1.3 or 64.1.20192004. They are often, but not always, numerical.
-Version numbers serve many purposes, and one of the most important of
-them is to ensure that software keeps working. Imagine, for example,
-that I release a new version of my library where I have renamed a
-particular function. If someone tried to build some software that
-depends on my library after I release that update, the build might fail
-because it calls a function that no longer exists! Versioning attempts
-to solve this problem by letting a project say that it depends on a
-particular version, or range of versions, of some other project. That
-way, even if the underlying library changes, dependent software
-continues building by using an older version of my library.
+在更宏观的层面，你的软件项目很可能包含 _本身也是项目_ 的依赖。你可能依赖于已安装的程序（如 `python`）、系统包（如 `openssl`）或编程语言内的库（如 `matplotlib`）。如今，大多数依赖都可以通过一个 _仓库_（_repository_）获取，它将大量此类依赖集中托管在一个地方，并提供方便的安装机制。一些例子包括通过 `apt` 工具访问的 Ubuntu 系统包仓库、RubyGems（用于 Ruby 库）、PyPI（用于 Python 库），或 Arch User Repository（用于 Arch Linux 用户提交的软件包）。
 
-That also isn't ideal though! What if I issue a security update which
-does _not_ change the public interface of my library (its "API"), and
-which any project that depended on the old version should immediately
-start using? This is where the different groups of numbers in a version
-come in. The exact meaning of each one varies between projects, but one
-relatively common standard is [_semantic
-versioning_](https://semver.org/). With semantic versioning, every
-version number is of the form: major.minor.patch. The rules are:
+由于与这些仓库交互的具体机制因仓库和工具而异，本讲不会深入任何一个具体仓库的细节。我们 _将_ 涵盖的是它们共同使用的一些常见术语。其中首要的是 _版本管理_（_versioning_）。大多数其他项目会依赖的那些项目，在每次发布时都会附带一个 _版本号_（_version number_），类似于 `8.1.3` 或 `64.1.20192004`。它们通常（但不总是）是数值形式的。版本号有多种用途，其中最重要的一项是确保软件持续可用。试想这样一个场景：我发布了我库的一个新版本，其中重命名了一个特定函数。如果我在那个更新发布之后有人尝试构建依赖我这个库的软件，构建可能会失败，因为它调用的函数已经不存在了！版本管理的思路是，让一个项目声明它依赖于另一个项目的特定版本或版本范围，从而即使底层库发生了变化，依赖软件也可以通过使用旧版本的库来继续构建。
 
- - If a new release does not change the API, increase the patch version.
- - If you _add_ to your API in a backwards-compatible way, increase the
-   minor version.
- - If you change the API in a non-backwards-compatible way, increase the
-   major version.
+但这还不够理想！假如我发布了一个安全更新，它 _没有_ 改变我的库的公开接口（"API"），而所有依赖旧版本的项目都应该立即开始使用它，这又该怎么办呢？这就是版本号中不同数字分组存在的意义。每个数字的具体含义因项目而异，但一个相对通用的标准是 [_语义化版本_（_Semantic Versioning_）](https://semver.org/)。语义化版本中，每个版本号的形式为 `主版本号.次版本号.修订号`（major.minor.patch）。规则如下：
 
-This already provides some major advantages. Now, if my project depends
-on your project, it _should_ be safe to use the latest release with the
-same major version as the one I built against when I developed it, as
-long as its minor version is at least what it was back then. In other
-words, if I depend on your library at version `1.3.7`, then it _should_
-be fine to build it with `1.3.8`, `1.6.1`, or even `1.3.0`. Version
-`2.2.4` would probably not be okay, because the major version was
-increased. We can see an example of semantic versioning in Python's
-version numbers. Many of you are probably aware that Python 2 and Python
-3 code do not mix very well, which is why that was a _major_ version
-bump. Similarly, code written for Python 3.5 might run fine on Python
-3.7, but possibly not on 3.4.
+ - 如果新发行版 _没有_ 改变 API，增加 _修订号_。
+ - 如果你以 _向后兼容_ 的方式 _添加_ 到 API，增加 _次版本号_。
+ - 如果你以 _不向后兼容_ 的方式 _更改_ API，增加 _主版本号_。
 
-When working with dependency management systems, you may also come
-across the notion of _lock files_. A lock file is simply a file that
-lists the exact version you are _currently_ depending on of each
-dependency. Usually, you need to explicitly run an update program to
-upgrade to newer versions of your dependencies. There are many reasons
-for this, such as avoiding unnecessary recompiles, having reproducible
-builds, or not automatically updating to the latest version (which may
-be broken). An extreme version of this kind of dependency locking is
-_vendoring_, which is where you copy all the code of your dependencies
-into your own project. That gives you total control over any changes to
-it, and lets you introduce your own changes to it, but also means you
-have to explicitly pull in any updates from the upstream maintainers
-over time.
+这已经带来了一些重大优势。现在，如果我的项目依赖你的项目，只要你的项目次版本号不低于我当时开发时使用的版本，使用与你构建时相同主版本号下最新发布版应该是安全的。换句话说，如果我的项目依赖你的库版本 `1.3.7`，那么用 `1.3.8`、`1.6.1` 甚至 `1.3.0` 来构建 _应该_ 没问题。版本 `2.2.4` 恐怕就不行了，因为主版本号增加了。我们可以看到 Python 的版本号中语义化版本的例子。很多人可能都知道 Python 2 和 Python 3 的代码混用起来不太顺利，这就是为什么那是一个 _主_ 版本号的跃升。同样，用 Python 3.5 编写的代码可能在 Python 3.7 上运行良好，但在 3.4 上就不一定了。
 
-# Continuous integration systems
+在使用依赖管理系统时，你可能还会遇到 _锁文件_（_lock file_）的概念。锁文件只是一个列出了你 _当前_ 依赖的每个依赖的确切版本的文件。通常，你需要显式运行一个更新程序来升级到依赖的新版本。这样做的原因有很多，比如避免不必要的重新编译、拥有可重复的构建，或自动不更新到最新版本（可能已损坏）。这类依赖锁定的一种极端形式是 _依赖内置_（_vendoring_），即你把你所有依赖的代码复制到你自己项目中。这让你对它们的任何变更拥有完全控制权，也可以引入你自己的修改，但也意味着你需要随时间显式地从上游维护者那里拉取任何更新。
 
-As you work on larger and larger projects, you'll find that there are
-often additional tasks you have to do whenever you make a change to it.
-You might have to upload a new version of the documentation, upload a
-compiled version somewhere, release the code to pypi, run your test
-suite, and all sort of other things. Maybe every time someone sends you
-a pull request on GitHub, you want their code to be style checked and
-you want some benchmarks to run? When these kinds of needs arise, it's
-time to take a look at continuous integration.
+# 持续集成系统
 
-Continuous integration, or CI, is an umbrella term for "stuff that runs
-whenever your code changes", and there are many companies out there that
-provide various types of CI, often for free for open-source projects.
-Some of the big ones are Travis CI, Azure Pipelines, and GitHub Actions.
-They all work in roughly the same way: you add a file to your repository
-that describes what should happen when various things happen to that
-repository. By far the most common one is a rule like "when someone
-pushes code, run the test suite". When the event triggers, the CI
-provider spins up a virtual machines (or more), runs the commands in
-your "recipe", and then usually notes down the results somewhere. You
-might set it up so that you are notified if the test suite stops
-passing, or so that a little badge appears on your repository as long as
-the tests pass.
+随着你处理的项目越来越大，你会发现每次对项目做出改动时，通常还有一些额外的任务需要完成。你可能需要上传文档的新版本、在某个地方上传编译后的版本、将代码发布到 PyPI、运行你的测试套件，以及各种其他事情。也许每次有人向你发送 GitHub 上的 PR（_pull request_），你都希望他们的代码通过风格检查，并运行一些基准测试？当这类需求出现时，就该考虑持续集成了。
 
-As an example of a CI system, the class website is set up using GitHub
-Pages. Pages is a CI action that runs the Jekyll blog software on every
-push to `master` and makes the built site available on a particular
-GitHub domain. This makes it trivial for us to update the website! We
-just make our changes locally, commit them with git, and then push. CI
-takes care of the rest.
+持续集成（_Continuous Integration_，简称 CI）是"每当你的代码发生变化时就运行某些东西"的统称，市面上有许多公司提供免费（尤其是对开源项目）的 CI 服务。其中一些大厂商包括 Travis CI、Azure Pipelines 和 GitHub Actions。它们的工作原理大致相同：你在仓库中添加一个文件，描述当仓库发生各种事件时应该发生什么。其中最常见的一种规则是"当有人推送代码时，运行测试套件"。当事件触发时，CI 提供者会启动虚拟机（或多个），在您的"配方"中运行命令，然后通常将结果记录在某处。你可以将它配置为在测试套件不再通过时通知你，或者在测试通过时在仓库中显示一个小徽章。
 
-## A brief aside on testing
+作为 CI 系统的一个示例，本课的网站是使用 GitHub Pages 搭建的。Pages 是一个 CI 操作，会在每次推送到 `master` 分支时运行 Jekyll 博客软件，并在特定的 GitHub 域名上提供构建后的站点。这使得我们更新网站变得非常简单——我们只需在本地做出更改，用 git 提交，然后推送。CI 会处理其余一切。
 
-Most large software projects come with a "test suite". You may already
-be familiar with the general concept of testing, but we thought we'd
-quickly mention some approaches to testing and testing terminology that
-you may encounter in the wild:
+## 关于测试的简要说明
 
- - Test suite: a collective term for all the tests
- - Unit test: a "micro-test" that tests a specific feature in isolation
- - Integration test: a "macro-test" that runs a larger part of the
-   system to check that different feature or components work _together_.
- - Regression test: a test that implements a particular pattern that
-   _previously_ caused a bug to ensure that the bug does not resurface.
- - Mocking: to replace a function, module, or type with a fake
-   implementation to avoid testing unrelated functionality. For example,
-   you might "mock the network" or "mock the disk".
+大多数大型软件项目都带有"测试套件"（_test suite_）。你可能已经熟悉测试的一般概念，但这里我们快速提及一些你在实践中可能遇到的测试方法和测试术语：
 
-# Exercises
+ - 测试套件（Test suite）：所有测试的统称。
+ - 单元测试（Unit test）：针对某一特定功能、在隔离环境下进行的"微测试"。
+ - 集成测试（Integration test）：运行系统更大一部分的"宏观测试"，用于检查不同功能或组件是否 _能够一起_ 正常工作。
+ - 回归测试（Regression test）：实现一个 _之前_ 导致过 bug 的特定模式的测试，以确保该 bug 不再出现。
+ - 模拟（Mocking）：用一个假的实现来替换某个函数、模块或类型，从而避免测试无关的功能。例如，你可以"模拟网络"或"模拟磁盘"。
 
- 1. Most makefiles provide a target called `clean`. This isn't intended
-    to produce a file called `clean`, but instead to clean up any files
-    that can be re-built by make. Think of it as a way to "undo" all of
-    the build steps. Implement a `clean` target for the `paper.pdf`
-    `Makefile` above. You will have to make the target
-    [phony](https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html).
-    You may find the [`git
-    ls-files`](https://git-scm.com/docs/git-ls-files) subcommand useful.
-    A number of other very common make targets are listed
-    [here](https://www.gnu.org/software/make/manual/html_node/Standard-Targets.html#Standard-Targets).
- 2. Take a look at the various ways to specify version requirements for
-    dependencies in [Rust's build
-    system](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html).
-    Most package repositories support similar syntax. For each one
-    (caret, tilde, wildcard, comparison, and multiple), try to come up
-    with a use-case in which that particular kind of requirement makes
-    sense.
- 3. Git can act as a simple CI system all by itself. In `.git/hooks`
-    inside any git repository, you will find (currently inactive) files
-    that are run as scripts when a particular action happens. Write a
-    [`pre-commit`](https://git-scm.com/docs/githooks#_pre_commit) hook
-    that runs `make paper.pdf` and refuses the commit if the `make`
-    command fails. This should prevent any commit from having an
-    unbuildable version of the paper.
- 4. Set up a simple auto-published page using [GitHub
-    Pages](https://pages.github.com/).
-    Add a [GitHub Action](https://github.com/features/actions) to the
-    repository to run `shellcheck` on any shell files in that
-    repository (here is [one way to do
-    it](https://github.com/marketplace/actions/shellcheck)). Check that
-    it works!
- 5. [Build your
-    own](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/building-actions)
-    GitHub action to run [`proselint`](https://github.com/amperser/proselint) or
-    [`write-good`](https://github.com/btford/write-good) on all the
-    `.md` files in the repository. Enable it in your repository, and
-    check that it works by filing a pull request with a typo in it.
+# 练习
+
+ 1. 大多数 Makefile 都提供了一个名为 `clean` 的目标。这个目标并非用来生成名为 `clean` 的文件，而是用来清理那些可以被 `make` 重新构建的所有文件。可以把它看作一种"撤销"所有构建步骤的方式。为上面 `paper.pdf` 的 `Makefile` 实现一个 `clean` 目标。你须要使该目标成为[伪目标（_phony_）](https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)。你可能会发现 [`git ls-files`](https://git-scm.com/docs/git-ls-files) 子命令很有用。下面列出了许多其他非常常见的 make 目标：[链接](https://www.gnu.org/software/make/manual/html_node/Standard-Targets.html#Standard-Targets)。
+ 2. 查看 [Rust 的构建系统](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html) 中用于为依赖指定版本要求的各种方式。大多数软件包仓库都支持类似的语法。针对每一种（caret、tilde、通配符、比较和多个版本），试着设想一个使用该类型要求的适用场景。
+ 3. Git 本身就可以充当一个简单的 CI 系统。在任何 git 仓库的 `.git/hooks` 中，你会找到（当前未激活的）文件，在特定事件发生时它们会作为脚本被运行。编写一个 [`pre-commit`](https://git-scm.com/docs/githooks#_pre_commit) 钩子，让它运行 `make paper.pdf`，并在 `make` 命令失败时拒绝提交。这样可以防止任何提交包含一个无法构建的论文版本。
+ 4. 使用 [GitHub Pages](https://pages.github.com/) 设置一个简单的自动发布页面。给仓库添加一个 [GitHub Action](https://github.com/features/actions)，用于对仓库中所有的 shell 文件运行 `shellcheck`（[一种实现方式](https://github.com/marketplace/actions/shellcheck)）。验证它是否正常工作！
+ 5. [自己构建](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/building-actions) 一个 GitHub action，用于对仓库中所有 `.md` 文件运行 [`proselint`](https://github.com/amperser/proselint) 或 [`write-good`](https://github.com/btford/write-good)。在仓库中启用它，并通过提交一个包含拼写错误的 pull request 来验证它是否正常工作。
+
+<!-- 译者新增自测题 -->
+
+ 6. 假设你在一个 Python 项目中使用了依赖锁定（lock file），某一天你运行了 `pip install --upgrade` 来更新依赖。解释为什么这可能引入构建不可复现的问题，以及如何避免它。
+ 7. 在一个 Makefile 中，如果两个目标（例如 `all` 和 `clean`）都不对应真实的磁盘文件，为什么还需要将它们的依赖标记为 `.PHONY`？

@@ -1,6 +1,6 @@
 ---
 layout: lecture
-title: "Backups"
+title: "数据备份"
 presenter: Jose
 date: 2019-01-24
 order: 2
@@ -10,94 +10,91 @@ video:
 special: true
 ---
 
-There are two types of people:
+世上有两种人：
 
-- Those who do backups
-- Those who will do backups
+- 已经做数据备份的人
+- 即将开始做数据备份的人
 
-Any data you own that you haven't backed up is data that could be gone at any moment, forever. Here we will cover some good backup basics and the pitfalls of some approaches.
+任何你没有备份的数据，都有可能随时永远消失。本章我们将介绍一些良好的备份基础知识，以及某些备份方法的陷阱。
 
-## 3-2-1 Rule
+## 3-2-1 规则
 
-The [3-2-1 rule](https://www.us-cert.gov/sites/default/files/publications/data_backup_options.pdf) is a general recommended strategy for backing up your data. It state that you should have:
+[3-2-1 规则](https://www.us-cert.gov/sites/default/files/publications/data_backup_options.pdf)是一种推荐用于数据备份的通用策略。该规则要求你至少拥有：
 
-- at least **3 copies** of your data
-- **2** copies in **different mediums**
-- **1** of the copies being **offsite**
+- 数据的至少 **3 份副本**
+- **2 份**副本存储在**不同介质**上
+- **1 份**副本放在**异地**
 
-The main idea behind this recommendation is not to put all your eggs in one basket. Having 2 different devices/disks ensures that a single hardware failure doesn't take away all your data. Similarly, if you store your only backup at home and the house burns down or gets robbed you'll lose everything! That's what the offsite copy is there for. Onsite backups give you availability and speed, offsite give you the resiliency should a disaster happen.
+这条建议背后的核心思想是不把鸡蛋放在同一个篮子里。拥有 2 台不同的设备/磁盘可以确保一次硬件故障不会带走你所有数据。类似地，如果你唯一的备份就存在家里，而房子遭火灾或被偷，你一样会失去一切！那异地副本的作用就在于此。本地备份提供可用性和速度，异地备份则在你遭遇灾难时提供弹性。
 
-## Testing your backups
+## 测试你的备份
 
-A common pitfall when performing backups is blindly trusting whatever the system says it's doing and not verifying that the data can be properly recovered. Toy Story 2 was almost lost and their backups were not working, [luck](https://www.youtube.com/watch?v=8dhp_20j0Ys) ended up saving them.
+进行备份时一个常见的陷阱是盲目信任系统报告的内容，而不验证数据是否可以正确恢复。《玩具总动员 2》几乎就因备份失效而遗失，[幸运地](https://www.youtube.com/watch?v=8dhp_20j0Ys)他们最终获救了。
 
-## Versioning
+## 版本控制
 
-You should understand that [RAID](https://en.wikipedia.org/wiki/RAID) is not a backup, and in general **mirroring is not a backup solution**. Simply syncing your files somewhere will not help in several scenarios, such as:
+你应该理解，[RAID](https://en.wikipedia.org/wiki/RAID) 不是备份，而且一般而言**镜像不是备份方案**。将文件简单地同步到别处，在以下场景中无济于事：
 
-- Data corruption
-- Malicious software
-- Deleting files by mistake
+- 数据损坏
+- 恶意软件
+- 误删文件
 
-If the changes on your data propagate to the backup then you won't be able to recover in these scenarios. Note that this is the case for a lot of cloud storage solutions like Dropbox, Google Drive, One Drive, &c. Some of them do keep deleted data around for short amounts of time but usually the interface to recover is not something you want to be using to recover large amounts of files.
+如果数据的变更传播到了备份中，那么在这些场景下你就无法恢复。请注意，许多云存储解决方案（如 Dropbox、Google Drive、OneDrive 等）就是这种情况。它们中的一些会短暂保留已删除的数据，但通常用于恢复的界面并不适合用来恢复大量文件。
 
-A proper backup system should be versioned in order to prevent this failure mode. By providing different snapshots in time one can easily navigate them to restore whatever was lost. The most widely known software of this kind is macOS Time Machine.
+一个完善的备份系统应当支持版本控制，以防止此类故障模式。通过提供不同时间点的快照，用户可以轻松地浏览它们并恢复丢失的内容。此类软件中知名度最广的是 macOS 的 Time Machine。
 
-## Deduplication
+译者补充：RAID（独立磁盘冗余阵列）通过多块磁盘的冗余排列来提高可靠性或性能，但 RAID 保护的是磁盘硬件故障，不保护文件误删、病毒破坏或数据损坏。因此 RAID 不能替代备份。
 
-However, making several copies of your data might be extremely costly in terms of disk space. Nevertheless, from one version to the next, most data will be identical and needs not be transferred again. This is where [data deduplication](https://en.wikipedia.org/wiki/Data_deduplication) comes into play, by keeping track of what has already been stored one can do **incremental backups** where only the changes from one version to the next need to be stored. This significantly reduces the amount of space needed for backups beyond the first copy.
+## 去重
 
-## Encryption
+然而，创建数据的多个副本在磁盘空间上可能极其昂贵。尽管如此，从一版本到下一版本，大部分数据是相同的，无需再次传输。这正是[数据去重](https://en.wikipedia.org/wiki/Data_deduplication)发挥作用的地方——通过跟踪已经存储的内容，可以执行**增量备份**，其中只需存储从一个版本到下一版本的变更。这显著减少了首次副本之外备份所需的磁盘空间。
 
-Since we might be backing up to untrusted third parties like cloud providers it is worth considering that if you backup your data is copied *as is* then it could potentially be looked by unwanted agents. Documents like your taxes are sensitive information that should not be backed up in plain format. To prevent this, many backup solutions offer **client side encryption** where data is encrypted before being sent to the server. That way the server cannot read the data it is storing but you can decrypt it with your secret key.
+## 加密
 
-As a side note, if your disk (or home partition) is not encrypted, then anyone that get hold of your computer can manage to override the user access controls and read your data. Modern hardware supports fast and efficient read and writes of encrypted data so you might want to consider enabling **full disk encryption**.
+由于我们可能会向不受信任的第三方（如云服务商）进行备份，值得考虑的是，如果你的数据以*原样*被复制，那么它可能会被未经授权的实体查看。诸如税务文件之类的文档是敏感信息，不应以明文格式进行备份。为了防止这种情况，许多备份解决方案提供**客户端加密**，即在数据发送到服务器之前对其进行加密。这样一来，服务器无法读取它存储的数据，但你可以使用自己的密钥对其进行解密。
 
+另外提一句，如果你的磁盘（或 home 分区）未加密，那么任何获得你计算机的人都可以绕过用户访问控制并读取你的数据。现代硬件支持快速且高效的加密数据读写，因此你可能需要考虑启用**全盘加密**。
 
-## Append only
+## 仅追加
 
-The properties reviewed so far focus on hardware failure or user mistakes but fail to address what happens if a malicious agent wanted to delete your data. Namely, say someone hacks into your system, are they able to wipe all your copies of the data you care about? If you worry about that scenario then you need some sort of append only backup solution. In general, this means having a server that will allow you to send new data but will refuse to delete existing data. Usually users have two keys, an append only key that supports  creating new backups and a full access key that also allows for deleting old backups that are no longer needed. The latter one is stored offline.
+前面讨论的属性关注的是硬件故障或用户误操作，但没有涵盖恶意攻击者想要删除你的数据时会发生什么。换言之，假设有人入侵了你的系统，他们是否能擦除你所有在乎的数据副本？如果你担心这种场景，那么你需要某种形式的**仅追加备份方案**。一般而言，这意味着拥有一个服务器，它允许你发送新数据，但会拒绝删除已有数据。通常用户拥有两把密钥：一把仅追加密钥，支持创建新备份；一把完整访问密钥，还允许删除不再需要的旧备份。后者通常离线存储。
 
-Note that this is a quite challenging scenario since you need the ability to make changes whilst still preventing a malicious user from deleting your data. Existing commercial solutions include [Tarsnap](https://www.tarsnap.com/) and [Borgbase](https://www.borgbase.com/).
+注意这是一个颇具挑战性的场景，因为你需要在防止恶意用户删除你的数据的同时，仍具备修改数据的能力。现有的商业解决方案包括 [Tarsnap](https://www.tarsnap.com/) 和 [Borgbase](https://www.borgbase.com/)。
 
+## 其他考量
 
-## Additional considerations
+其他你可能想了解的事项包括：
 
-Some other things you may want to look into are:
+- **定期备份**：过时的备份可能变得几乎无用。应为你的系统设置定期备份
+- **可启动备份**：某些程序允许你克隆整个磁盘。这样你就拥有了一个完整系统副本的镜像，可以直接从中启动。
+- **差异化备份策略**：你可能对所有数据的重视程度并非相同。你可以为不同类型的数据定义不同的备份策略。
+- **仅追加备份**：另一个考量是将仅追加操作强加到你的备份仓库，以防止恶意攻击者在获得你机器控制权时删除备份。
 
-- **Periodic backups**: outdated backups can become pretty useless. Making backups regularly should be a consideration for your system
-- **Bootable backups**: some programs allow you to clone your entire disk. That way you have an image that contains an entire copy of your system you can boot directly from.
-- **Differential backup strategies**, you may not necessarily care the same about all your data. You can define different backup policies for different types of data.
-- **Append only backups** an additional consideration is to enforce append only operations to your backup repositories in order to prevent malicious agents to delete them if they get hold of your machine.
+## 网络服务
 
+你使用的数据并非全部存放在你的硬盘上。如果你使用**网络服务**，那么有些你关心的数据（如 Google Docs 演示文稿或 Spotify 播放列表）可能存储在网上。另一个容易被遗忘的简单例子是带有网页访问功能的邮件账户，如 Gmail。在这些情况下找到合适的备份方案会稍微棘手一些。不过，许多服务允许你直接下载自己的数据，或通过 API 下载。例如针对 Gmail 的 [gmvault](https://github.com/gaubert/gmvault) 工具可以将邮件文件下载到你的计算机上。
 
-## Webservices
+## 网页
 
-Not all the data that you use lives on your hard disk. If you use **webservices**, then it might be the case that some data you care about, such as Google Docs presentations or Spotify playlists, is stored online. Another easy example that is easy to forget is email accounts with web access, such as Gmail. Figuring out a backup solution in these cases is somewhat trickier. However, there are many services that allow you to download your data, either directly or via an API. Tools such as [gmvault](https://github.com/gaubert/gmvault) for Gmail are available to download the email files to your computer.
+类似地，一些高质量的内容以网页的形式存在于网上。如果所述内容是静态的，只需保存网站及其所有附件即可轻松进行备份。另一个替代方案是 [Wayback Machine](https://archive.org/web/)，这是一个由 [Internet Archive](https://archive.org/) 管理的庞大互联网数字档案库——Internet Archive 是一家专注于保存各类媒体的非营利组织。Wayback Machine 允许你捕获和归档网页，并稍后检索为该网站存档的所有快照。如果你发现它有用，请考虑[捐赠](https://archive.org/donate/)给该项目。
 
+## 资源
 
-## Webpages
+以下是一些我们使用过并真诚推荐的良好备份程序和服务：
 
-Similarly, some high quality content can be found online in the form of webpages. If said content is static one can easily back it up by just saving the website and all of its attachments. Another alternative is the [Wayback Machine](https://archive.org/web/), a massive digital archive of the World Wide Web managed by the [Internet Archive](https://archive.org/), a non profit organization focused on the preservation of all sorts of media. The Wayback Machine allows you to capture and archive webpages being able to later retrieve all the snapshots that have been archived for that website. If you find it useful, consider [donating](https://archive.org/donate/) to the project.
+- [Tarsnap](https://www.tarsnap.com/) - 去重、加密的在线备份服务，专为真正的 paranoid 用户设计。
+- [Borg Backup](https://borgbackup.readthedocs.io) - 支持压缩和认证加密的去重备份程序。如果你需要云服务商，[BorgBase](https://www.borgbase.com/) 是一个热门选择。
+- [rsync](https://rsync.samba.org/) 是一个提供快速增量文件传输的工具。它不是完整的备份方案。
+- [rclone](https://rclone.org/) 类似 rsync，但面向云存储提供商，如 Amazon S3、Dropbox、Google Drive、rsync.net 等。支持远程文件夹的客户端加密。
 
+## 练习
 
-## Resources
+1. 思考一下你（没有）如何备份你的数据，并着手修复/改进它。
 
-Some good backup programs and services we have used and can honestly recommend:
+1. 找出如何备份你的邮件账户
 
-- [Tarsnap](https://www.tarsnap.com/) - deduplicated, encrypted online backup service for the truly paranoid.
-- [Borg Backup](https://borgbackup.readthedocs.io) - deduplicated backup program that supports compression and authenticated encryption. If you need a cloud provider [BorgBase](https://www.borgbase.com/) is one popular option.
-- [rsync](https://rsync.samba.org/) is a utility that provides fast incremental file transfer. It is not a full backup solution.
-- [rclone](https://rclone.org/) like rsync but for cloud storage providers such as Amazon S3, Dropbox, Google Drive, rsync.net, &c. Supports client side encryption of remote folders.
+1. 选择一个你经常使用的网络服务（Spotify、Google Music 等），找出备份你数据的选项。通常人们已经根据可用的 API 制作了工具（例如 [youtube-dl](https://ytdl-org.github.io/youtube-dl/)）解决方案。
 
-## Exercises
+1. 想一个多年来你反复访问的网站，在 [archive.org](https://archive.org/web/) 上查找它，它有多少个版本？
 
-1. Consider how you are (not) backing up your data and look into fixing/improving that.
-
-1. Figure out how to backup your email accounts
-
-1. Choose a webservice you use often (Spotify, Google Music, etc.) and figure out what options for backing up your data are. Often people have already made tools (such as [youtube-dl](https://ytdl-org.github.io/youtube-dl/)) solutions based on available APIs.
-
-1. Think of a website you have visited repeatedly over the years and look it up in [archive.org](https://archive.org/web/), how many versions does it have?
-
-1. One way to efficiently implement deduplication is to use hardlinks. Whereas symbolic link (also called a soft link or a symlink) is a file that points to another file or folder, a hardlink is a exact copy of the pointer (it uses the same inode and points to the same place in the disk). Thus if the original file is removed a symlink stops working whereas a hard link doesn't. However, hardlinks only work for files. Try using the command `ln` to create hard links and compare them to symlinks created with `ln -s`. (In macOS you will need to install the gnu coreutils or the hln package).
+1. 高效实现去重的方法之一是使用硬链接。符号链接（也称为软链接或 symlink）是一个指向另一个文件或文件夹的文件，而硬链接是指针的精确副本（它使用相同的 inode 并指向磁盘上的同一位置）。因此，如果原始文件被删除，symlink 将不再工作，而硬链接不会。然而，硬链接仅对文件有效。尝试使用命令 `ln` 创建硬链接，并将它们与使用 `ln -s` 创建的符号链接进行比较。（在 macOS 上，你需要安装 gnu coreutils 或 hln 包）。

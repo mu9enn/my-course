@@ -1,8 +1,8 @@
 ---
 layout: lecture
-title: "Course Overview + Introduction to the Shell"
+title: "课程概览 + Shell 入门"
 description: >
-  Learn about the motivation for this class, and get started with the shell.
+  了解本课程的学习动机，并开始使用 Shell。
 thumbnail: /static/assets/thumbnails/2026/lec1.png
 date: 2026-01-12
 ready: true
@@ -11,156 +11,70 @@ video:
   id: MSgoeuMqUmU
 ---
 
-# Who are we?
+# 我们是谁？
 
-This class is co-taught by [Anish](https://anish.io/),
-[Jon](https://thesquareplanet.com/), and [Jose](http://josejg.com/). We
-are all ex-MIT students who started this MIT IAP class back when we were
-students. You can reach us collectively at
-[missing-semester@mit.edu](mailto:missing-semester@mit.edu).
+本课程由 [Anish](https://anish.io/)、[Jon](https://thesquareplanet.com/) 和 [Jose](http://josejg.com/) 共同授课。我们都曾是 MIT 的学生，在还是学生时发起了这门 MIT IAP（独立活动期）课程。你可以通过 [missing-semester@mit.edu](mailto:missing-semester@mit.edu) 联系我们。
 
-We are not paid to teach this class, and do not monetize the class in
-any way. We make all the [course
-materials](https://missing.csail.mit.edu/) and [recordings of the
-lectures](https://www.youtube.com/@MissingSemester) freely available
-online. If you want to support our work, the best way to do so is to
-simply spread the word about the class. If you're a company, university,
-or other organization that runs this content past larger cohorts, please
-send us experience reports/testimonials by email so we get to hear about
-it :)
+我们不以教授这门课程获取报酬，也不以任何方式从课程中获利。我们把所有 [课程材料](https://missing.csail.mit.edu/) 和 [讲座录像](https://www.youtube.com/@MissingSemester) 都免费放在网上。如果你想支持我们的工作，最好的方式就是在你身边传播关于这门课程的消息。如果你是某个公司、大学或其他组织，带领大批成员学习了这些内容，请通过邮件发送你的使用体验或推荐给我们，这样我们才能听到相关反馈 :)
 
-# Motivation
+# 学习动机
 
-As computer scientists, we know that computers are great at aiding in
-repetitive tasks. However, far too often, we forget that this applies
-just as much to our _use_ of the computer as it does to the computations
-we want our programs to perform. We have a vast range of tools available
-at our fingertips that enable us to be more productive and solve more
-complex problems when working on any computer-related problem. Yet many
-of us utilize only a small fraction of those tools; we only know enough
-magical incantations by rote to get by, and blindly copy-paste commands
-from the internet when we get stuck.
+作为计算机科学的从业人员，我们很清楚计算机在辅助完成重复性任务方面非常出色。然而，我们往往忘记了这一点同样适用于我们对计算机的 _使用方式_，而不仅仅是我们希望程序执行的那些计算。当我们处理任何与计算机相关的问题时，手边有大量的工具可以让我们更高效地工作、解决更复杂的问题。但我们中的很多人只使用了这些工具中的一小部分——我们只会凭死记硬背几个"魔法咒语"来应付日常，一旦卡住就盲目地从网上复制粘贴命令。
 
-This class is an attempt to [address this](/about/).
+本课程就是 [针对这一问题](/about/) 做出的尝试。
 
-We want to teach you how to make the most of the tools you know, show
-you new tools to add to your toolbox, and hopefully instill in you some
-excitement for exploring (and perhaps building) more tools on your own.
-This is what we believe to be the missing semester from most Computer
-Science curricula.
+我们希望你学会充分利用已有的工具、将新工具添加到你的工具箱中，并希望在这个过程中激发你自己去探索（也许甚至是构建）更多工具的热情。我们认为，这正是大多数计算机科学课程中缺失的那一门。
 
-# Class structure
+# 课程结构
 
-The not-for-credit class consists of nine 1-hour lectures, each one
-centering on a [particular topic](/2026/). The lectures are largely
-independent, though as the semester goes on we will presume that you are
-familiar with the content from the earlier lectures. We have lecture
-notes online, but there may be content covered in class (e.g. in the
-form of demos) that may not be in the notes. As for past years, we will
-be recording lectures and posting the recordings
-[online](https://www.youtube.com/@MissingSemester).
+这门不计学分的课程由九场每场 1 小时的讲座组成，每场围绕 [一个特定主题](/2026/) 展开。这些讲座在很大程度上是相互独立的，但随着学期的推进，我们会假定你已经熟悉了之前讲座的内容。我们在网上提供讲座笔记，但课堂上的某些内容（比如演示环节）可能不会出现在笔记中。与往年一样，我们会录制讲座并将录像发布在 [网上](https://www.youtube.com/@MissingSemester)。
 
-We are trying to cover a lot of ground over the course of just a few
-1-hour lectures, so the lectures are fairly dense. To allow you some
-time to get familiar with the content at your own pace, each lecture
-includes a set of exercises that guide you through the lecture's key
-points. We will not be running dedicated office hours, but we encourage
-you to ask questions on the [OSSU Discord](https://ossu.dev/#community),
-in `#missing-semester-forum`, or email us at
-[missing-semester@mit.edu](mailto:missing-semester@mit.edu).
+我们试图在短短几场 1 小时的讲座中覆盖大量内容，因此讲座的信息密度相当大。为了让你有时间以自己的节奏熟悉内容，每场讲座都包含一组练习，引导你掌握本课的关键要点。我们不会开设专门的答疑时间，但鼓励你在 [OSSU Discord](https://ossu.dev/#community) 的 `#missing-semester-forum` 频道或发送邮件至 [missing-semester@mit.edu](mailto:missing-semester@mit.edu) 提问。
 
-Due to the limited time we have, we won't be able to cover all the tools
-in the same level of detail a full-scale class might. Where possible, we
-will try to point you towards resources for digging further into a tool
-or topic, but if something particularly strikes your fancy, don't
-hesitate to reach out to us and ask for pointers!
+由于时间有限，我们无法以全面课程可能达到的详细程度覆盖所有工具。在适当的地方，我们会尝试为你指引进一步深入某个工具或主题的额外资源。如果有什么特别引起你兴趣的内容，请不要犹豫，直接联系我们询问更多方向！
 
-Finally, if you have feedback about the class, please send it to us by
-email at [missing-semester@mit.edu](mailto:missing-semester@mit.edu).
+最后，如果你对本课程有任何反馈，请通过邮件发送至 [missing-semester@mit.edu](mailto:missing-semester@mit.edu)。
 
-# Topic 1: The Shell
+# 主题一：Shell
 
 {% comment %}
 lecturer: Jon
 {% endcomment %}
 
-## What is the shell?
+## 什么是 Shell？
 
-Computers these days have a variety of interfaces for giving them
-commands; fanciful graphical user interfaces, voice interfaces, AR/VR,
-and more recently: LLMs. These are great for 80% of use-cases, but they
-are often fundamentally restricted in what they allow you to do — you
-cannot press a button that isn't there or give a voice command that
-hasn't been programmed. To take full advantage of the tools your
-computer provides, we have to go old-school and drop down to a textual
-interface: The Shell.
+如今的计算机提供了多种方式来向它们发出指令：花哨的图形用户界面（GUI）、语音界面、AR/VR，以及最近越来越火的 LLM。这些方式对于 80% 的使用场景来说都很不错，但它们在很多方面本质上受到限制——你无法点击一个不存在的按钮，也无法执行尚未被编程的语音指令。要想充分利用计算机提供的所有工具，我们需要走回老路，使用基于文本的界面：Shell。
 
-Nearly all platforms you can get your hands on have a shell in one form
-or another, and many of them have several shells for you to choose from.
-While they may vary in the details, at their core they are all roughly
-the same: they allow you to run programs, give them input, and inspect
-their output in a semi-structured way.
+几乎所有你能接触到的平台都至少有一种 shell，其中很多平台还提供多种 shell 供你选择。它们虽然在细节上可能有所不同，但核心都是大致相同的：它们让你能以半结构化的方式运行程序、给程序提供输入，并检查程序的输出。
 
-To open a shell _prompt_ (where you can type commands), you first need a
-_terminal_, which is the visual interface to a shell. Your device
-probably shipped with one installed, or you can install one fairly
-easily:
+要在 shell _提示符_（你输入命令的地方）下操作，你需要先打开一个_终端_（terminal），即 shell 的可视化界面。你的设备可能预装了终端，或者你可以相当轻松地安装一个：
 
-- **Linux:**
-  Press `Ctrl + Alt + T` (works on most distributions). Or search for
-  "Terminal" in your applications menu.
-- **Windows:**
-  Press `Win + R`, type `cmd` or `powershell`, and press Enter.
-  Alternatively, search "Terminal" or "Command Prompt" in the Start menu.
-- **macOS:**
-  Press `Cmd + Space` to open Spotlight, type "Terminal", and press Enter.
-  Or find it in Applications → Utilities → Terminal.
+- **Linux：**
+  按 `Ctrl + Alt + T`（在大多数发行版上有效）。或者在你的应用程序菜单中搜索"Terminal"。
+- **Windows：**
+  按 `Win + R`，输入 `cmd` 或 `powershell`，然后按 Enter。或者在"开始"菜单中搜索"Terminal"或"Command Prompt"。
+- **macOS：**
+  按 `Cmd + Space` 打开 Spotlight，输入"Terminal"，然后按 Enter。或者在"应用程序 → 实用工具 → 终端"中找到它。
 
-On Linux and macOS, this will usually open the Bourne Again SHell, or
-"bash" for short. This is one of the most widely used shells, and its
-syntax is similar to what you will see in many other shells. On Windows,
-you'll be greeted by the "batch" or "powershell" shells, depending on
-which command you ran. These are Windows-specific, and not what we'll be
-focusing on in this class, although it has analogues for most of what
-we'll be teaching. You'll instead want the [Windows Subsystem for
-Linux](https://docs.microsoft.com/en-us/windows/wsl/) or a Linux virtual
-machine.
+在 Linux 和 macOS 上，这通常会打开 Bourne Again SHell，简称"bash"。这是使用最广泛的 shell 之一，它的语法与其他许多 shell 中的语法类似。在 Windows 上，根据你执行的命令，你会看到"batch"或"powershell" shell。这些是 Windows 专有的 shell，不是本课程的重点，尽管我们教授的大部分内容在它们中都有对应的功能。如果你想获得与本课程教学环境一致的体验，建议使用 [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) 或一个 Linux 虚拟机。
 
-Other shells exist, often with many ergonomic improvements over bash
-(fish and zsh are among the most common). While these are very popular
-(all the instructors use one), they're nowhere near as ubiquitous as
-bash, and lean on many of the same concepts, so we won't be focusing on
-those in this lecture.
+当然还有其他 shell 存在，其中许多在用户体验方面比 bash 有诸多改进（fish 和 zsh 是其中最常用的）。尽管这些 shell 非常流行（所有授课讲师都在使用），但它们远不如 bash 那样无处不在，并且它们与 bash 共用许多相同的概念，因此我们在讲座中不会将它们作为重点。
 
-## Why should you care about it?
+## 你为什么应该关心它？
 
-The shell is not just (usually) much faster than "clicking around", it
-also comes with expressive power you can't easily find in any one
-graphical program. As we'll see, the shell gives you the ability to
-_combine_ programs in creative ways to automate nearly any task.
+shell 不仅通常比"在图形界面上点点点"快得多，还具备你在任何一个图形程序中很难找到的表达能力。正如我们稍后将看到的，shell 让你能够以创造性地_组合_各种程序，从而自动化几乎所有任务。
 
-Knowing your way around a shell is also very useful to navigate the
-world of open-source software (which often come with install
-instructions that require the shell), building continuous integration
-for your software projects (as described in the [Code Quality
-lecture](/2026/code-quality/)), and debugging errors when other programs
-fail.
+熟练使用 shell 也对于导航开源软件世界非常有用（很多开源软件的安装说明都需要 shell），为你的软件项目搭建持续集成（如 [代码质量讲座](/2026/code-quality/) 所述），以及在其它程序出错时进行调试。
 
-## Navigating in the shell
+## 在 shell 中导航
 
-When you launch your terminal, you will see a _prompt_ that often looks
-a little like this:
+当你启动终端时，你会看到一个类似于这样的_提示符_（prompt）：
 
 ```console
 missing:~$
 ```
 
-This is the main textual interface to the shell. It tells you that you
-are on the machine `missing` and that your "current working directory",
-or where you currently are, is `~` (short for "home"). The `$` tells you
-that you are not the root user (more on that later). At this prompt you
-can type a _command_, which will then be interpreted by the shell. The
-most basic command is to execute a program:
+这是 shell 的主要文本界面。它告诉你：你正在 `missing` 这台机器上，你的"当前工作目录"（current working directory），也就是你当前所在的位置，是 `~`（"home"的缩写）。`$` 告诉你你不是 root 用户（稍后会讲到更多内容）。在这个提示符下，你可以输入一个_命令_，然后由 shell 来解释它。最基础的一条命令就是执行程序：
 
 ```console
 missing:~$ date
@@ -168,43 +82,20 @@ Fri 10 Jan 2020 11:49:31 AM EST
 missing:~$
 ```
 
-Here, we executed the `date` program, which (perhaps unsurprisingly)
-prints the current date and time. The shell then asks us for another
-command to execute. We can also execute a command with _arguments_:
+在这里，我们执行了 `date` 程序，它（也许并不令人意外地）打印出了当前的日期和时间。然后 shell 会等待我们输入下一条要执行的命令。我们还可以为命令_提供参数_（arguments）：
 
 ```console
 missing:~$ echo hello
 hello
 ```
 
-In this case, we told the shell to execute the program `echo` with the
-argument `hello`. The `echo` program simply prints out its arguments.
-The shell parses the command by splitting it by whitespace, and then
-runs the program indicated by the first word, supplying each subsequent
-word as an argument that the program can access. If you want to provide
-an argument that contains spaces or other special characters (e.g., a
-directory named "My Photos"), you can either quote the argument with `'`
-or `"` (`"My Photos"`), or escape just the relevant characters with `\`
-(`My\ Photos`).
+在这个例子中，我们告诉 shell 执行 `echo` 程序，并传入参数 `hello`。`echo` 程序只是把它的参数打印出来。shell 通过将命令按空白字符（空格、制表符）分割来解析命令，然后执行由第一个单词指示的程序，并将后续的每个单词作为该程序可以访问的参数传入。如果你要传入的参数中包含空格或其他特殊字符（比如名为"My Photos"的目录），你可以用 `'` 或 `"` 将参数引起来（`"My Photos"`），或者用 `\` 对需要转义的字符进行转义（`My\ Photos`）。
 
-Perhaps the most important command when you're starting out is `man`,
-short for "manual". The `man` program, among other things, lets you look
-up more information about any command on your system. For example, if
-you run `man date`, it'll explain what `date` is, and all of the various
-arguments you can pass it to alter its behavior. You can also usually
-get a short version of the help by passing `--help` as an argument to
-most commands.
+也许你在起步阶段最重要的命令就是 `man`，它是"manual"（手册）的缩写。`man` 程序可以帮你查阅关于系统上任何命令的更多信息。例如，运行 `man date` 会解释 `date` 是什么，以及你可以传递给它的各种参数来改变其行为。此外，对于大多数命令，通常也可以通过传入 `--help` 参数来获取简短的帮助信息。
 
-> Consider installing and using [`tldr`](https://tldr.sh/) in addition
-> to `man`, as it shows you common usage examples right there in the
-> terminal. LLMs are also usually very good at explaining how commands
-> work and how you can call them to achieve what you want to accomplish.
+> 建议安装并使用 [`tldr`](https://tldr.sh/) 作为 `man` 的补充——它会在终端中直接向你展示常见的用法示例。LLM 通常也很擅长解释命令是如何工作的，以及如何调用它们来实现你想要完成的目标。
 
-After `man`, the most important command to learn is `cd`, or "change
-directory". This command is actually built into the shell, and isn't a
-separate program (i.e., `which cd` will say "no cd found"). You pass it
-a path, and that path becomes your current working directory. You'll
-also see the working directory reflected in the shell prompt:
+在 `man` 之后，你需要学习的下一个最重要的命令就是 `cd`，即"change directory"（更改目录）。这个命令实际上内置在 shell 本身中，而不是一个独立的程序（也就是说，`which cd` 会返回"no cd found"）。你给它传入一个路径，它就会把你的当前工作目录切换为那个路径。你也会在 shell 提示符中看到工作目录的反映：
 
 ```console
 missing:~$ cd /bin
@@ -213,23 +104,11 @@ missing:/$ cd ~
 missing:~$
 ```
 
-> Note that the shell comes with auto-completion, so you can often
-> complete paths faster by pressing `<TAB>`!
+> 注意：shell 自带自动补全功能，因此你经常可以通过按下 `<TAB>` 来更快地补全路径！
 
-A lot of commands operate on the current working directory if nothing
-else is specified. If you're ever unsure where you are, you can run
-`pwd` or print the `$PWD` environment variable (with `echo $PWD`), both
-of which produce the current working directory.
+如果没有额外指定参数，很多命令会在当前工作目录上操作。如果你不确定自己当前在哪个位置，可以运行 `pwd` 或打印 `$PWD` 环境变量（使用 `echo $PWD`），两者都会显示当前工作目录。
 
-The current working directory also comes in handy in that it allows us to
-use _relative_ paths. All the paths we've seen so far have been
-_absolute_ --- they start with `/` and give the full set of directories
-needed to navigate to some location from the root of the file system
-(`/`). In practice, you'll more commonly work with relative paths; so
-called because they are relative to the current working directory. In a
-relative path (anything _not_ starting with `/`), the first path
-component is looked up in the current working directory, and subsequent
-components traverse as usual. For example:
+当前工作目录还有一个便利之处：它让我们可以使用_相对_路径。我们之前看到的所有路径都是_绝对_路径——它们以 `/` 开头，并给出了从文件系统根目录导航到某个位置所需的所有完整目录。而在实际使用中，你更常见的是使用相对路径——之所以称为"相对"，是因为它们是相对于当前工作目录而言的。在一个相对路径（任何 _不是_ 以 `/` 开头的路径）中，第一个路径组件会在当前工作目录中查找，后续组件则按照正常方式遍历。例如：
 
 ```console
 missing:~$ cd /
@@ -237,9 +116,7 @@ missing:/$ cd bin
 missing:/bin$
 ```
 
-There are also two "special" components that exist in every directory:
-`.` and `..`. `.` is "this directory", and `..` is "the parent
-directory". So:
+在每个目录中还有两个"特殊"组件：`.` 和 `..`。`.` 表示"这个目录本身"，`..` 表示"父目录"。所以：
 
 ```console
 missing:~$ cd /
@@ -247,21 +124,13 @@ missing:/$ cd bin/../bin/../bin/././../bin/..
 missing:/$
 ```
 
-You can usually use absolute and relative paths interchangeably for any
-command argument, just keep in mind what your current working directory
-is when using a relative one!
+在大多数情况下，你可以在命令的参数中交替使用绝对路径和相对路径，只要在使用相对路径时记住你当前的工作目录是什么即可！
 
-> Consider installing and using
-> [`zoxide`](https://github.com/ajeetdsouza/zoxide) to speed up your
-> `cd`ing --- `z` will remember the paths you frequently visit and let
-> you access with less typing.
+> 建议安装并使用 [`zoxide`](https://github.com/ajeetdsouza/zoxide) 来加速你的 `cd` 操作——`z` 会记住你经常访问的路径，让你用更少的输入量就能访问到它们。
 
-## What is available in the shell?
+## shell 中有哪些工具？
 
-But how does the shell know how to find programs like `date` or `echo`?
-If the shell is asked to execute a command, it consults an _environment
-variable_ called `$PATH` that lists which directories the shell should
-search for programs when it is given a command:
+但 shell 是怎么知道如何找到 `date` 或 `echo` 这样的程序的呢？当 shell 被要求执行一个命令时，它会查阅一个名为 `$PATH` 的_环境变量_（environment variable），该变量列出了 shell 在收到命令时需要搜索程序的目录：
 
 ```console
 missing:~$ echo $PATH
@@ -272,122 +141,70 @@ missing:~$ /bin/echo $PATH
 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ```
 
-When we run the `echo` command, the shell sees that it should execute
-the program `echo`, and then searches through the `:`-separated list of
-directories in `$PATH` for a file by that name. When it finds it, it
-runs it (assuming the file is _executable_; more on that later). We can
-find out which file is executed for a given program name using the
-`which` program. We can also bypass `$PATH` entirely by giving the
-_path_ to the file we want to execute.
+当我们运行 `echo` 命令时，shell 看到它应该执行 `echo` 这个程序，然后在 `$PATH` 中以 `:` 分隔的目录列表中搜索同名的文件。找到之后，它就会运行该文件（前提是文件_可执行_——稍后会讲到更多内容）。我们可以使用 `which` 程序来查看给定程序名对应执行的是哪个文件。我们也可以绕过 `$PATH` 的搜索，直接传入我们想要执行的文件的_路径_。
 
-This also gives a clue for how we can determine _all_ the programs we're
-able to execute in the shell: by listing the contents of all the
-directories on `$PATH`. We can do this by passing a given directory path
-to the `ls` program, which lists files:
+这也给了我们一个线索，用于确定_所有_能够在 shell 中执行的程序——列出 `$PATH` 中所有目录的内容即可。我们可以通过将某个目录路径传入 `ls` 程序来做到这一点，`ls` 用于列出文件：
 
 ```console
 missing:~$ ls /bin
 ```
 
-> Consider installing and using [`eza`](https://eza.rocks/) for a more
-> human-friendly `ls`.
+> 建议安装并使用 [`eza`](https://eza.rocks/) 作为更人性化的 `ls`。
 
-This will, on most computers, print a _lot_ of programs, but we'll only
-focus on some of the most important ones here. First, some simple ones:
+这将在大多数计算机上打印出_大量_程序，但这里我们只关注一些最重要的。首先是一些简单的：
 
-- `cat file`, which prints the contents of `file`.
-- `sort file`, which prints out the lines of `file` in sorted order.
-- `uniq file`, which eliminates consecutive duplicate lines from `file`.
-- `head file` and `tail file`, which respectively print the first and
-  last few lines of `file`.
+- `cat file`：打印 `file` 的内容。
+- `sort file`：按排序顺序打印 `file` 中的各行。
+- `uniq file`：去除 `file` 中连续的重复行。
+- `head file` 和 `tail file`：分别打印 `file` 开头和结尾的几行。
 
-> Consider installing and using [`bat`](https://github.com/sharkdp/bat)
-> over `cat` for syntax highlighting and scrolling.
+> 建议安装并使用 [`bat`](https://github.com/sharkdp/bat) 替代 `cat`——它提供语法高亮和滚动功能。
 
-There's also `grep pattern file`, which finds lines matching `pattern`
-in `file`. This one deserves slightly more attention as it's both _very_
-useful and sports a wider array of features than one may expect.
-`pattern` is actually a _regular expression_ which can express very
-complex patterns --- we'll [cover
-those](/2026/code-quality/#regular-expressions)
-in the code quality lecture. You can also specify a directory instead of a
-file (or leave it off for `.`) and pass `-r` to recursively search all
-the files in a directory.
+还有 `grep pattern file`，它会在 `file` 中查找匹配 `pattern` 的行。这个命令值得稍微多讲一点，因为它_非常_有用，而且它的功能也比很多人预期的要丰富得多。这里的 `pattern` 实际上是一个_正则表达式_（regular expression），可以表达非常复杂的模式——我们将在 [代码质量讲座](/2026/code-quality/#regular-expressions) 中[深入介绍](/2026/code-quality/#regular-expressions)。你也可以传入一个目录而非文件（或者对当前目录省略它传 `.`）并加上 `-r` 参数来递归搜索目录下的所有文件。
 
-> Consider installing and using
-> [`ripgrep`](https://github.com/BurntSushi/ripgrep) over `grep` for a
-> faster and more human-friendly (but less portable) alternative.
-> `ripgrep` will also recursively search the current working directory
-> by default!
+> 建议安装并使用 [`ripgrep`](https://github.com/BurntSushi/ripgrep) 替代 `grep`——它更快、对用户更友好（但可移植性较差）。`ripgrep` 还会默认递归搜索当前工作目录！
 
-There are also some very useful tools with a slightly more complicated
-interface. First among those is `sed`, which is a programmatic file
-editor. It has its own programming language for making automated edits
-to files, but the most common use of it is:
+还有一些功能稍复杂但也非常有用的工具。其中首推的是 `sed`，这是一个程序化的文件编辑器。它有自己的一套编程语言来对文件进行自动化编辑，但最常用的用法是：
 
 ```console
 missing:~$ sed -i 's/pattern/replacement/g' file
 ```
 
-This replaces all instances of `pattern` with `replacement` in `file`.
-The `-i` indicates that we want the substitutions to happen inline (as
-opposed to leaving `file` unmodified and printing the substituted
-contents). The `s/` is the way to express in the sed programming
-language that we want to do a substitution. The `/` separates the
-pattern from the replacement. And the trailing `/g` indicates that we
-want to replace _all_ occurrences on each line rather than just the
-first. As with `grep`, `pattern` here is a regular expression, which
-gives you significant expressive power. Regular expression substitutions
-also allow `replacement` to refer back to parts of the matched pattern;
-we'll see an example of that in a second.
+这会将 `file` 中所有 `pattern` 的实例替换为 `replacement`。`-i` 表示我们希望替换在原文件中原地进行（而不是保持 `file` 不变、仅输出替换后的内容）。`s/` 是在 sed 编程语言中表达"我们要做替换"的方式。`/` 分隔了模式（pattern）和替换文本（replacement）。尾部的 `/g` 表示我们希望替换每一行上的_所有_匹配项，而不仅仅是第一个。与 `grep` 一样，这里的 `pattern` 是一个正则表达式，赋予了您很强的表达能力。正则表达式替换还允许 `replacement` 部分引用匹配模式中捕获的子串；我们很快就会看到一个例子。
 
-Next, we have `find`, which lets you find files (recursively) that match
-certain conditions. For example:
+接下来是 `find`，它可以用来查找（递归地）符合某些条件的文件。例如：
 
 ```console
 missing:~$ find ~/Downloads -type f -name "*.zip" -mtime +30
 ```
 
-Finds ZIP files in the download directory that are older than 30 days.
+查找下载目录中 30 天之前创建的 ZIP 文件。
 
 ```console
 missing:~$ find ~ -type f -size +100M -exec ls -lh {} \;
 ```
 
-Finds files larger than 100M in your home directory and lists them. Note
-that `-exec` takes a _command_ terminated with a stand-alone `;` (which
-we need to escape much like a space) where `{}` is replaced with each
-matching file path by `find`.
+查找主目录中大于 100M 的文件并列出它们。注意 `-exec` 接收一个以单独 `;` 结束的_命令_（这里的 `;` 需要像空格一样转义），其中 `{}` 会被 `find` 替换为每个匹配文件的路径。
 
 ```console
 missing:~$ find . -name "*.py" -exec grep -l "TODO" {} \;
 ```
 
-Finds any `.py` files with TODO items in them.
+查找所有包含 TODO 标记的 `.py` 文件。
 
-The syntax of `find` can be a little daunting, but hopefully this gives
-you a sense of how useful it can be!
+`find` 的语法可能看起来有点吓人，但希望这些例子能让你感受到它的有用之处！
 
-> Consider installing and using [`fd`](https://github.com/sharkdp/fd)
-> instead of `find` for a more human-friendly (but less portable!)
-> experience.
+> 建议安装并使用 [`fd`](https://github.com/sharkdp/fd) 替代 `find`——它更人性化（但可移植性较差！）。
 
-Next on the docket is `awk`, which, like `sed`, has its own programming
-language. Where `sed` is built for editing files, `awk` is built for
-parsing them. By far the most common use of `awk` is for data files with
-a regular syntax (like CSV files) where you want to extract only certain
-parts of every record (i.e., line):
+接下来轮到 `awk`，和 `sed` 一样，它也有自己的编程语言。`sed` 专为编辑文件而设计，而 `awk` 专为_解析_文件而设计。`awk` 最典型的用途是处理具有规整格式的数据文件（比如 CSV 文件），从中提取每个记录（即每一行）的某些特定部分：
 
 ```console
 missing:~$ awk '{print $2}' file
 ```
 
-Prints the second whitespace-separated column of every line of `file`.
-If you add `-F,`, it'll print the second comma-separated column of every
-line. `awk` can do much more --- filtering rows, computing aggregates,
-and more --- see the exercises for a taste.
+打印 `file` 中每一行的第二个空白符分隔的列。如果加上 `-F,` 参数，它会打印每一行的第二个逗号分隔的列。`awk` 能做更多的事情——过滤行、计算聚合值等等——详见练习。
 
-Putting these tools together, we can do fancy things like:
+将这些工具组合在一起，我们可以做一些很酷的事情，比如：
 
 ```console
 missing:~$ ssh myserver 'journalctl -u sshd -b-1 | grep "Disconnected from"' \
@@ -398,76 +215,29 @@ missing:~$ ssh myserver 'journalctl -u sshd -b-1 | grep "Disconnected from"' \
 postgres,mysql,oracle,dell,ubuntu,inspur,test,admin,user,root
 ```
 
-This grabs SSH logs from a remote server (we'll talk more about `ssh` in
-the next lecture), searches for disconnect messages, extracts the
-username from each such message, and prints the top 10 usernames
-comma-separated. All in one command! We'll leave dissecting each step as
-an exercise.
+这条命令从远程服务器抓取 SSH 日志（`ssh` 我们将在下一讲中详细介绍），搜索断开连接的消息，从每条消息中提取用户名，并以逗号分隔的形式打印出使用频率最高的 10 个用户名。全部在一个命令中完成！我们将每一步的分析留作练习。
 
-## The shell language (bash)
+## Shell 语言（bash）
 
-The previous example introduced a new concept: pipes (`|`). These let
-you string together the output of one program with the input of another.
-This works because most command-line programs will operate on their
-"standard input" (where your keystrokes normally go) if no `file`
-argument is given. `|` takes the "standard output" (what normally gets
-printed to your terminal) of the program before the `|` and makes it be
-the standard input of the program after the `|`. This allows you to
-_compose_ shell programs, and it's part of what makes the shell such a
-productive environment to work in!
+上面的例子引入了一个新概念：_管道_（pipes, `|`）。它让你能将一个程序的输出"串接"到另一个程序的输入中。这之所以可行，是因为大多数命令行程序在 _没有_ 给出 `file` 参数时，会对它们的"标准输入"（standard input，即你的键盘输入默认进入的地方）进行操作。`|` 将 `|` 前面程序的"标准输出"（standard output，即通常打印到终端的内容）作为 `|` 后面程序的标准输入。这让你可以_组合_ shell 程序，也是让 shell 成为如此高效的工作环境的一部分原因！
 
-In fact, most shells implement a full programming language (like bash),
-just like Python or Ruby. It has variables, conditionals, loops, and
-functions. When you run commands in your shell, you are really writing a
-small bit of code that your shell interprets. We won't teach you all of
-bash today, but there are some bits you'll find particularly useful:
+实际上，大多数 shell 都实现了一套完整的编程语言（比如 bash），与 Python 或 Ruby 类似。它有变量、条件判断、循环和函数。当你在 shell 中运行命令时，你实际上是在编写一小段由 shell 解释执行的代码。我们今天不会教你所有 bash 的知识，但有一些你会特别有用的部分：
 
-First, redirects: `>file` lets you take the standard output of a program
-and write it to `file` instead of to your terminal. This makes it easier
-to analyze after the fact. `>>file` will append to `file` rather than
-overwrite it. There's also `<file` which tells the shell to read from
-`file` instead of from your keyboard as the standard input to a program.
+首先是重定向（redirects）：`>file` 可以将程序的标准输出写入 `file` 而不是终端，方便事后分析。`>>file` 会_追加_到 `file` 而不是覆盖它。还有 `<file`，它告诉 shell 从 `file` 读取而非从你的键盘读取，作为程序的标准输入。
 
-> This is a good time to mention the `tee` program. `tee` will print
-> standard input to standard output (just like `cat`!), but will _also_
-> write it to a file. So `verbose cmd | tee verbose.log | grep CRITICAL`
-> will preserve the full verbose log to a file while keeping your
-> terminal clean!
+> 这里值得顺便提一下 `tee` 程序。`tee` 会将标准输入打印到标准输出（和 `cat` 一样！），但_也会_将它写入一个文件。因此 `verbose cmd | tee verbose.log | grep CRITICAL` 会在全量详细日志保存到一个文件的同时，保持你的终端界面干净！
 
-Next, conditionals: `if command1; then command2; command3; fi` will
-execute `command1`, and if it doesn't result in an error, will run
-`command2` and `command3`. You can also have an `else` branch if you
-wish. The most common command to use as `command1` is the `test`
-command, often abbreviated simply as `[`, which lets you evaluate
-conditions like "does a file exist" (`test -f file` / `[ -f file ]`) or
-"does a string equal another" (`[ "$var" = "string" ]`). In bash,
-there's also `[[ ]]`, which is a "safer" built-in version of `test` that
-has fewer odd behaviours around quoting.
+接下来是条件判断：`if command1; then command2; command3; fi` 会执行 `command1`，如果它没有出错，就会运行 `command2` 和 `command3`。你也可以在需要时使用 `else` 分支。最常用的作为 `command1` 的命令是 `test` 命令，通常缩写为 `[`，它让你可以评估各种条件，比如"某个文件是否存在"（`test -f file` / `[ -f file ]`）或"某个字符串是否等于另一个"（`[ "$var" = "string" ]`）。在 bash 中，还有 `[[ ]]`，它是 `test` 的"更安全"的内置版本，在引号处理方面有更少的怪异行为。
 
-Bash also has two forms of loops, `while` and `for`. `while command1; do
-command2; command3; done` functions just like the equivalent `if`
-command, except that it will re-execute the whole thing over and over
-for as long as `command1` does not error. `for varname in a b c d; do
-command; done` executes `command` four times, each time with `$varname`
-set to one of `a`, `b`, `c`, and `d`. Instead of listing the items
-explicitly, you'll often use "command substitution", such as:
+bash 也有两种形式的循环：`while` 和 `for`。`while command1; do command2; command3; done` 的功能与等价的 `if` 命令类似，只不过它会一遍又一遍地重新执行整个代码块，只要 `command1` 不出错就会持续进行。`for varname in a b c d; do command; done` 会执行 `command` 四次，每次让 `$varname` 分别取 `a`、`b`、`c` 和 `d` 中的一个值。除了直接列出各项，你通常会使用"_命令替换_"（command substitution），例如：
 
 ```bash
 for i in $(seq 1 10); do
 ```
 
-This executes the command `seq 1 10` (which prints the numbers from 1 to
-10 inclusive) and then replaces the whole `$()` with that command's
-output, giving you a 10-iteration for loop. In older code you'll
-sometimes see literal backticks (like ``for i in `seq 1 10`; do``)
-instead of `$()`, but you should strongly prefer the `$()` form as it
-can be nested.
+这执行了 `seq 1 10` 命令（它会打印从 1 到 10 的数字），然后将整个 `$()` 替换为该命令的输出，给你一个 10 次迭代的 for 循环。在旧代码中，你有时可能会看到使用反引号字面量的写法（比如 ``for i in `seq 1 10`; do``）而不是 `$()`，但你应强烈偏好 `$()` 写法，因为它可以嵌套。
 
-While you _can_ write long shell scripts directly in your prompt, you'll
-usually want to write them into a `.sh` file instead. For example,
-here's a script that will run a program in a loop until it fails,
-printing the output only of the failed run, while stressing your CPU in
-the background (useful to reproduce flaky tests for example):
+虽然你_可以_直接在提示符下编写很长的 shell 脚本，但你通常更愿意把它们写入一个 `.sh` 文件中。例如，下面是一个脚本，它会在后台给 CPU 施加压力的同时，循环运行一个程序直到它失败，并只打印出失败运行的输出（对于复现偶发性测试失败很有用，比如）：
 
 ```bash
 #!/bin/bash
@@ -496,161 +266,56 @@ tail -n 20 "$LOGFILE"
 echo "Full log: $LOGFILE"
 ```
 
-This has a number of new things in it that I recommend you spend some
-time diving into, as they're very useful in crafting useful shell
-invocations like background jobs (`&`) to run programs concurrently,
-trickier [shell
-redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html),
-and [arithmetic
-expansion](https://www.gnu.org/software/bash/manual/html_node/Arithmetic-Expansion.html).
+这里面有很多新内容，建议你花时间深入了解它们——它们在编写实用的 shell 指令时非常有用，比如后台作业（`&`）可以并发运行程序、复杂的 [shell 重定向](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)，以及 [算术扩展](https://www.gnu.org/software/bash/manual/html_node/Arithmetic-Expansion.html)。
 
-It's worth spending a second on the first two lines of the program
-though. The first is the "shebang" -- you'll see this at the top of
-other files than shell scripts too. When a file that starts with the
-magic incantation `#!/path` is executed, the shell will start the
-program at `/path`, and pass it the contents of the file as input. In
-the case of a shell script, this means passing the contents of the shell
-script to `/bin/bash`, but you can also write Python scripts with a
-shebang line of `/usr/bin/python`!
+不过值得花一秒关注程序的开头两行。第一行是"shebang"——你也会在其他非 shell 脚本文件的顶部看到它。当一个以魔法咒语 `#!/path` 开头的文件被执行时，shell 会启动 `/path` 处的程序，并将文件的内容作为输入传入。对于 shell 脚本来说，这意味着将 shell 脚本的内容传递给 `/bin/bash`，但你也可以编写 Python 脚本，只需将 shebang 行设为 `/usr/bin/python` 即可！
 
-The second line is a way to make bash "stricter", and mitigate a number
-of footguns when writing shell scripts. `set` can take a whole lot of
-arguments, but briefly: `-e` makes it so that if any command fails, the
-script exits early; `-u` makes it so that use of undefined variables
-crashes the script rather than just using an empty string; and `-o
-pipefail` makes it so that if programs in a `|` sequence fail, the
-shell script as a whole also exits early.
+第二行是让 bash 变得"更严格"的一种方式，用来缓解编写 shell 脚本时出现的不少"坑"。`set` 可以接受大量参数，但简要说明：`-e` 表示如果任何命令失败，脚本就会提前退出；`-u` 表示使用未定义的变量会让脚本崩溃，而不是简单地使用空字符串；`-o pipefail` 表示如果 `|` 管道序列中的任何程序失败，整个 shell 脚本也会提前退出。
 
-> Shell programming is a deep topic, just as any programming language
-> is, but be warned: bash has an unusual number of gotchas, to the point
-> that there are [multiple](https://tldp.org/LDP/abs/html/gotchas.html)
-> websites dedicated to [listing them](https://mywiki.wooledge.org/BashPitfalls).
-> I highly recommend making heavy use of
-> [shellcheck](https://www.shellcheck.net/) when writing them. LLMs are
-> also great at writing and debugging shell scripts, as well as
-> translating them to a "real" programming language (like Python) when
-> they've grown too unwieldy for bash (100+ lines).
+> Shell 编程是一个深入的话题，就像任何编程语言一样，但要注意：bash 有不寻常数量的"陷阱"，甚至出现了多个 [专门列出这些陷阱的网站](https://tldp.org/LDP/abs/html/gotchas.html)。我强烈建议你在编写 shell 脚本时大量使用 [shellcheck](https://www.shellcheck.net/)。LLM 也非常擅长编写和调试 shell 脚本，以及当脚本在 bash 中变得过于笨拙（超过 100 行）时，将它们翻译成"正经"的编程语言（如 Python）。
 
-# Next steps
+# 下一步
 
-At this point you know your way around a shell enough to accomplish
-basic tasks. You should be able to navigate around to find files of
-interest and use the basic functionality of most programs. In the next
-lecture, we will talk about how to perform and automate more complex
-tasks using the shell and the many handy command-line programs out
-there.
+到这里，你对 shell 的使用已经达到了完成基本任务的水平。你应该能够导航到感兴趣的文件位置，并使用大多数程序的基本功能。在接下来的讲座中，我们将讨论如何利用 shell 以及大量实用的命令行程序来执行和自动化更复杂的任务。
 
-# Exercises
+# 练习
 
-All classes in this course are accompanied by a series of exercises.
-Some give you a specific task to do, while others are open-ended, like
-"try using X and Y programs". We highly encourage you to try them out.
+本课程的所有课程都附带一系列练习。有些练习给你一个具体要完成的任务，另一些则是开放式的，比如"尝试使用 X 和 Y 程序"。我们强烈鼓励你动手尝试。
 
-We have not written solutions for the exercises. If you are stuck on
-anything in particular, feel free to post in `#missing-semester-forum`
-on [Discord](https://ossu.dev/#community) or send us an email describing
-what you've tried so far, and we will try to help you out. These
-exercises will also likely work well as initial prompts in a
-conversation with an LLM where you can interactively dive into the
-topic. The real value in these exercises is the journey of discovering
-the answers, not the answer itself. We encourage you to follow tangents
-and ask "why" as you work through them, rather than just looking for the
-shortest path to the solution.
+我们尚未为这些练习编写解答。如果你在某处特别卡住，很乐意在 [Discord](https://ossu.dev/#community) 的 `#missing-semester-forum` 频道发帖，或发送邮件给我们描述你已经尝试过的方法，我们会尽力帮助你。这些练习也很适合在 LLM 对话中作为初始提示——你可以交互式的深入探索这一主题。这些练习真正的价值在于发现答案的_过程_，而不仅仅是答案本身。我们鼓励你在完成练习时跟随自己的思路、提出"为什么"的问题，而不仅仅是寻找最短的解题路径。
 
-1. For this course, you need to be using a Unix shell like Bash or ZSH. If
-   you are on Linux or macOS, you don't have to do anything special. If you
-   are on Windows, you need to make sure you are not running cmd.exe or
-   PowerShell; you can use [Windows Subsystem for
-   Linux](https://docs.microsoft.com/en-us/windows/wsl/) or a Linux virtual
-   machine to use Unix-style command-line tools. To make sure you're running
-   an appropriate shell, you can try the command `echo $SHELL`. If it says
-   something like `/bin/bash` or `/usr/bin/zsh`, that means you're running
-   the right program.
+1. 学习本课程时，你需要使用 Unix 风格的 shell，如 Bash 或 ZSH。如果你在 Linux 或 macOS 上，不需要做特殊设置。如果你在 Windows 上，需要确保你没有运行 cmd.exe 或 PowerShell——你可以使用 [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) 或一个 Linux 虚拟机来使用 Unix 风格的命令行工具。要确保你正在运行合适的 shell，可以尝试执行命令 `echo $SHELL`。如果它返回类似 `/bin/bash` 或 `/usr/bin/zsh` 的结果，说明你正在运行正确的程序。
 
-1. What does the `-l` flag to `ls` do? Run `ls -l /` and examine the output.
-   What do the first 10 characters of each line mean? (Hint: `man ls`)
+1. `ls` 的 `-l` 标志做了什么？运行 `ls -l /` 并检查输出。每一行的前 10 个字符代表什么意思？（提示：`man ls`）
 
-1. In the command `find ~/Downloads -type f -name "*.zip" -mtime +30`, the
-   `*.zip` is a "glob". What is a glob? Create a test directory with some
-   files and experiment with patterns like `ls *.txt`, `ls file?.txt`, and
-   `ls {a,b,c}.txt`. See [Pattern
-   Matching](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html)
-   in the Bash manual.
+1. 在命令 `find ~/Downloads -type f -name "*.zip" -mtime +30` 中，`*.zip` 是一个"通配符"（glob）。通配符是什么？创建一个包含一些文件的测试目录，并尝试 `ls *.txt`、`ls file?.txt` 和 `ls {a,b,c}.txt` 等模式。参见 Bash 手册中的 [Pattern Matching](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html)。
 
-1. What's the difference between `'single quotes'`, `"double quotes"`, and
-   `$'ANSI quotes'`? Write a command that echoes a string containing a
-   literal `$`, a `!`, and a newline character. See
-   [Quoting](https://www.gnu.org/software/bash/manual/html_node/Quoting.html).
+1. `'单引号'`、`"双引号"` 和 `$'ANSI 引号'` 有什么区别？编写一个命令来 echo 包含一个字面量 `$`、一个 `!` 和一个换行符的字符串。参见 [Quoting](https://www.gnu.org/software/bash/manual/html_node/Quoting.html)。
 
-1. The shell has three standard streams: stdin (0), stdout (1), and stderr
-   (2). Run `ls /nonexistent /tmp` and redirect stdout to one file and
-   stderr to another. How would you redirect both to the same file? See
-   [Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html).
+1. shell 有三个标准流：stdin（标准输入，编号 0）、stdout（标准输出，编号 1）和 stderr（标准错误，编号 2）。运行 `ls /nonexistent /tmp` 并将 stdout 重定向到一个文件、stderr 重定向到另一个文件。如何将两者重定向到同一个文件？参见 [Redirections](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)。
 
-1. `$?` holds the exit status of the last command (0 = success). `&&` runs
-   the next command only if the previous succeeded; `||` runs it only if
-   the previous failed. Write a one-liner that creates `/tmp/mydir` only if
-   it doesn't already exist. See [Exit
-   Status](https://www.gnu.org/software/bash/manual/html_node/Exit-Status.html).
+1. `$?` 保存着上一个命令的退出状态（0 表示成功）。`&&` 仅在上一条命令成功时才运行下一条命令；`||` 仅在上一条命令失败时才运行下一条命令。编写一条单行命令，仅在 `/tmp/mydir` 不存在时才创建它。参见 [Exit Status](https://www.gnu.org/software/bash/manual/html_node/Exit-Status.html)。
 
-1. Why does `cd` have to be built into the shell itself rather than a
-   standalone program? (Hint: think about what a child process can and
-   cannot affect in its parent.)
+1. 为什么 `cd` 必须内置在 shell 中，而不能是一个独立的程序？（提示：思考子进程能且不能影响其父进程的哪些内容。）
 
-1. Write a script that takes a filename as an argument (`$1`) and checks
-   whether the file exists using `test -f` or `[ -f ... ]`. It should print
-   different messages depending on whether the file exists. See [Bash
-   Conditional
-   Expressions](https://www.gnu.org/software/bash/manual/html_node/Bash-Conditional-Expressions.html).
+1. 编写一个脚本，接受一个文件名作为参数（`$1`），并使用 `test -f` 或 `[ -f ... ]` 检查该文件是否存在。它应根据文件是否存在输出不同的信息。参见 [Bash Conditional Expressions](https://www.gnu.org/software/bash/manual/html_node/Bash-Conditional-Expressions.html)。
 
-1. Save the script from the previous exercise to a file (e.g., `check.sh`).
-   Try running it with `./check.sh somefile`. What happens? Now run
-   `chmod +x check.sh` and try again. Why is this step necessary? (Hint:
-   look at `ls -l check.sh` before and after the `chmod`.)
+1. 将上一题中的脚本保存到一个文件（例如 `check.sh`）。尝试用 `./check.sh somefile` 运行它。发生了什么？然后运行 `chmod +x check.sh` 再试一次。为什么这一步是必要的？（提示：在 `chmod` 前后分别查看 `ls -l check.sh` 的输出。）
 
-1. What happens if you add `-x` to the `set` flags in a script? Try it with
-    a simple script and observe the output. See [The Set
-    Builtin](https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html).
+1. 如果在脚本的 `set` 标志中加上 `-x` 会发生什么？尝试在一个简单的脚本中试试，并观察输出。参见 [The Set Builtin](https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html)。
 
-1. Write a command that copies a file to a backup with today's date in the
-    filename (e.g., `notes.txt` → `notes_2026-01-12.txt`). (Hint: `$(date
-    +%Y-%m-%d)`). See [Command
-    Substitution](https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html).
+1. 编写一条命令，将一个文件复制为带有今天日期的备份（例如 `notes.txt` → `notes_2026-01-12.txt`)。（提示：`$(date +%Y-%m-%d)`）。参见 [Command Substitution](https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html)。
 
-1. Modify the flaky test script from the lecture to accept the test command
-    as an argument instead of hardcoding `cargo test my_test`. (Hint: `$1`
-    or `$@`). See [Special
-    Parameters](https://www.gnu.org/software/bash/manual/html_node/Special-Parameters.html).
+1. 修改讲座中的偶发性测试脚本，让它接受测试命令作为参数传入，而不是硬编码 `cargo test my_test`。（提示：`$1` 或 `$@`）。参见 [Special Parameters](https://www.gnu.org/software/bash/manual/html_node/Special-Parameters.html)。
 
-1. Use pipes to find the 5 most common file extensions in your home
-    directory. (Hint: combine `find`, `grep` or `sed` or `awk`, `sort`,
-    `uniq -c`, and `head`.)
+1. 使用管道找到你主目录中 5 个最常见的文件扩展名。（提示：组合使用 `find`、`grep` 或 `sed` 或 `awk`、`sort`、`uniq -c` 和 `head`。）
 
-1. `xargs` converts lines from stdin into command arguments. Use `find` and
-    `xargs` together (not `find -exec`) to find all `.sh` files in a
-    directory and count the lines in each with `wc -l`. Bonus: make it
-    handle filenames with spaces. (Hint: `-print0` and `-0`). See `man
-    xargs`.
+1. `xargs` 将 stdin 中的行转换为命令行参数。使用 `find` 和 `xargs` 配合（不使用 `find -exec`）来查找目录中所有的 `.sh` 文件，并用 `wc -l` 统计每个文件的行数。加分项：让它能处理文件名中包含空格的情况。（提示：`-print0` 和 `-0`）。参见 `man xargs`。
 
-1. Use `curl` to fetch the HTML of the course website
-    (`https://missing.csail.mit.edu/`) and pipe it to `grep` to count how
-    many lectures are listed. (Hint: look for a pattern that appears once
-    per lecture; use `curl -s` to silence the progress output.)
+1. 使用 `curl` 获取课程网站的 HTML（`https://missing.csail.mit.edu/`），然后管道传递给 `grep` 来统计列出了多少讲座。（提示：寻找每个讲座出现一次的模式；使用 `curl -s` 静默进度输出。）
 
-1. [`jq`](https://jqlang.github.io/jq/) is a powerful tool for processing
-    JSON data. Fetch the sample data at
-    `https://microsoftedge.github.io/Demos/json-dummy-data/64KB.json` with
-    `curl` and use `jq` to extract just the names of people whose version
-    is greater than 6. (Hint: pipe to `jq .` first to see the structure;
-    then try `jq '.[] | select(...) | .name'`)
+1. [`jq`](https://jqlang.github.io/jq/) 是一个用于处理 JSON 数据的强大工具。使用 `curl` 获取以下示例数据 `https://microsoftedge.github.io/Demos/json-dummy-data/64KB.json`，并用 `jq` 提取出 version 大于 6 的人的 name 字段。（提示：先管道传入 `jq .` 查看数据结构；然后尝试 `jq '.[] | select(...) | .name'`）
 
-1. `awk` can filter lines based on column values and manipulate output.
-    For example, `awk '$3 ~ /pattern/ {$4=""; print}'` prints only lines
-    where the third column matches `pattern`, while omitting the fourth
-    column. Write an `awk` command that prints only lines where the second
-    column is greater than 100, and swaps the first and third columns. Test
-    with: `printf 'a 50 x\nb 150 y\nc 200 z\n'`
+1. `awk` 可以根据列值过滤行并操作输出。例如，`awk '$3 ~ /pattern/ {$4=""; print}'` 仅输出第三列匹配 `pattern` 的行，同时省略第四列。编写一条 `awk` 命令，仅输出第二列大于 100 的行，并交换第一列和第三列。用以下命令测试：`printf 'a 50 x\nb 150 y\nc 200 z\n'`
 
-1. Dissect the SSH log pipeline from the lecture: what does each step do?
-    Then build something similar to find your most-used shell commands from
-    `~/.bash_history` (or `~/.zsh_history`).
+1. 分析讲座中 SSH 日志的管道：每一步分别做了什么？然后自己构建一个类似的管道，用于从 `~/.bash_history`（或 `~/.zsh_history`）中找到你最常用的 shell 命令。

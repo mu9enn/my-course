@@ -1,6 +1,6 @@
 ---
 layout: lecture
-title: "Virtual Machines and Containers"
+title: "虚拟机与容器"
 presenter: Anish, Jon
 date: 2019-01-15
 order: 2
@@ -9,125 +9,91 @@ video:
   id: LJ9ki5zq6Ik
 ---
 
-# Virtual Machines
+# 虚拟机
 
-Virtual machines are simulated computers. You can configure a guest virtual
-machine with some operating system and configuration and use it without
-affecting your host environment.
+虚拟机（Virtual Machines, VM）是一种被模拟出来的计算机。你可以为一个客户虚拟机（guest）配置任意操作系统和系统设置，并使用它而不会影响你的宿主机（host）环境。
 
-For this class, you can use VMs to experiment with operating systems, software,
-and configurations without risk: you won't affect your primary development
-environment.
+对于本课程而言，你可以用虚拟机来尝试各种操作系统、软件和系统配置，而无需担心风险：你的主要开发环境不会受到任何影响。
 
-In general, VMs have lots of uses. They are commonly used for running software
-that only runs on a certain operating system (e.g. using a Windows VM on Linux
-to run Windows-specific software). They are often used for experimenting with
-potentially malicious software.
+总的来说，虚拟机的用途非常广泛。一个常见的场景是在某个特定操作系统上运行软件（例如，在 Linux 上用 Windows 虚拟机来运行仅限 Windows 的软件）。此外，虚拟机经常被用来实验可能有恶意行为的软件，因为它可以把风险隔离在沙箱之内。
 
-## Useful features
+## 有用的特性
 
-- **Isolation**: hypervisors do a pretty good job of isolating the guest from
-the host, so you can use VMs to run buggy or untrusted software reasonably
-safely.
+- **隔离**：超管理器（hypervisor，也称虚拟机监控器）能够相当好地把客户机与宿主机隔离开，因此你可以用虚拟机来运行 buggy 或不受信任的软件，安全系数较高。
 
-- **Snapshots**: you can take "snapshots" of your virtual machine, capturing
-the entire machine state (disk, memory, etc.), make changes to your machine,
-and then restore to an earlier state. This is useful for testing out
-potentially destructive actions, among other things.
+- **快照**：你可以对虚拟机"拍快照"，捕获整个机器状态（磁盘、内存等），在对机器做了一通改动之后，再恢复到之前的状态。这非常有用——比如用来测试一些可能造成破坏的操作，等等。
 
-## Disadvantages
+## 缺点
 
-Virtual machines are generally slower than running on bare metal, so they may
-be unsuitable for certain applications.
+虚拟机的运行速度通常比在裸机（bare metal，即没有虚拟化的真实硬件）上慢，因此对于某些对性能敏感的应用场景可能不太合适。
 
-## Setup
+## 环境配置要点
 
-- **Resources**: shared with host machine; be aware of this when allocating
-physical resources.
+- **资源**：虚拟机的计算资源与宿主机共享；在分配物理资源时要有这个意识。
 
-- **Networking**: many options, default NAT should work fine for most use
-cases.
+- **网络**：有多种网络配置选项，默认 NAT 模式对大多数用途已经够用。
 
-- **Guest addons**: many hypervisors can install software in the guest to
-enable nicer integration with host system. You should use this if you can.
+- **客户增强组件（Guest Addons）**：许多超管理器可以在客户机内部安装软件，以实现与宿主机更良好的集成（比如更好的分辨率、剪贴板共享等）。如果支持，建议开启。
 
-## Resources
+## 参考资源
 
-- Hypervisors
-    - [VirtualBox](https://www.virtualbox.org/) (open-source)
-    - [Virt-manager](https://virt-manager.org/) (open-source, manages KVM virtual machines and LXC containers)
-    - [VMWare](https://www.vmware.com/) (commercial, available from IS&T [for
-    MIT students](https://ist.mit.edu/vmware-fusion))
+- 超管理器（Hypervisor）
+    - [VirtualBox](https://www.virtualbox.org/)（开源）
+    - [Virt-manager](https://virt-manager.org/)（开源，管理 KVM 虚拟机和 LXC 容器）
+    - [VMWare](https://www.vmware.com/)（商业软件，MIT 学生可通过 IS&T [免费领取](https://ist.mit.edu/vmware-fusion)）
 
-If you are already familiar with popular hypervisors/VMs you may want to learn more about how to do this from a command line friendly way. One option is the [libvirt](https://wiki.libvirt.org/page/UbuntuKVMWalkthrough) toolkit which allows you to manage multiple different virtualization providers/hypervisors.
+如果你已经熟悉流行的超管理器/虚拟机，接下来你可能想进一步了解如何在命令行中以编程方式管理它们。一个选择是 [libvirt](https://wiki.libvirt.org/page/UbuntuKVMWalkthrough) 工具集，它可以统一管理多种不同的虚拟化平台/超管理器。
 
-## Exercises
+## 练习
 
-1. Download and install a hypervisor.
+1. 下载并安装一个超管理器。
 
-1. Create a new virtual machine and install a Linux distribution (e.g.
-[Debian](https://www.debian.org/)).
+1. 新建一台虚拟机，并安装一个 Linux 发行版（例如 [Debian](https://www.debian.org/)）。
 
-1. Experiment with snapshots. Try things that you've always wanted to try, like
-   running `sudo rm -rf --no-preserve-root /`, and see if you can recover
-   easily.
+1. 实验一下快照功能。尝试一些你一直想试试的操作——比如运行 `sudo rm -rf --no-preserve-root /`——然后看看能不能轻松恢复。
 
-1. Read what a [fork-bomb](https://en.wikipedia.org/wiki/Fork_bomb) (`:(){ :|:& };:`) is and run it on the VM to see that the resource isolation (CPU, Memory, &c) works.
+1. 阅读一下什么是 [fork 炸弹（fork-bomb）](https://en.wikipedia.org/wiki/Fork_bomb)（即 `:(){ :|:& };:`），然后在虚拟机里运行它，观察资源隔离（CPU、内存等）是否正常工作。
 
-1. Install guest addons and experiment with different windowing modes, file
-   sharing, and other features.
+1. 安装客户增强组件，并尝试不同的窗口模式、文件共享以及其他功能。
 
-# Containers
+# 容器
 
-Virtual Machines are relatively heavy-weight; what if you want to spin
-up machines in an automated fashion? Enter containers!
+虚拟机相对笨重；如果你想要以自动化的方式快速启动大量机器，该怎么办？答案就是**容器**（Containers）！
 
  - Amazon Firecracker
  - Docker
  - rkt
  - lxc
 
-Containers are _mostly_ just an assembly of various Linux security
-features, like virtual file system, virtual network interfaces, chroots,
-virtual memory tricks, and the like, that together give the appearance
-of virtualization.
+容器本质上只是各种 Linux 安全特性的组合体，比如虚拟文件系统、虚拟网络接口、chroot、虚拟内存技巧等，这些特性共同组合在一起，产生了一种"虚拟化"的表象。
 
-Not quite as secure or isolated as a VM, but pretty close and getting
-better. Usually higher performance, and much faster to start, but not
-always.
+安全隔离性不如虚拟机那么彻底，但也差不多，而且正在越来越好。性能通常更高，启动速度也要快得多——当然并非总是如此。
 
-The performance boost comes from the fact that unlike VMs which run an entire copy of the operating system, containers share the linux kernel with the host. However note that if you are running linux containers on Windows/macOS a Linux VM will need to be active as a middle layer between the two.
+性能提升的原因在于：虚拟机需要运行整个操作系统的完整副本，而容器则与宿主机共享同一个 Linux 内核。不过需要注意的是，如果你是在 Windows/macOS 上运行 Linux 容器，那么实际上需要先启动一个 Linux 虚拟机作为中间层。
 
-![Docker vs VM](/2019/files/containers-vs-vms.png)
-_Comparison between Docker containers and Virtual Machines. Credit: blog.docker.com_
+![Docker 与虚拟机](/2019/files/containers-vs-vms.png)
+_Docker 容器与虚拟机的对比。图片来源：blog.docker.com_
 
-Containers are handy for when you want to run an automated task in a
-standardized setup:
+当你需要在标准化的环境中运行自动化任务时，容器非常顺手：
 
- - Build systems
- - Development environments
- - Pre-packaged servers
- - Running untrusted programs
-   - Grading student submissions
-   - (Some) cloud computing
- - Continuous integration
+ - 构建系统
+ - 开发环境
+ - 预配置好的服务器
+ - 运行不受信任的程序
+   - 给学生的作业打分
+   -（部分）云计算
+ - 持续集成
    - Travis CI
    - GitHub Actions
 
-Moreover, container software like Docker has also been extensively used as a solution for [dependency hell](https://en.wikipedia.org/wiki/Dependency_hell). If a machine needs to be running many services with conflicting dependencies they can be isolated using containers.
+此外，像 Docker 这样的容器软件也被广泛用作解决[依赖地狱（dependency hell）](https://en.wikipedia.org/wiki/Dependency_hell)的方案。如果一台机器需要运行多个服务，而它们的依赖相互冲突，就可以用容器把各个服务隔离开来。
 
-Usually, you write a file that defines how to construct your container.
-You start with some minimal _base image_ (like Alpine Linux), and then
-a list of commands to run to set up the environment you want (install
-packages, copy files, build stuff, write config files, etc.). Normally,
-there's also a way to specify any external ports that should be
-available, and an _entrypoint_ that dictates what command should be run
-when the container is started (like a grading script).
+通常情况下，你需要编写一个文件来定义如何构建你的容器。你从一个最小化的**基础镜像**（base image，比如 Alpine Linux）开始，然后列出一系列要运行的命令来搭建你想要的运行环境（安装包、拷贝文件、构建代码、写入配置文件，等等）。通常还可以指定哪些外部端口应该对外暴露，以及一个**入口点**（entrypoint），用于定义容器启动时应该执行的命令（比如打分脚本）。
 
-In a similar fashion to code repository websites (like [GitHub](https://github.com/)) there are some container repository websites (like [DockerHub](https://hub.docker.com/))where many software services have prebuilt images that one can easily deploy.
+与代码仓库网站（如 [GitHub](https://github.com/)）类似，也存在一些容器镜像仓库网站（如 [DockerHub](https://hub.docker.com/)），上面有许多预构建好的软件镜像，可以一键部署。
 
-## Exercises
+## 练习
 
-1. Choose a container software (Docker, LXC, …) and install a simple Linux image. Try SSHing into it.
+1. 选择一个容器软件（Docker、LXC 等），安装一个简单的 Linux 镜像，并尝试 SSH 登录进去。
 
-1. Search and download a prebuilt container image for a popular web server (nginx, apache, …)
+1. 搜索并下载一个常用 Web 服务器的预构建容器镜像（nginx、Apache 等）。
