@@ -1,6 +1,6 @@
 # 中文教学版进度
 
-最近批次已结束，已生成 **40/44** 篇。
+最近批次已结束，已生成 **44/44** 篇。
 
 由 Claude Code 调用 Qwen3.6-35B-A3B-FP8 辅助制作。生成成功不代表已通过独立技术审核；代码、公式、引用和许可证按原作保留。
 
@@ -25,10 +25,10 @@
 | [_2019/shell.md](_2019/shell.md) | 已生成 |
 | [_2019/version-control.md](_2019/version-control.md) | 已生成 |
 | [_2019/virtual-machines.md](_2019/virtual-machines.md) | 已生成 |
-| [_2019/web.md](_2019/web.md) | 失败，待重做 |
-| [_2020/command-line.md](_2020/command-line.md) | 失败，待重做 |
-| [_2020/course-shell.md](_2020/course-shell.md) | 失败，待重做 |
-| [_2020/data-wrangling.md](_2020/data-wrangling.md) | 失败，待重做 |
+| [_2019/web.md](_2019/web.md) | 已生成 |
+| [_2020/command-line.md](_2020/command-line.md) | 已生成 |
+| [_2020/course-shell.md](_2020/course-shell.md) | 已生成 |
+| [_2020/data-wrangling.md](_2020/data-wrangling.md) | 已生成 |
 | [_2020/debugging-profiling.md](_2020/debugging-profiling.md) | 已生成 |
 | [_2020/editors.md](_2020/editors.md) | 已生成 |
 | [_2020/index.md](_2020/index.md) | 已生成 |

@@ -1,8 +1,8 @@
 ---
 layout: lecture
-title: "Course Overview + The Shell"
+title: "课程导论 + Shell"
 description: >
-  Learn about the motivation for this class, and get started with the shell.
+  了解本课程的设计动机，并上手使用 shell。
 thumbnail: /static/assets/thumbnails/2020/lec1.png
 date: 2020-01-13
 ready: true
@@ -11,92 +11,42 @@ video:
   id: Z56Jmr9Z34Q
 ---
 
-# Motivation
+# 动机
 
-As computer scientists, we know that computers are great at aiding in
-repetitive tasks. However, far too often, we forget that this applies
-just as much to our _use_ of the computer as it does to the computations
-we want our programs to perform. We have a vast range of tools
-available at our fingertips that enable us to be more productive and
-solve more complex problems when working on any computer-related
-problem. Yet many of us utilize only a small fraction of those tools; we
-only know enough magical incantations by rote to get by, and blindly
-copy-paste commands from the internet when we get stuck.
+作为计算机科学家，我们深知计算机在辅助重复性任务方面表现卓越。然而，我们常常忘记这一点同样适用于我们_使用_计算机的方式，而不仅仅是我们希望程序执行的计算。当我们面对任何与计算机相关的问题时，身边有大量工具触手可及，它们能让我们事半功倍，解决更复杂的问题。然而许多开发者只使用了其中极小的一部分——我们仅靠死记硬背几句"咒语"勉强应付，一旦卡住就盲目地从网上复制粘贴别人的命令。
 
-This class is an attempt to address this.
+本课程就是为了弥补这一缺失。
 
-We want to teach you how to make the most of the tools you know, show
-you new tools to add to your toolbox, and hopefully instill in you some
-excitement for exploring (and perhaps building) more tools on your own.
-This is what we believe to be the missing semester from most Computer
-Science curricula.
+我们希望教你：如何充分用好你已知的工具、为你提供新工具箱里的新工具，并希望能够激发你自己去探索（甚至创造）更多工具的热情。我们认为，这正是大多数计算机科学课程表中缺失的一门课。
 
-# Class structure
+# 课程结构
 
-The class consists of 11 1-hour lectures, each one centering on a
-[particular topic](/2020/). The lectures are largely independent,
-though as the semester goes on we will presume that you are familiar
-with the content from the earlier lectures. We have lecture notes
-online, but there will be a lot of content covered in class (e.g. in the
-form of demos) that may not be in the notes. We will be recording
-lectures and posting the recordings online.
+本课程共包含 11 个 1 小时的讲座，每个讲座围绕一个[特定主题](/2020/)展开。这些讲座彼此相对独立，但随着学期推进，我们会默认你已熟悉之前讲座中涉及的内容。网上有讲座笔记，但课堂上展示的内容（例如各种演示 demo）很多并未收录在笔记中。我们会录制讲座视频并在线发布。
 
-We are trying to cover a lot of ground over the course of just 11 1-hour
-lectures, so the lectures are fairly dense. To allow you some time to
-get familiar with the content at your own pace, each lecture includes a
-set of exercises that guide you through the lecture's key points. After
-each lecture, we are hosting office hours where we will be present to
-help answer any questions you might have. If you are attending the class
-online, you can send us questions at
-[missing-semester@mit.edu](mailto:missing-semester@mit.edu).
+由于仅有 11 个 1 小时的讲座，内容相当密集。为了让你在适合自己的节奏下熟悉内容，每个讲座都附带一组练习，引导你掌握讲座的核心要点。每个讲座之后，我们会举办办公时间（office hours），届时我们会在线答疑。如果你是通过网络旁听本课程，可以通过
+[missing-semester@mit.edu](mailto:missing-semester@mit.edu) 给我们发送邮件提问。
 
-Due to the limited time we have, we won't be able to cover all the tools
-in the same level of detail a full-scale class might. Where possible, we
-will try to point you towards resources for digging further into a tool
-or topic, but if something particularly strikes your fancy, don't
-hesitate to reach out to us and ask for pointers!
+受时间限制，我们无法像完整的学分课程那样对每个工具都深入讲解。在可行的情况下，我们会为你提供进一步深入学习某个工具或主题的资源链接；如果某个工具特别吸引你，也欢迎随时联系我们，我们很乐意为你指点方向！
 
-# Topic 1: The Shell
+# 主题一：Shell
 
-## What is the shell?
+## 什么是 shell？
 
-Computers these days have a variety of interfaces for giving them
-commands; fanciful graphical user interfaces, voice interfaces, and
-even AR/VR are everywhere. These are great for 80% of use-cases, but
-they are often fundamentally restricted in what they allow you to do —
-you cannot press a button that isn't there or give a voice command that
-hasn't been programmed. To take full advantage of the tools your
-computer provides, we have to go old-school and drop down to a textual
-interface: The Shell.
+如今的计算机提供了各式各样的操作界面：精美的图形用户界面、语音交互界面，甚至增强现实/虚拟现实（AR/VR）也随处可见。这些界面在 80% 的使用场景中表现优异，但它们往往在本质上有功能限制——你无法按下尚未存在的按钮，也无法发出尚未被编程设定的语音指令。要想充分利用计算机提供的全部工具，我们必须回归传统，使用文本界面：**Shell（命令行解释器）**。
 
-Nearly all platforms you can get your hands on have a shell in one form or
-another, and many of them have several shells for you to choose from.
-While they may vary in the details, at their core they are all roughly
-the same: they allow you to run programs, give them input, and inspect
-their output in a semi-structured way.
+几乎你能拿到手的任何平台都至少有一个 shell，许多平台甚至提供多种 shell 供你选择。虽然它们在细节上可能有所不同，但本质上大同小异：它们都能让你运行程序、给程序输入数据，并以半结构化的方式检查程序的输出。
 
-In this lecture, we will focus on the Bourne Again SHell, or "bash" for
-short. This is one of the most widely used shells, and its syntax is
-similar to what you will see in many other shells. To open a shell
-_prompt_ (where you can type commands), you first need a _terminal_.
-Your device probably shipped with one installed, or you can install one
-fairly easily.
+在本讲座中，我们将以 **Bourne Again SHell**（简称 **bash**）为重点。bash 是最广泛使用的 shell 之一，它的语法与你在其他许多 shell 中见到的语法非常相似。要打开一个 shell _提示符_（prompt，即你输入命令的地方），你需要一个 _终端_（terminal）。你的设备很可能已经预装了终端，或者你可以很方便地安装一个。
 
-## Using the shell
+## 使用 shell
 
-When you launch your terminal, you will see a _prompt_ that often looks
-a little like this:
+启动终端后，你会看到一个 _提示符_，通常看起来大致如下：
 
 ```console
 missing:~$
 ```
 
-This is the main textual interface to the shell. It tells you that you
-are on the machine `missing` and that your "current working directory",
-or where you currently are, is `~` (short for "home"). The `$` tells you
-that you are not the root user (more on that later). At this prompt you
-can type a _command_, which will then be interpreted by the shell. The
-most basic command is to execute a program:
+这是与 shell 交互的主要文本界面。它告诉你：你当前连接的机器名是 `missing`，你的"当前工作目录"（current working directory，即你当前所处的位置）是 `~`（home 目录的缩写）。`$` 表示你当前不是 root 用户（稍后会详细介绍）。在这个提示符下，你可以输入 _命令_，shell 会对其进行解释。最基本的命令就是执行程序：
 
 ```console
 missing:~$ date
@@ -104,35 +54,16 @@ Fri 10 Jan 2020 11:49:31 AM EST
 missing:~$
 ```
 
-Here, we executed the `date` program, which (perhaps unsurprisingly)
-prints the current date and time. The shell then asks us for another
-command to execute. We can also execute a command with _arguments_:
+在这里，我们执行了 `date` 程序，它（或许并不令人意外地）打印出了当前的日期和时间。shell 随即等待我们输入下一个命令。我们还可以为命令附带 _参数_（arguments）：
 
 ```console
 missing:~$ echo hello
 hello
 ```
 
-In this case, we told the shell to execute the program `echo` with the
-argument `hello`. The `echo` program simply prints out its arguments.
-The shell parses the command by splitting it by whitespace, and then
-runs the program indicated by the first word, supplying each subsequent
-word as an argument that the program can access. If you want to provide
-an argument that contains spaces or other special characters (e.g., a
-directory named "My Photos"), you can either quote the argument with `'`
-or `"` (`"My Photos"`), or escape just the relevant characters with `\`
-(`My\ Photos`).
+这里，我们告诉 shell 执行 `echo` 程序，并传入参数 `hello`。`echo` 程序的作用仅仅是把它的参数打印出来。shell 通过以空白字符为分隔符拆分命令文本来解析这条命令，然后运行由第一个词指定的程序，并将后续的每个词作为程序可以访问的参数传给它。如果你要传入的参数中包含空格或其他特殊字符（比如一个名为"My Photos"的目录），你可以用单引号 `'` 或双引号 `"` 把整个参数括起来（`"My Photos"`），也可以用反斜杠 `\` 对相关的特殊字符进行转义（`My\ Photos`）。
 
-But how does the shell know how to find the `date` or `echo` programs?
-Well, the shell is a programming environment, just like Python or Ruby,
-and so it has variables, conditionals, loops, and functions (next
-lecture!). When you run commands in your shell, you are really writing a
-small bit of code that your shell interprets. If the shell is asked to
-execute a command that doesn't match one of its programming keywords, it
-consults an _environment variable_ called `$PATH` that lists which
-directories the shell should search for programs when it is given a
-command:
-
+那么 shell 是如何找到 `date` 或 `echo` 这些程序的呢？shell 本身就是一个编程环境，和 Python 或 Ruby 类似——它拥有变量、条件判断、循环和函数（下一讲介绍！）。你在 shell 中运行的每一条命令，实际上都是在写一小段由 shell 解释执行的代码。如果 shell 被要求执行的命令不匹配任何编程关键字，它便会查阅一个名为 `$PATH` 的 _环境变量_（environment variable），该变量列出了 shell 在接收到命令时需要搜索哪些目录：
 
 ```console
 missing:~$ echo $PATH
@@ -143,26 +74,11 @@ missing:~$ /bin/echo $PATH
 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ```
 
-When we run the `echo` command, the shell sees that it should execute
-the program `echo`, and then searches through the `:`-separated list of
-directories in `$PATH` for a file by that name. When it finds it, it
-runs it (assuming the file is _executable_; more on that later). We can
-find out which file is executed for a given program name using the
-`which` program. We can also bypass `$PATH` entirely by giving the
-_path_ to the file we want to execute.
+当我们运行 `echo` 命令时，shell 看到需要执行 `echo` 这个程序，于是依次在 `$PATH` 中以冒号 `:` 分隔的目录列表中查找名为 `echo` 的文件。找到之后，shell 就执行它（前提是文件具有 _可执行权限_；稍后详解）。我们可以使用 `which` 程序来查找某个程序名对应的是哪个文件。我们也可以直接给出要执行文件的 _路径_（path），从而绕过 `$PATH` 的搜索。
 
-## Navigating in the shell
+## 在 shell 中导航
 
-A path on the shell is a delimited list of directories; separated by `/`
-on Linux and macOS and `\` on Windows. On Linux and macOS, the path `/`
-is the "root" of the file system, under which all directories and files
-lie, whereas on Windows there is one root for each disk partition (e.g.,
-`C:\`). We will generally assume that you are using a Linux filesystem
-in this class. A path that starts with `/` is called an _absolute_ path.
-Any other path is a _relative_ path. Relative paths are relative to the
-current working directory, which we can see with the `pwd` command and
-change with the `cd` command. In a path, `.` refers to the current
-directory, and `..` to its parent directory:
+shell 中的路径是一个由分隔符分隔的目录列表；在 Linux 和 macOS 上使用 `/` 分隔，在 Windows 上使用 `\` 分隔。在 Linux 和 macOS 上，路径 `/` 是文件系统的"根"，所有目录和文件都位于其下；而在 Windows 上，每个磁盘分区都有一个根目录（例如 `C:\`）。在本课程中，我们主要假定你使用的是类 Unix 文件系统。以 `/` 开头的路径称为 _绝对路径_（absolute path）。其他所有路径均为 _相对路径_（relative path）。相对路径是相对于当前工作目录而言的，我们可用 `pwd` 命令查看当前工作目录，用 `cd` 命令更改它。在路径中，`.` 表示当前目录，`..` 表示其上级目录：
 
 ```console
 missing:~$ pwd
@@ -183,15 +99,11 @@ missing:~$ ../../bin/echo hello
 hello
 ```
 
-Notice that our shell prompt kept us informed about what our current
-working directory was. You can configure your prompt to show you all
-sorts of useful information, which we will cover in a later lecture.
+注意我们的 shell 提示符一直跟踪显示着当前的工作目录。你可以将提示符配置为显示各种有用信息，我们将在之后的讲座中介绍这一点。
 
-In general, when we run a program, it will operate in the current
-directory unless we tell it otherwise. For example, it will usually
-search for files there, and create new files there if it needs to.
+一般来说，除非显式指定，否则程序会在当前工作目录下运行。例如，它通常会在那里查找文件，并在需要时在那里创建新文件。
 
-To see what lives in a given directory, we use the `ls` command:
+要查看某个目录下有什么内容，我们使用 `ls` 命令：
 
 ```console
 missing:~$ ls
@@ -208,12 +120,7 @@ home
 ...
 ```
 
-Unless a directory is given as its first argument, `ls` will print the
-contents of the current directory. Most commands accept flags and
-options (flags with values) that start with `-` to modify their
-behavior. Usually, running a program with the `-h` or `--help` flag
-will print some help text that tells you what flags
-and options are available. For example, `ls --help` tells us:
+除非将某个目录作为 `ls` 的第一个参数传入，否则 `ls` 会打印当前目录的内容。大多数命令都接受以 `-` 开头的 _标志_（flags）和 _选项_（options，即带值的标志）来修改自身行为。通常，运行一个程序并带上 `-h` 或 `--help` 标志，就会打印出帮助文本，告诉你有哪些标志和选项可用。例如 `ls --help` 告诉我们：
 
 ```
   -l                         use a long listing format
@@ -224,45 +131,21 @@ missing:~$ ls -l /home
 drwxr-xr-x 1 missing  users  4096 Jun 15  2019 missing
 ```
 
-This gives us a bunch more information about each file or directory
-present. First, the `d` at the beginning of the line tells us that
-`missing` is a directory. Then follow three groups of three characters
-(`rwx`). These indicate what permissions the owner of the file
-(`missing`), the owning group (`users`), and everyone else respectively
-have on the relevant item. A `-` indicates that the given principal does
-not have the given permission. Above, only the owner is allowed to
-modify (`w`) the `missing` directory (i.e., add/remove files in it). To
-enter a directory, a user must have "search" (represented by "execute":
-`x`) permissions on that directory (and its parents). To list its
-contents, a user must have read (`r`) permissions on that directory. For
-files, the permissions are as you would expect. Notice that nearly all
-the files in `/bin` have the `x` permission set for the last group,
-"everyone else", so that anyone can execute those programs.
+这为我们提供了每个文件或目录的更多详细信息。首先，行首的 `d` 告诉我们 `missing` 是一个目录。接下来是三组三个字符（`rwx`）。它们分别指示了文件的所有者（`missing`）、文件所属的组（`users`）以及其他所有人对该项目分别拥有什么权限。`-` 表示该主体不具备该项权限。在上述例子中，只有所有者被允许修改（`w`）`missing` 目录（即在其中添加或删除文件）。要进入一个目录，用户必须对该目录（及其所有上级目录）拥有"搜索"权限（以"执行"权限表示：`x`）。要列出其内容，用户必须对该目录拥有读取（`r`）权限。对于普通文件，权限正如你预期的一般。注意 `/bin` 中几乎大部分文件都对最后一组"其他所有人"设置了 `x` 权限，这意味着任何人都可以执行这些程序。
 
-Some other handy programs to know about at this point are `mv` (to
-rename/move a file), `cp` (to copy a file), and `mkdir` (to make a new
-directory).
+此时你还应该了解另外几个常用程序：`mv`（移动或重命名文件）、`cp`（复制文件）和 `mkdir`（创建新目录）。
 
-If you ever want _more_ information about a program's arguments, inputs,
-outputs, or how it works in general, give the `man` program a try. It
-takes as an argument the name of a program, and shows you its _manual
-page_. Press `q` to exit.
+如果你希望 _了解更多_ 某个程序的参数、输入、输出或它的工作原理，可以尝试 `man` 程序。它以程序名为参数，展示该程序的 _手册页_（manual page）。按 `q` 退出。
 
 ```console
 missing:~$ man ls
 ```
 
-## Connecting programs
+## 连接程序
 
-In the shell, programs have two primary "streams" associated with them:
-their input stream and their output stream. When the program tries to
-read input, it reads from the input stream, and when it prints
-something, it prints to its output stream. Normally, a program's input
-and output are both your terminal. That is, your keyboard as input and
-your screen as output. However, we can also rewire those streams!
+在 shell 中，每个程序都关联着两条主要的"数据流"：它们的 _输入流_（input stream）和 _输出流_（output stream）。当程序试图读取输入时，它从输入流中读取；当程序打印内容时，它写到输出流中。通常情况下，一个程序的输入和输出都来自你的终端——即你的键盘作为输入、你的屏幕作为输出。但我们也可以"重新接线"这些流！
 
-The simplest form of redirection is `< file` and `> file`. These let you
-rewire the input and output streams of a program to a file respectively:
+最简单的重定向形式是 `< file` 和 `> file`。它们分别将程序的输入流和输出流重定向到一个文件：
 
 ```console
 missing:~$ echo hello > hello.txt
@@ -275,16 +158,9 @@ missing:~$ cat hello2.txt
 hello
 ```
 
-Demonstrated in the example above, `cat` is a program that con`cat`enates
-files. When given file names as arguments, it prints the contents of each of
-the files in sequence to its output stream. But when `cat` is not given any
-arguments, it prints contents from its input stream to its output stream (like
-in the third example above).
+如上面例子所示，`cat` 是一个将文件 _concatenate_（拼接）在一起的程序。当 `cat` 接收到文件名作为参数时，它会按顺序把每个文件的内容打印到其输出流中。但当 `cat` 没有接收任何参数时，它会从输入流读取内容并打印到输出流（如第三个示例）。
 
-You can also use `>>` to append to a file. Where this kind of
-input/output redirection really shines is in the use of _pipes_. The `|`
-operator lets you "chain" programs such that the output of one is the
-input of another:
+你还可以使用 `>>` 向文件末尾追加内容。而输入/输出重定向最强大的用法在于 _管道_（pipes）的使用。`|` 运算符让你可以"串联"多个程序，使得一个程序的输出成为另一个程序的输入：
 
 ```console
 missing:~$ ls -l / | tail -n1
@@ -293,36 +169,21 @@ missing:~$ curl --head --silent google.com | grep --ignore-case content-length |
 219
 ```
 
-We will go into a lot more detail about how to take advantage of pipes
-in the lecture on data wrangling.
+我们将在"数据处理"（data wrangling）讲座中更深入地介绍如何利用管道的更多细节。
 
-## A versatile and powerful tool
+## 一个多功能而强大的工具
 
-On most Unix-like systems, one user is special: the "root" user. You may
-have seen it in the file listings above. The root user is above (almost)
-all access restrictions, and can create, read, update, and delete any
-file in the system. You will not usually log into your system as the
-root user though, since it's too easy to accidentally break something.
-Instead, you will be using the `sudo` command. As its name implies, it
-lets you "do" something "as su" (short for "super user", or "root").
-When you get permission denied errors, it is usually because you need to
-do something as root. Though make sure you first double-check that you
-really wanted to do it that way!
+在大多数类 Unix 系统上，有一个用户是特殊的：那就是 "root" 用户。你可能在前面列出的文件信息中看到过它。root 用户凌驾于（几乎）所有限制之上，可以在系统中创建、读取、更新和删除任何文件。不过你通常不应该以 root 用户身份登录系统，因为这样做很容易不小心把系统搞坏。你应该使用的是 `sudo` 命令。顾名思义，`sudo` 允许你"以 su（super user，即 super user 的缩写，意为超级用户/管理员）的身份做某事"。当你遇到权限被拒绝（Permission denied）的错误时，通常是因为你需要以 root 身份来操作。不过动手之前，务必先确认你真的打算这么做！
 
-One thing you need to be root in order to do is writing to the `sysfs` file
-system mounted under `/sys`. `sysfs` exposes a number of kernel parameters as
-files, so that you can easily reconfigure the kernel on the fly without
-specialized tools. **Note that sysfs does not exist on Windows or macOS.**
+有一件你需要 root 权限才能做的事是向挂载在 `/sys` 下的 `sysfs` 文件系统写入数据。`sysfs` 将许多内核参数以文件的形式暴露出来，这样你就可以在不使用专用工具的情况下轻松地动态重新配置内核。**请注意，sysfs 在 Windows 或 macOS 上并不存在。**
 
-For example, the brightness of your laptop's screen is exposed through a file
-called `brightness` under
+例如，你笔记本电脑屏幕的亮度通过以下路径下一个名为 `brightness` 的文件来暴露：
 
 ```
 /sys/class/backlight
 ```
 
-By writing a value into that file, we can change the screen brightness.
-Your first instinct might be to do something like:
+向这个文件中写入一个数值，就可以改变屏幕亮度。你第一反应可能是这样做：
 
 ```console
 $ sudo find -L /sys/class/backlight -maxdepth 2 -name '*brightness*'
@@ -333,87 +194,41 @@ An error occurred while redirecting file 'brightness'
 open: Permission denied
 ```
 
-This error may come as a surprise. After all, we ran the command with
-`sudo`! This is an important thing to know about the shell. Operations
-like `|`, `>`, and `<` are done _by the shell_, not by the individual
-program. `echo` and friends do not "know" about `|`. They just read from
-their input and write to their output, whatever it may be. In the case
-above, the _shell_ (which is authenticated just as your user) tries to
-open the brightness file for writing, before setting that as `sudo
-echo`'s output, but is prevented from doing so since the shell does not
-run as root. Using this knowledge, we can work around this:
+这个错误可能令人惊讶。毕竟我们已经用了 `sudo` 运行命令！这是关于 shell 运行方式的一个重要知识点。像 `|`、`>` 和 `<` 这样的操作是由 _shell_（而非各个单独的程序）来执行的。`echo` 等程序并不"知道" `|` 的存在；它们只是从输入流读取并向输出流写入，无论输入输出是什么。在上述例子中，_shell_（以你的普通用户身份认证，而非 root）试图以写入方式打开 brightness 文件，再把它设置为 `sudo echo` 的输出目标，但被拒绝，因为 shell 本身并没有以 root 身份运行。利用这个认识，我们可以绕开这个限制：
 
 ```console
 $ echo 3 | sudo tee brightness
 ```
 
-Since the `tee` program is the one to open the `/sys` file for writing,
-and _it_ is running as `root`, the permissions all work out. You can
-control all sorts of fun and useful things through `/sys`, such as the
-state of various system LEDs (your path might be different):
+因为在这里是 `tee` 程序以写入方式打开 `/sys` 文件，而 _它_ 是以 `root` 身份运行的，所以权限限制就顺利通过了。你可以透过 `/sys` 控制各种有趣且有实用价值的系统事项，比如各种系统 LED 的状态（你的路径可能不同）：
 
 ```console
 $ echo 1 | sudo tee /sys/class/leds/input6::scrolllock/brightness
 ```
 
-# Next steps
+# 下一步
 
-At this point you know your way around a shell enough to accomplish
-basic tasks. You should be able to navigate around to find files of
-interest and use the basic functionality of most programs. In the next
-lecture, we will talk about how to perform and automate more complex
-tasks using the shell and the many handy command-line programs out
-there.
+到这里，你已经对 shell 有了足够的了解，足以完成一些基本任务。你应该能够导航查找感兴趣的文件，并熟练使用大多数程序的基本功能。在下一讲中，我们将讨论如何利用 shell 和众多好用的命令行程序来执行并自动化更复杂的任务。
 
-# Exercises
+# 练习
 
-All classes in this course are accompanied by a series of exercises. Some give
-you a specific task to do, while others are open-ended, like "try using X and Y
-programs". We highly encourage you to try them out.
+本课程的所有讲座都附有练习。有些练习会要求你完成一个具体的任务，而另一些则是开放式的，比如"尝试使用 X 和 Y 程序"。我们非常鼓励你亲自尝试。
 
-We have not written solutions for the exercises. If you are stuck on anything
-in particular, feel free to send us an email describing what you've tried so
-far, and we will try to help you out.
+我们并未为练习编写答案。如果你在某个具体问题上卡住了，欢迎给我们发邮件描述你到目前为止尝试过的内容，我们会尽力帮助你。
 
- 1. For this course, you need to be using a Unix shell like Bash or ZSH. If you
-    are on Linux or macOS, you don't have to do anything special. If you are on
-    Windows, you need to make sure you are not running cmd.exe or PowerShell;
-    you can use [Windows Subsystem for
-    Linux](https://docs.microsoft.com/en-us/windows/wsl/) or a Linux virtual
-    machine to use Unix-style command-line tools. To make sure you're running
-    an appropriate shell, you can try the command `echo $SHELL`. If it says
-    something like `/bin/bash` or `/usr/bin/zsh`, that means you're running the
-    right program.
- 1. Create a new directory called `missing` under `/tmp`.
- 1. Look up the `touch` program. The `man` program is your friend.
- 1. Use `touch` to create a new file called `semester` in `missing`.
- 1. Write the following into that file, one line at a time:
+ 1. 在本课程中，你需要使用类 Unix 的 shell，例如 Bash 或 ZSH。如果你在 Linux 或 macOS 上，无需做任何特殊配置。如果你在 Windows 上，请确保你没有在使用 `cmd.exe` 或 PowerShell；你可以使用 [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) 或一台 Linux 虚拟机来使用类 Unix 的命令行工具。要确认你正在运行合适的 shell，可以试试执行命令 `echo $SHELL`。如果输出类似 `/bin/bash` 或 `/usr/bin/zsh`，说明你正在运行正确的程序。
+ 1. 在 `/tmp` 下新建一个名为 `missing` 的目录。
+ 1. 查阅 `touch` 程序的用法。`man` 程序是你的好帮手。
+ 1. 使用 `touch` 在 `missing` 目录中创建一个新的文件，名为 `semester`。
+ 1. 逐行将以下内容写入该文件：
     ```
     #!/bin/sh
     curl --head --silent https://missing.csail.mit.edu
     ```
-    The first line might be tricky to get working. It's helpful to know that
-    `#` starts a comment in Bash, and `!` has a special meaning even within
-    double-quoted (`"`) strings. Bash treats single-quoted strings (`'`)
-    differently: they will do the trick in this case. See the Bash
-    [quoting](https://www.gnu.org/software/bash/manual/html_node/Quoting.html)
-    manual page for more information.
- 1. Try to execute the file, i.e. type the path to the script (`./semester`)
-    into your shell and press enter. Understand why it doesn't work by
-    consulting the output of `ls` (hint: look at the permission bits of the
-    file).
- 1. Run the command by explicitly starting the `sh` interpreter, and giving it
-    the file `semester` as the first argument, i.e. `sh semester`. Why does
-    this work, while `./semester` didn't?
- 1. Look up the `chmod` program (e.g. use `man chmod`).
- 1. Use `chmod` to make it possible to run the command `./semester` rather than
-    having to type `sh semester`. How does your shell know that the file is
-    supposed to be interpreted using `sh`? See this page on the
-    [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) line for more
-    information.
- 1. Use `|` and `>` to write the "last modified" date output by
-    `semester` into a file called `last-modified.txt` in your home
-    directory.
- 1. Write a command that reads out your laptop battery's power level or your
-    desktop machine's CPU temperature from `/sys`. Note: if you're a macOS
-    user, your OS doesn't have sysfs, so you can skip this exercise.
+    第一行可能需要花些功夫才能正确输入。需要知道的是，`#` 在 Bash 中用来开启注释，而 `!` 在双引号（`"`）字符串中也具有特殊含义。Bash 对单引号字符串（`'`）的处理方式不同——在这种情况下使用单引号即可。详见 Bash 手册中关于[引用（Quoting）](https://www.gnu.org/software/bash/manual/html_node/Quoting.html) 的部分。
+ 1. 尝试执行这个文件——即在 shell 中输入该脚本的路径（`./semester`）然后按回车。通过观察 `ls` 的输出（提示：查看文件的权限位）来理解为什么它不会工作。
+ 1. 通过显式启动 `sh` 解释器并将 `semester` 作为其第一个参数来运行该命令，即执行 `sh semester`。为什么这次能成功，而 `./semester` 不行？
+ 1. 查阅 `chmod` 程序（例如，使用 `man chmod`）。
+ 1. 使用 `chmod` 使得你可以直接运行 `./semester`，而不必再键入 `sh semester`。你的 shell 是如何知道应该用 `sh` 来解释这个文件的？详见 [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) 行的相关说明。
+ 1. 使用 `|` 和 `>` 将 `semester` 输出的"最后修改时间"写入你 home 目录下的一个名为 `last-modified.txt` 的文件中。
+ 1. 写一个命令，从 `/sys` 中读取你笔记本电脑电池电量或台式机 CPU 温度。注意：如果你是 macOS 用户，你的操作系统没有 sysfs，可以跳过此练习。
